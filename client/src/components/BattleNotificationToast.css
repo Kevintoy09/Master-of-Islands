@@ -1,0 +1,180 @@
+/* BattleNotificationToast.css */
+
+.battle-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 999999;
+  pointer-events: none;
+}
+
+.battle-toast {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 320px;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  cursor: pointer;
+  pointer-events: all;
+  animation: slideInRight 0.4s ease-out, shake 0.5s ease-in-out 0.4s;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.battle-toast:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+}
+
+.battle-toast.victory {
+  border-color: rgba(46, 204, 113, 0.5);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 80%, rgba(46, 204, 113, 0.15) 100%);
+}
+
+.battle-toast.defeat {
+  border-color: rgba(231, 76, 60, 0.5);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 80%, rgba(231, 76, 60, 0.15) 100%);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.battle-toast-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  color: white;
+  font-size: 20px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.battle-toast-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.battle-toast-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.battle-toast-content {
+  flex: 1;
+}
+
+.battle-toast-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.battle-toast.victory .battle-toast-title {
+  color: #2ecc71;
+}
+
+.battle-toast.defeat .battle-toast-title {
+  color: #e74c3c;
+}
+
+.battle-toast-battle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12px;
+}
+
+.battle-toast-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.battle-toast-action {
+  font-size: 12px;
+  color: #3498db;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Animation de pulsation pour attirer l'attention */
+.battle-toast::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 12px;
+  background: linear-gradient(45deg, transparent, rgba(52, 152, 219, 0.4), transparent);
+  animation: rotateBorder 3s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotateBorder {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .battle-toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .battle-toast {
+    min-width: auto;
+    max-width: none;
+    padding: 16px;
+  }
+
+  .battle-toast-icon {
+    font-size: 36px;
+  }
+
+  .battle-toast-title {
+    font-size: 18px;
+  }
+
+  .battle-toast-stats {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

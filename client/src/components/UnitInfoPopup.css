@@ -1,0 +1,318 @@
+.unit-info-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.unit-info-popup {
+  background: linear-gradient(145deg, #2d1810, #3d2317);
+  border: 2px solid #DAA520;
+  border-radius: 12px;
+  color: #F5DEB3;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.unit-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #8B4513;
+  background: rgba(218, 165, 32, 0.1);
+}
+
+.unit-info-header h2 {
+  margin: 0;
+  color: #FFD700;
+  font-size: 1.4em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #FFD700;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  transform: scale(1.1);
+}
+
+.unit-info-content {
+  padding: 20px;
+}
+
+.info-section {
+  margin-bottom: 24px;
+}
+
+.info-section h3 {
+  margin: 0 0 12px 0;
+  color: #DAA520;
+  font-size: 1.1em;
+  border-bottom: 1px solid #8B4513;
+  padding-bottom: 4px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.info-item .label {
+  font-weight: 500;
+  color: #CD853F;
+}
+
+.info-item .value {
+  font-weight: bold;
+  color: #F5DEB3;
+  text-align: right;
+}
+
+/* Couleurs de texte dynamiques */
+.player-color-0 {
+  color: #DC143C !important; /* Rouge */
+}
+
+.player-color-1 {
+  color: #4169E1 !important; /* Bleu */
+}
+
+.player-color-2 {
+  color: #ffae00 !important; /* Orange */
+}
+
+.player-color-3 {
+  color: #32CD32 !important; /* Vert */
+}
+
+.player-color-4 {
+  color: #9370DB !important; /* Violet */
+}
+
+.player-color-5 {
+  color: #FF1493 !important; /* Rose */
+}
+
+.player-color-6 {
+  color: #00CED1 !important; /* Cyan */
+}
+
+.player-color-7 {
+  color: #FFD700 !important; /* Or */
+}
+
+/* Fallback pour les équipes génériques */
+.team-color[data-team="attacker"] {
+  color: #DC143C !important;
+}
+
+.team-color[data-team="defender"] {
+  color: #4169E1 !important;
+}
+
+.health-bar {
+  position: relative;
+  background: rgba(139, 69, 19, 0.3);
+  border-radius: 10px;
+  padding: 4px 8px !important;
+  min-width: 80px;
+  overflow: hidden;
+}
+
+.health-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #FF4444, #FFAA44, #44FF44);
+  border-radius: 10px;
+  z-index: -1;
+  transition: width 0.3s ease;
+}
+
+.stat-breakdown {
+  margin-bottom: 16px;
+  background: rgba(139, 69, 19, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 3px solid #DAA520;
+}
+
+.stat-breakdown h4 {
+  margin: 0 0 8px 0;
+  color: #FFD700;
+  font-size: 1em;
+}
+
+.stat-calculation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 0.9em;
+}
+
+.stat-line.bonus {
+  color: #90EE90;
+  font-weight: 500;
+}
+
+.stat-line.total {
+  border-top: 1px solid #8B4513;
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.stat-value {
+  font-weight: bold;
+  min-width: 40px;
+  text-align: right;
+}
+
+.bonus-status {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.bonus-active {
+  background: rgba(144, 238, 144, 0.2);
+  border: 1px solid #90EE90;
+  color: #90EE90;
+}
+
+.bonus-inactive {
+  background: rgba(139, 69, 19, 0.2);
+  border: 1px solid #8B4513;
+  color: #CD853F;
+}
+
+.bonus-icon {
+  font-size: 1.2em;
+  margin-right: 8px;
+}
+
+.bonus-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 0.85em;
+}
+
+.bonus-details span {
+  background: rgba(255, 215, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #DAA520;
+}
+
+/* Scrollbar personnalisée */
+.unit-info-popup::-webkit-scrollbar {
+  width: 6px;
+}
+
+.unit-info-popup::-webkit-scrollbar-track {
+  background: rgba(139, 69, 19, 0.3);
+  border-radius: 3px;
+}
+
+.unit-info-popup::-webkit-scrollbar-thumb {
+  background: #DAA520;
+  border-radius: 3px;
+}
+
+.unit-info-popup::-webkit-scrollbar-thumb:hover {
+  background: #FFD700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .unit-info-popup {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  /* Garder 2 colonnes sur mobile mais réduire l'espacement et la taille */
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .info-item {
+    padding: 4px 0;
+    font-size: 0.85em;
+  }
+
+  .info-item .label {
+    font-size: 0.8em;
+  }
+
+  .info-item .value {
+    font-size: 0.85em;
+  }
+
+  .unit-info-header h2 {
+    font-size: 1.1em;
+  }
+
+  .info-section h3 {
+    font-size: 1.0em;
+    margin-bottom: 8px;
+  }
+
+  .stat-line {
+    font-size: 0.8em;
+  }
+
+  /* Réduire le padding du popup sur mobile */
+  .unit-info-content {
+    padding: 12px 16px;
+  }
+
+  .unit-info-header {
+    padding: 12px 16px;
+  }
+}
+
+/* Style pour l'effectif dans les calculs */
+.unit-count {
+  color: #999999;
+  font-weight: normal;
+}

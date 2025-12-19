@@ -1,0 +1,474 @@
+/* Forge Popup - Design élégant et moderne */
+
+.forge-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.forge-popup-content {
+  background: linear-gradient(145deg, #2c1810 0%, #4a2d1a 50%, #3d2316 100%);
+  border: 3px solid #8b4513;
+  border-radius: 15px;
+  padding: 20px;
+  max-width: 600px;
+  width: 85vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 215, 0, 0.3);
+}
+
+/* Header */
+.forge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #8b4513;
+  position: relative;
+}
+
+.forge-title h2 {
+  color: #ffd700;
+  margin: 0;
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.forge-title p {
+  color: #deb887;
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+}
+
+.forge-gold {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.3rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.close-button {
+  background: linear-gradient(145deg, #8b4513, #a0522d);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.close-button:hover {
+  background: linear-gradient(145deg, #a0522d, #cd853f);
+  transform: scale(1.1);
+}
+
+/* Info section */
+.forge-info {
+  background: rgba(139, 69, 19, 0.2);
+  border: 1px solid #8b4513;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 25px;
+  color: #deb887;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.forge-info p {
+  margin: 5px 0;
+}
+
+/* Forge config info for page 2 */
+.forge-config-info {
+  background: rgba(139, 69, 19, 0.15);
+  border: 1px solid #8b4513;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  color: #deb887;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.forge-config-info p {
+  margin: 3px 0;
+}
+
+/* Loading & Error */
+.loading, .error {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 1.2rem;
+  border-radius: 10px;
+}
+
+.loading {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.error {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* Units container */
+.units-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+/* Unit card */
+.unit-card {
+  background: linear-gradient(145deg, #3d2316, #2c1810);
+  border: 2px solid #654321;
+  border-radius: 15px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.unit-card.improved {
+  border-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.unit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Unit header */
+.unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #654321;
+}
+
+.unit-header h3 {
+  color: #ffd700;
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.points-counter {
+  color: #deb887;
+  font-size: 0.9rem;
+  background: rgba(139, 69, 19, 0.3);
+  padding: 5px 10px;
+  border-radius: 15px;
+  border: 1px solid #8b4513;
+}
+
+/* Improvements list */
+.improvements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Improvement item */
+.improvement-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(139, 69, 19, 0.15);
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 69, 19, 0.3);
+  transition: all 0.2s ease;
+}
+
+.improvement-item:hover {
+  background: rgba(139, 69, 19, 0.25);
+}
+
+.improvement-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.improvement-name {
+  color: #deb887;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.improvement-value {
+  color: #ffd700;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.upgrade-cost {
+  color: #90ee90;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Controls */
+.improvement-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-upgrade, .btn-downgrade {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-upgrade {
+  background: linear-gradient(145deg, #228b22, #32cd32);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 100, 0, 0.3);
+}
+
+.btn-upgrade:hover:not(:disabled) {
+  background: linear-gradient(145deg, #32cd32, #00ff00);
+  transform: scale(1.1);
+}
+
+.btn-upgrade:disabled {
+  background: #555;
+  color: #888;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-downgrade {
+  background: linear-gradient(145deg, #dc143c, #ff6347);
+  color: white;
+  box-shadow: 0 2px 4px rgba(139, 0, 0, 0.3);
+}
+
+.btn-downgrade:hover:not(:disabled) {
+  background: linear-gradient(145deg, #ff6347, #ff4500);
+  transform: scale(1.1);
+}
+
+.btn-downgrade:disabled {
+  background: #555;
+  color: #888;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Nouvelle interface - Sélection d'unités */
+.unit-selection-view {
+  padding: 20px 0;
+}
+
+.available-units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.unit-selection-card {
+  background: linear-gradient(145deg, #3d2316, #2c1810);
+  border: 2px solid #8b4513;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.unit-selection-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+  border-color: #ffd700;
+}
+
+.unit-selection-card.improved {
+  border-color: #32cd32;
+  background: linear-gradient(145deg, #2d4a2d, #1e3a1e);
+}
+
+.unit-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.unit-name {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.improvement-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #32cd32;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.unit-base-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  margin-top: 15px;
+}
+
+.stat-mini {
+  background: rgba(255, 215, 0, 0.2);
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #deb887;
+  font-weight: bold;
+}
+
+/* Nouvelle interface - Détails d'unité */
+.unit-details-view {
+  padding: 20px 0;
+}
+
+.unit-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #8b4513;
+}
+
+.back-button {
+  background: linear-gradient(145deg, #8b4513, #a0522d);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: linear-gradient(145deg, #a0522d, #8b4513);
+  transform: scale(1.05);
+}
+
+.unit-stats-section,
+.unit-improvements-section {
+  margin-bottom: 25px;
+}
+
+.unit-stats-section h4,
+.unit-improvements-section h4 {
+  color: #ffd700;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  background: linear-gradient(145deg, #3d2316, #2c1810);
+  border: 1px solid #8b4513;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-name {
+  color: #deb887;
+  font-weight: bold;
+}
+
+.stat-values {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.bonus {
+  color: #32cd32;
+  font-size: 0.9rem;
+}
+
+.forge-resources {
+  color: #deb887;
+  font-weight: bold;
+  background: rgba(255, 215, 0, 0.1);
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .units-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .available-units-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .forge-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .unit-details-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .improvement-item {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

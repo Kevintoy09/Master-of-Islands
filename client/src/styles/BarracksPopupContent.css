@@ -1,0 +1,1294 @@
+/* BarracksPopupContent.css */
+
+.barracks-popup-content {
+  font-family: 'Trajan Pro', serif;
+  color: #8B4513;
+  padding: 0;
+  margin: 0;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.barracks-header {
+  padding: 15px 20px;
+  border-bottom: 2px solid #8B4513;
+  background: linear-gradient(135deg, #D2B48C, #F5DEB3);
+  margin-bottom: 20px;
+}
+
+.barracks-header h2 {
+  margin: 0;
+  color: #8B4513;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.barracks-tabs {
+  padding: 0 20px;
+}
+
+.tab-navigation {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #D2B48C;
+}
+
+/* ===== STYLE IKARIAM ===== */
+
+.production-tab-ikariam {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.production-summary-ikariam {
+  background: linear-gradient(135deg, #f9f3e8, #f0e6d2);
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  width: calc(100% - 30px);
+  margin-right: 30px;
+}
+
+.summary-units-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d4a574;
+}
+
+.summary-unit-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+}
+
+.summary-unit-icon {
+  background: #fff;
+  border: 2px solid #d4a574;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  overflow: hidden;
+}
+
+.summary-unit-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.summary-unit-count {
+  font-weight: bold;
+  font-size: 17px;
+  color: #8B4513;
+}
+
+.summary-unit-name {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
+.summary-costs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.summary-cost {
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 1px solid #d4a574;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.summary-cost.time {
+  background: #fff4e6;
+  color: #e67e22;
+}
+
+.summary-action-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.cancel-production-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 6px 25px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.cancel-production-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+.production-progress-text {
+  font-size: 14px;
+  font-weight: bold;
+  color: #27ae60;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.produce-all-btn {
+  background: linear-gradient(135deg, #27ae60, #229954);
+  color: white;
+  border: none;
+  padding: 6px 40px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.produce-all-btn:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+  background: linear-gradient(135deg, #229954, #1e8449);
+}
+
+.produce-all-btn.disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.units-list-ikariam {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 25px;
+}
+
+.ikariam-unit-row {
+  display: grid;
+  grid-template-columns: 70px calc(105% - 200px) 95px;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, #fff9f0, #fef5e7);
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  padding: 10px 10px;
+  transition: all 0.3s ease;
+  width: calc(90% - 5px);
+  margin-right: 30px;
+}
+
+.ikariam-unit-row:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+/* Colonne 1: Image */
+.unit-image-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unit-icon-large {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff, #f8f9fa);
+  border: 2px solid #d4a574;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 3px;
+  overflow: hidden;
+}
+
+/* Colonne 2: Détails */
+.unit-details-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.unit-name-ikariam {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: bold;
+  color: #8B4513;
+}
+
+.unit-costs-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.requirement-message {
+  padding: 8px 10px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #856404;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.cost-item {
+  background: #fff;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+.cost-item.ok {
+  color: #27ae60;
+  border-color: #27ae60;
+}
+
+.cost-item.missing {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.cost-item.time-cost {
+  background: #fff4e6;
+  color: #e67e22;
+  border-color: #f39c12;
+}
+
+/* Colonne 3: Contrôles */
+.unit-controls-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+
+.quantity-controls {
+  display: flex;
+  gap: 3px;
+}
+
+.qty-btn-ikariam {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #d4a574;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #8B4513;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.qty-btn-ikariam:hover:not(:disabled) {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  transform: scale(1.1);
+}
+
+.qty-btn-ikariam:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty-btn-ikariam.plus {
+  border-color: #27ae60;
+}
+
+.qty-btn-ikariam.minus {
+  border-color: #e74c3c;
+}
+
+.quantity-input-ikariam {
+  width: 42px;
+  height: 20px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  border: 1px solid #d4a574;
+  border-radius: 4px;
+  background: #fff;
+  color: #8B4513;
+}
+
+.quantity-input-ikariam:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* ===== Styles complémentaires pour Ikariam ===== */
+
+/* Maximiser la largeur du popup */
+.barracks-tabs {
+  padding: 0 10px;
+  max-width: 100%;
+  width: 100%;
+}
+
+.units-list-ikariam {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+  .ikariam-unit-row {
+    grid-template-columns: 50px 1fr 85px;
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  .unit-icon-large {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .unit-name-ikariam {
+    font-size: 13px;
+  }
+  
+  .cost-item {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+  
+  .qty-btn-ikariam {
+    width: 26px;
+    height: 26px;
+    font-size: 16px;
+  }
+  
+  .quantity-input-ikariam {
+    width: 50px;
+    height: 26px;
+    font-size: 13px;
+  }
+  
+  .production-summary-ikariam {
+    padding: 12px;
+  }
+  
+  .summary-unit-icon {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* ===== Styles généraux (conservés) ===== */
+
+.heroes-section, .units-section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  color: #2c3e50;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #3498db;
+}
+
+.heroes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.hero-card-garrison {
+  background: linear-gradient(145deg, #ecf0f1, #d5dbdb);
+  border: 2px solid #bdc3c7;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.hero-card-garrison.clickable {
+  cursor: pointer;
+}
+
+.hero-card-garrison:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hero-card-garrison.clickable:hover {
+  border-color: #f39c12;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.hero-name-section {
+  flex: 1;
+}
+
+.hero-name {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.hero-rarity {
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hero-specialty-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.hero-level {
+  color: #7f8c8d;
+  font-size: 0.9em;
+  margin-bottom: 8px;
+}
+
+.hero-stats-mini {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.85em;
+}
+
+.hero-stats-mini span {
+  background: rgba(52, 152, 219, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.hero-bonuses {
+  margin-bottom: 8px;
+  font-size: 0.8em;
+}
+
+.bonus-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.bonus-row span {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.hero-experience {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: #7f8c8d;
+  margin-bottom: 10px;
+}
+
+.hero-experience div {
+  text-align: center;
+}
+
+.hero-status {
+  text-align: center;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.status-garrison {
+  background: #27ae60;
+  color: white;
+}
+
+.status-battle {
+  background: #e74c3c;
+  color: white;
+}
+
+.status-wounded {
+  background: #f39c12;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .heroes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-experience {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .bonus-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: 'Trajan Pro', serif;
+  font-size: 14px;
+  color: #8B4513;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  border-bottom-color: #8B4513;
+  background: rgba(139, 69, 19, 0.1);
+  font-weight: bold;
+}
+
+/* Style compact pour les cartes d'unités */
+.compact-unit-card {
+  background: linear-gradient(135deg, #F5DEB3 0%, #DDD3B8 100%);
+  border: 2px solid #8B4513;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.compact-unit-card:hover {
+  transform: translateY(-1px);
+}
+
+.unit-header-compact {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.unit-header-compact:hover {
+  background-color: rgba(139, 69, 19, 0.1);
+}
+
+.unit-icon-compact {
+  margin-right: 10px;
+}
+
+.unit-icon-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border: 1px solid #8B4513;
+  color: white;
+  font-weight: bold;
+}
+
+.unit-icon-small.infantry {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+}
+
+.unit-icon-small.ranged {
+  background: linear-gradient(135deg, #7ED321 0%, #5BA916 100%);
+}
+
+.unit-icon-small.cavalry {
+  background: linear-gradient(135deg, #F5A623 0%, #D4941A 100%);
+}
+
+.unit-icon-small.siege {
+  background: linear-gradient(135deg, #BD10E0 0%, #9013FE 100%);
+}
+
+.unit-icon-small.hero {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.unit-info-compact {
+  flex: 1;
+}
+
+.unit-name-compact {
+  margin: 0 0 4px 0;
+  color: #8B4513;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.unit-stats-compact {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-compact {
+  font-size: 11px;
+  color: #666;
+  font-weight: bold;
+}
+
+.info-icon {
+  color: #FF6B35;
+  font-size: 14px;
+}
+
+.cost-section-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.cost-row-compact {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cost-compact {
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.cost-compact.ok {
+  background: #90EE90;
+  color: #2E7D32;
+}
+
+.cost-compact.missing {
+  background: #FFB3B3;
+  color: #C62828;
+}
+
+.time-compact {
+  font-size: 11px;
+  color: #8B4513;
+  font-weight: bold;
+}
+
+.production-controls-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quantity-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qty-btn {
+  background: #8B4513;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.qty-btn:hover {
+  background: #A0522D;
+}
+
+.qty-display {
+  color: #8B4513;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.produce-btn {
+  background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
+  color: white;
+  border: 1px solid #228B22;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.produce-btn.enabled:hover {
+  background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+}
+
+.produce-btn.disabled {
+  background: #999;
+  border-color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tab-button:hover {
+  background: rgba(139, 69, 19, 0.05);
+}
+
+.tab-content {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.resources-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  padding: 15px;
+  background: #F5F5DC;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 2px solid #D2B48C;
+}
+
+.resource-item {
+  font-weight: bold;
+  color: #8B4513;
+  text-align: center;
+  font-size: 13px;
+}
+
+.units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 15px;
+}
+
+/* Empêcher tout scroll imbriqué dans le contenu des onglets */
+.tab-content .units-grid,
+.tab-content .garrison-units,
+.tab-content .production-queue {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+.barracks-unit-card {
+  border: 2px solid #8B4513;
+  border-radius: 6px;
+  padding: 12px;
+  background: white;
+  box-shadow: 0 2px 6px rgba(139, 69, 19, 0.2);
+  margin-bottom: 10px;
+}
+
+.unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #D2B48C;
+}
+
+.unit-name {
+  margin: 0;
+  color: #8B4513;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.unit-category {
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.unit-category.hero {
+  background: #DC143C;
+  color: white;
+}
+
+.unit-category.infantry {
+  background: #4169E1;
+  color: white;
+}
+
+.unit-category.ranged {
+  background: #228B22;
+  color: white;
+}
+
+.unit-category.cavalry {
+  background: #FFD700;
+  color: #8B4513;
+}
+
+.unit-category.siege {
+  background: #8B008B;
+  color: white;
+}
+
+.unit-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stats-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #654321;
+}
+
+.stat-icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+.production-section {
+  border-top: 1px solid #D2B48C;
+  padding-top: 12px;
+}
+
+.cost-title {
+  margin: 0 0 8px 0;
+  font-weight: bold;
+  color: #8B4513;
+  font-size: 13px;
+}
+
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.cost-available {
+  color: #228B22;
+  font-weight: bold;
+}
+
+.cost-missing {
+  color: #DC143C;
+  font-weight: bold;
+}
+
+.production-time {
+  color: #4169E1;
+  font-weight: bold;
+}
+
+.production-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.quantity-input {
+  width: 50px;
+  padding: 4px;
+  border: 2px solid #D2B48C;
+  border-radius: 3px;
+  text-align: center;
+  font-family: 'Trajan Pro', serif;
+  font-size: 12px;
+}
+
+.production-button {
+  flex: 1;
+  padding: 6px 12px;
+  background: #8B4513;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: 'Trajan Pro', serif;
+  font-weight: bold;
+  font-size: 12px;
+  transition: background 0.3s ease;
+}
+
+.production-button:hover {
+  background: #A0522D;
+}
+
+.production-button.disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.production-queue {
+  padding: 10px 0;
+}
+
+.queue-title {
+  margin: 0 0 15px 0;
+  color: #8B4513;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.no-production {
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}
+
+.queue-item {
+  border: 1px solid #D2B48C;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: white;
+  position: relative;
+}
+
+.queue-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.cancel-queue-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.cancel-queue-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.cancel-queue-btn:active {
+  transform: scale(0.95);
+}
+
+.queue-unit-name {
+  margin: 0 0 4px 0;
+  color: #8B4513;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.queue-quantity {
+  margin: 0;
+  color: #654321;
+  font-size: 12px;
+}
+
+.queue-time {
+  text-align: right;
+}
+
+.queue-time p {
+  margin: 0;
+  font-size: 11px;
+  color: #654321;
+}
+
+.time-remaining {
+  font-weight: bold;
+  color: #8B4513;
+  font-size: 12px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #E0E0E0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4169E1, #1E90FF);
+  transition: width 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .units-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .unit-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .resources-display {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Styles pour la garnison */
+.garrison-display {
+  padding: 20px 0;
+}
+
+.garrison-title {
+  color: #8B4513;
+  font-size: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-bottom: 2px solid #D2B48C;
+  padding-bottom: 10px;
+}
+
+.no-units {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #F5F5DC, #FFF8DC);
+  border-radius: 10px;
+  border: 2px dashed #D2B48C;
+}
+
+.no-units p {
+  margin: 10px 0;
+  color: #8B4513;
+}
+
+.no-units .hint {
+  font-style: italic;
+  color: #A0522D;
+  font-size: 14px;
+}
+
+.garrison-units {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.garrison-unit-card {
+  background: linear-gradient(135deg, #F5F5DC, #FFF8DC);
+  border: 2px solid #D2B48C;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(139, 69, 19, 0.2);
+}
+
+.garrison-unit-card:hover {
+  border-color: #8B4513;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(139, 69, 19, 0.3);
+}
+
+.garrison-unit-card .unit-icon {
+  flex-shrink: 0;
+}
+
+.garrison-unit-card .unit-details {
+  flex-grow: 1;
+}
+
+.garrison-unit-card .unit-name {
+  margin: 0 0 5px 0;
+  color: #8B4513;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.garrison-unit-card .unit-quantity {
+  margin: 5px 0;
+  color: #A0522D;
+  font-size: 14px;
+}
+
+.garrison-unit-card .unit-quantity strong {
+  color: #8B4513;
+  font-size: 16px;
+}
+
+.unit-stats-mini {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.unit-stats-mini span {
+  background: rgba(139, 69, 19, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #8B4513;
+}
+
+.unit-actions {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.unit-status {
+  background: linear-gradient(135deg, #90EE90, #98FB98);
+  color: #006400;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0;
+  border: 1px solid #228B22;
+}
+
+/* Styles manquants pour les héros */
+.hero-status {
+  text-align: center;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.status-garrison {
+  background: #27ae60;
+  color: white;
+}
+
+.status-battle {
+  background: #e74c3c;
+  color: white;
+}
+
+.status-wounded {
+  background: #f39c12;
+  color: white;
+}
+
+/* Responsive pour héros */
+@media (max-width: 768px) {
+  .heroes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-experience {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .bonus-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+}

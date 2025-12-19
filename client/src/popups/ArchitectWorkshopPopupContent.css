@@ -1,0 +1,398 @@
+/* Styles pour le contenu du popup Atelier d'Architecte */
+.architect-content {
+  padding: 0;
+  max-width: 100%;
+}
+
+.architect-description {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(52, 73, 94, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.architect-description p {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+/* ===== SECTION BONUS ACTUELS ===== */
+.architect-bonus-section {
+  margin-bottom: 20px;
+}
+
+.architect-bonus-section h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.architect-bonus-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.architect-bonus-card {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.architect-bonus-card:hover {
+  transform: translateY(-2px);
+}
+
+.architect-bonus-icon {
+  font-size: 1.8em;
+}
+
+.architect-bonus-content {
+  flex: 1;
+}
+
+.architect-bonus-title {
+  font-size: 0.8em;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.architect-bonus-value {
+  font-size: 1.2em;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SECTION ÉCONOMIES ===== */
+.architect-savings-section {
+  margin-bottom: 20px;
+}
+
+.architect-savings-section h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.architect-savings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.architect-savings-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.architect-savings-item:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+}
+
+.architect-savings-building {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 6px;
+  font-size: 0.9em;
+}
+
+.architect-savings-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.architect-savings-cost {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.architect-savings-resource {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(39, 174, 96, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.architect-savings-resource img {
+  width: 14px;
+  height: 14px;
+}
+
+.architect-savings-more {
+  background: rgba(149, 165, 166, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7em;
+  color: #7f8c8d;
+}
+
+.architect-savings-time {
+  font-size: 0.8em;
+  color: #e67e22;
+  font-weight: 600;
+}
+
+.architect-no-savings {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+  background: rgba(149, 165, 166, 0.1);
+  border-radius: 8px;
+  border: 2px dashed #bdc3c7;
+}
+
+.architect-empty-icon {
+  font-size: 2em;
+  margin-bottom: 8px;
+}
+
+/* ===== SECTION ÉVOLUTION NIVEAUX ===== */
+.architect-level-section {
+  margin-bottom: 20px;
+}
+
+.architect-level-section h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.architect-level-comparison {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.architect-level-row {
+  display: grid;
+  grid-template-columns: 1fr 60px 60px 50px;
+  align-items: center;
+  min-height: 40px;
+}
+
+.architect-level-header {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: white;
+  font-weight: 600;
+  font-size: 0.8em;
+}
+
+.architect-level-row:not(.architect-level-header):nth-child(even) {
+  background: rgba(52, 73, 94, 0.03);
+}
+
+.architect-level-cell {
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 0.8em;
+  border-right: 1px solid rgba(52, 73, 94, 0.1);
+}
+
+.architect-level-cell:last-child {
+  border-right: none;
+}
+
+.architect-level-cell:first-child {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.architect-level-cell.current {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.architect-level-cell.next {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.architect-level-cell.gain {
+  color: #e67e22;
+  font-weight: 700;
+}
+
+/* ===== LOADING ===== */
+.architect-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #7f8c8d;
+}
+
+.architect-loading-spinner {
+  font-size: 2em;
+  margin-bottom: 12px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE MOBILE ===== */
+@media (max-width: 768px) {
+  .architect-content {
+    padding: 0;
+  }
+
+  .architect-description {
+    margin-bottom: 15px;
+    padding: 10px;
+  }
+
+  .architect-description p {
+    font-size: 0.85em;
+  }
+
+  /* Bonus cards en colonne sur mobile */
+  .architect-bonus-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .architect-bonus-card {
+    padding: 12px;
+  }
+
+  .architect-bonus-icon {
+    font-size: 1.5em;
+  }
+
+  .architect-bonus-value {
+    font-size: 1.1em;
+  }
+
+  /* Sections plus compactes */
+  .architect-bonus-section,
+  .architect-savings-section,
+  .architect-level-section {
+    margin-bottom: 15px;
+  }
+
+  .architect-bonus-section h4,
+  .architect-savings-section h4,
+  .architect-level-section h4 {
+    margin-bottom: 10px;
+    font-size: 0.95em;
+  }
+
+  /* Tableau niveau plus compact */
+  .architect-level-row {
+    grid-template-columns: 1fr 50px 50px 40px;
+    min-height: 35px;
+  }
+
+  .architect-level-cell {
+    padding: 6px 4px;
+    font-size: 0.75em;
+  }
+
+  .architect-level-cell:first-child {
+    padding-left: 8px;
+    font-size: 0.8em;
+  }
+
+  /* Savings plus compactes */
+  .architect-savings-item {
+    padding: 10px;
+  }
+
+  .architect-savings-building {
+    font-size: 0.85em;
+    margin-bottom: 4px;
+  }
+
+  .architect-savings-resource {
+    font-size: 0.75em;
+    padding: 1px 4px;
+  }
+
+  .architect-savings-resource img {
+    width: 12px;
+    height: 12px;
+  }
+
+  .architect-savings-time {
+    font-size: 0.75em;
+  }
+
+  .architect-no-savings {
+    padding: 15px;
+    font-size: 0.85em;
+  }
+
+  .architect-empty-icon {
+    font-size: 1.5em;
+    margin-bottom: 6px;
+  }
+}
+
+/* Extra compact pour très petits écrans */
+@media (max-width: 480px) {
+  .architect-bonus-card {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .architect-bonus-icon {
+    font-size: 1.3em;
+  }
+
+  .architect-bonus-title {
+    font-size: 0.75em;
+  }
+
+  .architect-bonus-value {
+    font-size: 1em;
+  }
+
+  .architect-level-row {
+    grid-template-columns: 1fr 45px 45px 35px;
+    min-height: 32px;
+  }
+
+  .architect-level-cell {
+    padding: 4px 2px;
+    font-size: 0.7em;
+  }
+
+  .architect-level-cell:first-child {
+    padding-left: 6px;
+    font-size: 0.75em;
+  }
+
+  .architect-savings-item {
+    padding: 8px;
+  }
+
+  .architect-savings-cost {
+    gap: 6px;
+  }
+}

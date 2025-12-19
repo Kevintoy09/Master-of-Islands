@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master of Islands - AI Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .actions {
+            padding: 30px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .actions h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group select,
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .ai-list {
+            padding: 30px;
+        }
+        
+        .ai-list h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8f9fa;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        th {
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .personality-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .personality-economic {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .personality-military {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .personality-balanced {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-online {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-offline {
+            color: #6c757d;
+        }
+        
+        .ai-console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .ai-console.show {
+            display: block;
+        }
+        
+        .ai-console-line {
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .ai-console-line:last-child {
+            border-bottom: none;
+        }
+        
+        .ai-console-time {
+            color: #858585;
+            margin-right: 10px;
+        }
+        
+        .ai-console-success {
+            color: #4caf50;
+        }
+        
+        .ai-console-error {
+            color: #f44336;
+        }
+        
+        .ai-console-warning {
+            color: #ff9800;
+        }
+        
+        .ai-console-info {
+            color: #2196f3;
+        }
+        
+        .console-toggle {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .console-toggle:hover {
+            background: #5a6268;
+        }
+        
+        .message {
+            padding: 15px;
+            margin: 20px 30px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Administration</h1>
+            <p>Master of Islands - Gestion des joueurs IA</p>
+        </header>
+        
+        <div class="stats" id="stats-container">
+            <div class="stat-card">
+                <h3>Total IA</h3>
+                <div class="value" id="stat-total">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>En ligne</h3>
+                <div class="value" id="stat-online">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Economic</h3>
+                <div class="value" id="stat-economic">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Military</h3>
+                <div class="value" id="stat-military">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Balanced</h3>
+                <div class="value" id="stat-balanced">-</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3 style="color: rgba(255,255,255,0.9);">IA Auto Mode</h3>
+                <div style="margin-top: 10px;">
+                    <button id="ai-auto-toggle" onclick="toggleAIAuto()" style="padding: 10px 20px; font-size: 1em; border-radius: 6px; border: 2px solid white; background: transparent; color: white; cursor: pointer; font-weight: bold;">
+                        <span id="ai-auto-status">Chargement...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="actions">
+            <h2>Actions</h2>
+            <div class="form-group">
+                <input type="text" id="ai-name" placeholder="Nom (optionnel)">
+                <select id="ai-personality">
+                    <option value="random">Personnalité Aléatoire</option>
+                    <option value="economic">Economic</option>
+                    <option value="military">Military</option>
+                    <option value="balanced">Balanced</option>
+                </select>
+                <select id="ai-difficulty">
+                    <option value="medium">Difficulté Moyenne</option>
+                    <option value="easy">Facile</option>
+                    <option value="hard">Difficile</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="createAI()">Créer IA</button>
+                <button class="btn-success" onclick="spawnMissingAIs()">Spawn IA Manquantes</button>
+                <button class="btn-warning" onclick="executeAIs()">Exécuter Cycle IA</button>
+                <button class="btn-danger" onclick="deleteAllAIs()">Supprimer Toutes les IA</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #6c757d;">Chargement...</p>
+        </div>
+        
+        <div class="ai-list">
+            <h2>Liste des Joueurs IA</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Personnalité</th>
+                        <th>Difficulté</th>
+                        <th>Villes</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ai-table-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #6c757d;">
+                            Aucune IA trouvée
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        let aiPlayers = [];
+        
+        // Charger les données au démarrage
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadAIPlayers();
+            loadAIAutoStatus();
+            
+            // Rafraîchir stats toutes les 10 secondes
+            setInterval(() => {
+                loadStats();
+                loadAIPlayers();
+                loadAIAutoStatus();
+            }, 10000);
+            
+            // Polling des logs console toutes les 2 secondes
+            setInterval(pollConsoleLogs, 2000);
+        });
+        
+        async function loadAIAutoStatus() {
+            try {
+                const response = await fetch('/api/admin/ai/auto-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const isEnabled = data.ai_auto_enabled;
+                    const statusBtn = document.getElementById('ai-auto-status');
+                    const toggleBtn = document.getElementById('ai-auto-toggle');
+                    
+                    if (isEnabled) {
+                        statusBtn.textContent = '✓ ACTIVÉ';
+                        toggleBtn.style.background = '#28a745';
+                        toggleBtn.style.borderColor = '#28a745';
+                    } else {
+                        statusBtn.textContent = '✗ DÉSACTIVÉ';
+                        toggleBtn.style.background = 'transparent';
+                        toggleBtn.style.borderColor = 'white';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading AI auto status:', error);
+            }
+        }
+        
+        async function toggleAIAuto() {
+            try {
+                showLoading(true);
+                const response = await fetch('/api/admin/ai/toggle-auto', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.ai_auto_enabled ? 'IA Auto Mode ACTIVÉ' : 'IA Auto Mode DÉSACTIVÉ', 'success');
+                    loadAIAutoStatus();
+                } else {
+                    showMessage('Erreur: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Erreur lors du toggle: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+        
+        function showLoading(show = true) {
+            const loading = document.getElementById('loading');
+            loading.classList.toggle('show', show);
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/ai/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.stats;
+                    document.getElementById('stat-total').textContent = stats.total_ais || 0;
+                    document.getElementById('stat-online').textContent = stats.active_now || 0;
+                    document.getElementById('stat-economic').textContent = stats.by_personality?.economic || 0;
+                    document.getElementById('stat-military').textContent = stats.by_personality?.military || 0;
+                    document.getElementById('stat-balanced').textContent = stats.by_personality?.balanced || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadAIPlayers() {
+            try {
+                const response = await fetch('/api/ai/players');
+                const data = await response.json();
+                
+                if (data.success) {
+                    aiPlayers = data.ai_players;
+                    renderTable();
+                }
+            } catch (error) {
+                console.error('Error loading AI players:', error);
+            }
+        }
+        
+        // Stockage des logs de console par IA
+        const aiConsoleLogs = {};
+        const consoleOpenState = {}; // Sauvegarde de l'état ouvert/fermé
+        
+        function renderTable() {
+            const tbody = document.getElementById('ai-table-body');
+            
+            if (aiPlayers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #6c757d;">Aucune IA trouvée</td></tr>';
+                return;
+            }
+            
+            // Sauvegarder l'état des consoles avant de re-render
+            aiPlayers.forEach(ai => {
+                const consoleEl = document.getElementById(`console-${ai.id}`);
+                if (consoleEl) {
+                    consoleOpenState[ai.id] = consoleEl.classList.contains('show');
+                }
+            });
+            
+            tbody.innerHTML = aiPlayers.map(ai => {
+                // Initialiser les logs si pas déjà fait
+                if (!aiConsoleLogs[ai.id]) {
+                    aiConsoleLogs[ai.id] = [];
+                }
+                
+                return `
+                    <tr>
+                        <td colspan="7">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; gap: 20px; align-items: center; flex: 1;">
+                                    <strong>${ai.username}</strong>
+                                    <span class="personality-badge personality-${ai.personality}">${ai.personality}</span>
+                                    <span>${ai.difficulty}</span>
+                                    <span>${ai.city_count || 0} ville(s)</span>
+                                    <span class="status-${ai.is_online ? 'online' : 'offline'}">${ai.is_online ? '● En ligne' : '○ Hors ligne'}</span>
+                                </div>
+                                <div>
+                                    <button class="console-toggle" onclick="toggleConsole('${ai.id}')">📋 Console</button>
+                                    <button onclick="clearConsole('${ai.id}')" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-left: 5px;" title="Effacer la console">🗑️</button>
+                                    <button class="btn-danger" onclick="deleteAI('${ai.id}')">Supprimer</button>
+                                </div>
+                            </div>
+                            <div id="console-${ai.id}" class="ai-console">
+                                <div style="color: #858585; margin-bottom: 10px;">Console IA - ${ai.username}</div>
+                                <div id="console-content-${ai.id}">
+                                    ${aiConsoleLogs[ai.id].length === 0 ? '<div style="color: #858585;">Aucune action enregistrée</div>' : aiConsoleLogs[ai.id].map(log => `<div class="ai-console-line"><span class="ai-console-time">${log.time}</span><span class="${log.type}">${log.message}</span></div>`).join('')}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Restaurer l'état des consoles après le re-render
+            aiPlayers.forEach(ai => {
+                if (consoleOpenState[ai.id]) {
+                    const consoleEl = document.getElementById(`console-${ai.id}`);
+                    if (consoleEl) {
+                        consoleEl.classList.add('show');
+                    }
+                }
+            });
+        }
+        
+        function toggleConsole(aiId) {
+            const consoleEl = document.getElementById(`console-${aiId}`);
+            consoleEl.classList.toggle('show');
+            // Sauvegarder l'état
+            consoleOpenState[aiId] = consoleEl.classList.contains('show');
+        }
+        
+        async function clearConsole(aiId) {
+            try {
+                // Supprimer du fichier JSON côté serveur
+                const response = await fetch(`/api/ai/console-logs/${aiId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Supprimer de la mémoire locale
+                    if (aiConsoleLogs[aiId]) {
+                        aiConsoleLogs[aiId] = [];
+                    }
+                    
+                    // Mettre à jour l'affichage
+                    const consoleContent = document.getElementById(`console-content-${aiId}`);
+                    if (consoleContent) {
+                        consoleContent.innerHTML = '<div class="ai-console-line"><span style="color: #666; text-align: center; display: block;">Console effacée</span></div>';
+                    }
+                } else {
+                    console.error('Erreur lors de la suppression des logs:', data.error);
+                }
+            } catch (error) {
+                console.error('Erreur clearConsole:', error);
+            }
+        }
+        
+        function addConsoleLog(aiId, message, type = 'ai-console-info', timestamp = null) {
+            const now = timestamp ? new Date(timestamp) : new Date();
+            const time = now.toLocaleTimeString('fr-FR');
+            
+            if (!aiConsoleLogs[aiId]) {
+                aiConsoleLogs[aiId] = [];
+            }
+            
+            aiConsoleLogs[aiId].push({ time, message, type, timestamp: timestamp || now.toISOString() });
+            
+            // Limiter à 50 logs
+            if (aiConsoleLogs[aiId].length > 50) {
+                aiConsoleLogs[aiId].shift();
+            }
+            
+            // Mettre à jour l'affichage si la console est visible
+            const consoleContent = document.getElementById(`console-content-${aiId}`);
+            if (consoleContent) {
+                consoleContent.innerHTML = aiConsoleLogs[aiId].map(log => 
+                    `<div class="ai-console-line"><span class="ai-console-time">${log.time}</span><span class="${log.type}">${log.message}</span></div>`
+                ).join('');
+                
+                // Auto-scroll vers le bas
+                const consoleEl = document.getElementById(`console-${aiId}`);
+                if (consoleEl.classList.contains('show')) {
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                }
+            }
+        }
+        
+        async function pollConsoleLogs() {
+            try {
+                const response = await fetch('/api/ai/console-logs');
+                const data = await response.json();
+                
+                if (data.success && data.logs) {
+                    // Utiliser les timestamps pour détecter les nouveaux logs
+                    const existingTimestamps = new Set();
+                    Object.values(aiConsoleLogs).forEach(logs => {
+                        logs.forEach(log => {
+                            if (log.timestamp) existingTimestamps.add(log.timestamp);
+                        });
+                    });
+                    
+                    // Filtrer uniquement les logs non encore affichés
+                    const newLogs = data.logs.filter(log => !existingTimestamps.has(log.timestamp));
+                    
+                    newLogs.forEach(log => {
+                        let type = 'ai-console-info';
+                        if (log.success) {
+                            type = 'ai-console-success';
+                        } else if (log.action === 'wait') {
+                            type = 'ai-console-warning';
+                        } else if (!log.success) {
+                            type = 'ai-console-error';
+                        }
+                        
+                        addConsoleLog(log.player_id, log.message, type, log.timestamp);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur polling console logs:', error);
+            }
+        }
+        
+        async function createAI() {
+            const name = document.getElementById('ai-name').value || null;
+            const personality = document.getElementById('ai-personality').value;
+            const difficulty = document.getElementById('ai-difficulty').value;
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/ai/players', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, personality, difficulty })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`IA "${data.ai_player.username}" créée avec succès !`);
+                    document.getElementById('ai-name').value = '';
+                    loadStats();
+                    loadAIPlayers();
+                } else {
+                    showMessage(`Erreur: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function deleteAI(playerId) {
+            if (!confirm('Supprimer cette IA ?')) return;
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`/api/ai/players/${playerId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('IA supprimée avec succès !');
+                    loadStats();
+                    loadAIPlayers();
+                } else {
+                    showMessage(`Erreur: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function spawnMissingAIs() {
+            if (!confirm('Spawn des IA manquantes (minimum 1 par île) ?')) return;
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/ai/spawn', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(data.message);
+                    loadStats();
+                    loadAIPlayers();
+                } else {
+                    showMessage(`Erreur: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function executeAIs() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/ai/execute', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Afficher les actions dans les consoles
+                    if (data.actions && data.actions.length > 0) {
+                        data.actions.forEach(action => {
+                            let type = 'ai-console-info';
+                            if (action.success) {
+                                type = 'ai-console-success';
+                            } else if (action.action === 'wait') {
+                                type = 'ai-console-warning';
+                            } else {
+                                type = 'ai-console-error';
+                            }
+                            addConsoleLog(action.player_id, action.message, type);
+                        });
+                    }
+                    
+                    loadStats();
+                    loadAIPlayers();
+                } else {
+                    showMessage(`Erreur: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function deleteAllAIs() {
+            if (!confirm('⚠️ ATTENTION : Supprimer TOUTES les IA ?')) return;
+            
+            showLoading(true);
+            
+            try {
+                for (const ai of aiPlayers) {
+                    await fetch(`/api/ai/players/${ai.id}`, { method: 'DELETE' });
+                }
+                
+                showMessage('Toutes les IA ont été supprimées !');
+                loadStats();
+                loadAIPlayers();
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>

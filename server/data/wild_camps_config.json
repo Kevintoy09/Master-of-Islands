@@ -1,0 +1,165 @@
+{
+  "level_1": {
+    "description": "Petit campement sauvage avec quelques guerriers",
+    "difficulty": "Facile",
+    "units": {"barbarian_warrior": 3, "barbarian_archer": 2},
+    "rewards": {"wood": 150, "stone": 100, "cereal": 80},
+    "battlefield": "battlefield_map_1.json"
+  },
+  "level_2": {
+    "description": "Camp de sauvages renforcé avec des pillards",
+    "difficulty": "Facile",
+    "units": {"barbarian_warrior": 5, "barbarian_archer": 3, "barbarian_raider": 1},
+    "rewards": {"wood": 250, "stone": 180, "cereal": 140, "iron": 50},
+    "battlefield": "battlefield_map_2.json"
+  },
+  "level_3": {
+    "description": "Tribu sauvage avec un chaman pour soutien magique",
+    "difficulty": "Moyen",
+    "units": {"barbarian_warrior": 7, "barbarian_archer": 5, "barbarian_raider": 2, "tribal_shaman": 1},
+    "rewards": {"wood": 400, "stone": 300, "cereal": 220, "iron": 100, "papyrus": 30},
+    "battlefield": "Austerlitz.json"
+  },
+  "level_4": {
+    "description": "Forteresse sauvage commandée par un chef bandit",
+    "difficulty": "Moyen",
+    "units": {"barbarian_warrior": 10, "barbarian_archer": 7, "barbarian_raider": 3, "tribal_shaman": 2, "bandit_leader": 1},
+    "rewards": {"wood": 600, "stone": 450, "cereal": 350, "iron": 180, "papyrus": 60, "horse": 10},
+    "battlefield": "grande_carte_v2.json"
+  },
+  "level_5": {
+    "description": "Repaire de pirates et sauvages alliés",
+    "difficulty": "Difficile",
+    "units": {"barbarian_warrior": 12, "barbarian_archer": 8, "barbarian_raider": 4, "tribal_shaman": 2, "bandit_leader": 1, "pirate_crew": 3},
+    "rewards": {"wood": 1000, "stone": 750, "cereal": 600, "iron": 300, "papyrus": 120, "horse": 20, "marble": 15, "glass": 10},
+    "battlefield": "Overload_beach.json"
+  },
+  "level_6": {
+    "units": {"barbarian_warrior": 15, "barbarian_archer": 10, "barbarian_raider": 5, "tribal_shaman": 3, "bandit_leader": 1, "pirate_crew": 4},
+    "rewards": {"wood": 1400, "stone": 1000, "cereal": 800, "iron": 400, "papyrus": 160, "horse": 30, "marble": 25, "glass": 15},
+    "battlefield": "default_working_v2.json"
+  },
+  "level_7": {
+    "units": {"barbarian_warrior": 18, "barbarian_archer": 12, "barbarian_raider": 6, "tribal_shaman": 4, "bandit_leader": 2, "pirate_crew": 5, "pirate_captain": 1},
+    "rewards": {"wood": 1800, "stone": 1300, "cereal": 1000, "iron": 500, "papyrus": 200, "horse": 40, "marble": 35, "glass": 20},
+    "battlefield": "custom_battlefield_1_v2.json"
+  },
+  "level_8": {
+    "units": {"barbarian_warrior": 20, "barbarian_archer": 15, "barbarian_raider": 8, "tribal_shaman": 5, "bandit_leader": 2, "pirate_crew": 6, "pirate_captain": 1, "mercenary_veteran": 2},
+    "rewards": {"wood": 2200, "stone": 1600, "cereal": 1200, "iron": 600, "papyrus": 240, "horse": 50, "marble": 45, "glass": 25, "wool": 20},
+    "battlefield": "Austerlitz.json"
+  },
+  "level_9": {
+    "units": {"barbarian_warrior": 22, "barbarian_archer": 18, "barbarian_raider": 10, "tribal_shaman": 6, "bandit_leader": 3, "pirate_crew": 7, "pirate_captain": 1, "mercenary_veteran": 3},
+    "rewards": {"wood": 2600, "stone": 1900, "cereal": 1400, "iron": 700, "papyrus": 280, "horse": 60, "marble": 55, "glass": 30, "wool": 25},
+    "battlefield": "grande_carte_v2.json"
+  },
+  "level_10": {
+    "units": {"barbarian_warrior": 25, "barbarian_archer": 20, "barbarian_raider": 12, "tribal_shaman": 7, "bandit_leader": 3, "pirate_crew": 8, "pirate_captain": 2, "mercenary_veteran": 4, "rogue_mage": 1},
+    "rewards": {"wood": 3000, "stone": 2200, "cereal": 1600, "iron": 800, "papyrus": 320, "horse": 70, "marble": 65, "glass": 35, "wool": 30, "spice": 15},
+    "battlefield": "Overload_beach.json"
+  },
+  "level_11": {
+    "units": {"barbarian_warrior": 28, "barbarian_archer": 22, "barbarian_raider": 14, "tribal_shaman": 8, "bandit_leader": 4, "pirate_crew": 10, "pirate_captain": 2, "mercenary_veteran": 5, "rogue_mage": 1},
+    "rewards": {"wood": 3500, "stone": 2600, "cereal": 1900, "iron": 950, "papyrus": 380, "horse": 85, "marble": 80, "glass": 45, "wool": 40, "spice": 20},
+    "battlefield": "default_working_v2.json"
+  },
+  "level_12": {
+    "units": {"barbarian_warrior": 30, "barbarian_archer": 25, "barbarian_raider": 16, "tribal_shaman": 10, "bandit_leader": 4, "pirate_crew": 12, "pirate_captain": 3, "mercenary_veteran": 6, "rogue_mage": 2},
+    "rewards": {"wood": 4000, "stone": 3000, "cereal": 2200, "iron": 1100, "papyrus": 440, "horse": 100, "marble": 95, "glass": 55, "wool": 50, "spice": 25},
+    "battlefield": "custom_battlefield_1_v2.json"
+  },
+  "level_13": {
+    "units": {"barbarian_warrior": 32, "barbarian_archer": 28, "barbarian_raider": 18, "tribal_shaman": 12, "bandit_leader": 5, "pirate_crew": 14, "pirate_captain": 3, "mercenary_veteran": 7, "rogue_mage": 2},
+    "rewards": {"wood": 4500, "stone": 3400, "cereal": 2500, "iron": 1250, "papyrus": 500, "horse": 115, "marble": 110, "glass": 65, "wool": 60, "spice": 30, "silk": 10},
+    "battlefield": "Austerlitz.json"
+  },
+  "level_14": {
+    "units": {"barbarian_warrior": 35, "barbarian_archer": 30, "barbarian_raider": 20, "tribal_shaman": 14, "bandit_leader": 5, "pirate_crew": 16, "pirate_captain": 4, "mercenary_veteran": 8, "rogue_mage": 3},
+    "rewards": {"wood": 5000, "stone": 3800, "cereal": 2800, "iron": 1400, "papyrus": 560, "horse": 130, "marble": 125, "glass": 75, "wool": 70, "spice": 35, "silk": 15},
+    "battlefield": "grande_carte_v2.json"
+  },
+  "level_15": {
+    "units": {"barbarian_warrior": 38, "barbarian_archer": 32, "barbarian_raider": 22, "tribal_shaman": 16, "bandit_leader": 6, "pirate_crew": 18, "pirate_captain": 4, "mercenary_veteran": 10, "rogue_mage": 3, "ancient_guardian": 1},
+    "rewards": {"wood": 5500, "stone": 4200, "cereal": 3100, "iron": 1550, "papyrus": 620, "horse": 145, "marble": 140, "glass": 85, "wool": 80, "spice": 40, "silk": 20},
+    "battlefield": "Overload_beach.json"
+  },
+  "level_16": {
+    "units": {"barbarian_warrior": 40, "barbarian_archer": 35, "barbarian_raider": 25, "tribal_shaman": 18, "bandit_leader": 7, "pirate_crew": 20, "pirate_captain": 5, "mercenary_veteran": 12, "rogue_mage": 4, "ancient_guardian": 1},
+    "rewards": {"wood": 6200, "stone": 4700, "cereal": 3500, "iron": 1750, "papyrus": 700, "horse": 170, "marble": 165, "glass": 100, "wool": 95, "spice": 50, "silk": 25, "perfume": 8},
+    "battlefield": "default_working_v2.json"
+  },
+  "level_17": {
+    "units": {"barbarian_warrior": 42, "barbarian_archer": 38, "barbarian_raider": 28, "tribal_shaman": 20, "bandit_leader": 8, "pirate_crew": 22, "pirate_captain": 5, "mercenary_veteran": 14, "rogue_mage": 4, "ancient_guardian": 1},
+    "rewards": {"wood": 6900, "stone": 5200, "cereal": 3900, "iron": 1950, "papyrus": 780, "horse": 195, "marble": 190, "glass": 115, "wool": 110, "spice": 60, "silk": 30, "perfume": 12},
+    "battlefield": "custom_battlefield_1_v2.json"
+  },
+  "level_18": {
+    "units": {"barbarian_warrior": 45, "barbarian_archer": 40, "barbarian_raider": 30, "tribal_shaman": 22, "bandit_leader": 9, "pirate_crew": 25, "pirate_captain": 6, "mercenary_veteran": 16, "rogue_mage": 5, "ancient_guardian": 1},
+    "rewards": {"wood": 7600, "stone": 5700, "cereal": 4300, "iron": 2150, "papyrus": 860, "horse": 220, "marble": 215, "glass": 130, "wool": 125, "spice": 70, "silk": 35, "perfume": 16},
+    "battlefield": "Austerlitz.json"
+  },
+  "level_19": {
+    "units": {"barbarian_warrior": 48, "barbarian_archer": 42, "barbarian_raider": 32, "tribal_shaman": 25, "bandit_leader": 10, "pirate_crew": 28, "pirate_captain": 7, "mercenary_veteran": 18, "rogue_mage": 6, "ancient_guardian": 2},
+    "rewards": {"wood": 8300, "stone": 6200, "cereal": 4700, "iron": 2350, "papyrus": 940, "horse": 245, "marble": 240, "glass": 145, "wool": 140, "spice": 80, "silk": 40, "perfume": 20},
+    "battlefield": "grande_carte_v2.json"
+  },
+  "level_20": {
+    "units": {"barbarian_warrior": 50, "barbarian_archer": 45, "barbarian_raider": 35, "tribal_shaman": 28, "bandit_leader": 12, "pirate_crew": 30, "pirate_captain": 8, "mercenary_veteran": 20, "rogue_mage": 7, "ancient_guardian": 2},
+    "rewards": {"wood": 9000, "stone": 6700, "cereal": 5100, "iron": 2550, "papyrus": 1020, "horse": 270, "marble": 265, "glass": 160, "wool": 155, "spice": 90, "silk": 45, "perfume": 25},
+    "battlefield": "Overload_beach.json"
+  },
+  "level_21": {
+    "units": {"barbarian_warrior": 52, "barbarian_archer": 48, "barbarian_raider": 38, "tribal_shaman": 30, "bandit_leader": 14, "pirate_crew": 32, "pirate_captain": 9, "mercenary_veteran": 22, "rogue_mage": 8, "ancient_guardian": 2},
+    "rewards": {"wood": 9800, "stone": 7300, "cereal": 5600, "iron": 2800, "papyrus": 1120, "horse": 300, "marble": 295, "glass": 180, "wool": 175, "spice": 105, "silk": 55, "perfume": 30, "jewelry": 5},
+    "battlefield": "default_working_v2.json"
+  },
+  "level_22": {
+    "units": {"barbarian_warrior": 55, "barbarian_archer": 50, "barbarian_raider": 40, "tribal_shaman": 32, "bandit_leader": 16, "pirate_crew": 35, "pirate_captain": 10, "mercenary_veteran": 25, "rogue_mage": 9, "ancient_guardian": 3},
+    "rewards": {"wood": 10600, "stone": 7900, "cereal": 6100, "iron": 3050, "papyrus": 1220, "horse": 330, "marble": 325, "glass": 200, "wool": 195, "spice": 120, "silk": 65, "perfume": 35, "jewelry": 8},
+    "battlefield": "custom_battlefield_1_v2.json"
+  },
+  "level_23": {
+    "units": {"barbarian_warrior": 58, "barbarian_archer": 52, "barbarian_raider": 42, "tribal_shaman": 35, "bandit_leader": 18, "pirate_crew": 38, "pirate_captain": 11, "mercenary_veteran": 28, "rogue_mage": 10, "ancient_guardian": 3},
+    "rewards": {"wood": 11400, "stone": 8500, "cereal": 6600, "iron": 3300, "papyrus": 1320, "horse": 360, "marble": 355, "glass": 220, "wool": 215, "spice": 135, "silk": 75, "perfume": 40, "jewelry": 12},
+    "battlefield": "Austerlitz.json"
+  },
+  "level_24": {
+    "units": {"barbarian_warrior": 60, "barbarian_archer": 55, "barbarian_raider": 45, "tribal_shaman": 38, "bandit_leader": 20, "pirate_crew": 40, "pirate_captain": 12, "mercenary_veteran": 30, "rogue_mage": 11, "ancient_guardian": 3},
+    "rewards": {"wood": 12200, "stone": 9100, "cereal": 7100, "iron": 3550, "papyrus": 1420, "horse": 390, "marble": 385, "glass": 240, "wool": 235, "spice": 150, "silk": 85, "perfume": 45, "jewelry": 16},
+    "battlefield": "grande_carte_v2.json"
+  },
+  "level_25": {
+    "units": {"barbarian_warrior": 62, "barbarian_archer": 58, "barbarian_raider": 48, "tribal_shaman": 40, "bandit_leader": 22, "pirate_crew": 42, "pirate_captain": 13, "mercenary_veteran": 32, "rogue_mage": 12, "ancient_guardian": 4},
+    "rewards": {"wood": 13000, "stone": 9700, "cereal": 7600, "iron": 3800, "papyrus": 1520, "horse": 420, "marble": 415, "glass": 260, "wool": 255, "spice": 165, "silk": 95, "perfume": 50, "jewelry": 20},
+    "battlefield": "Overload_beach.json"
+  },
+  "level_26": {
+    "units": {"barbarian_warrior": 65, "barbarian_archer": 60, "barbarian_raider": 50, "tribal_shaman": 42, "bandit_leader": 25, "pirate_crew": 45, "pirate_captain": 14, "mercenary_veteran": 35, "rogue_mage": 13, "ancient_guardian": 4},
+    "rewards": {"wood": 14000, "stone": 10400, "cereal": 8200, "iron": 4100, "papyrus": 1640, "horse": 460, "marble": 455, "glass": 285, "wool": 280, "spice": 185, "silk": 110, "perfume": 60, "jewelry": 25, "gem": 3},
+    "battlefield": "default_working_v2.json"
+  },
+  "level_27": {
+    "units": {"barbarian_warrior": 68, "barbarian_archer": 62, "barbarian_raider": 52, "tribal_shaman": 45, "bandit_leader": 28, "pirate_crew": 48, "pirate_captain": 15, "mercenary_veteran": 38, "rogue_mage": 14, "ancient_guardian": 4},
+    "rewards": {"wood": 15000, "stone": 11100, "cereal": 8800, "iron": 4400, "papyrus": 1760, "horse": 500, "marble": 495, "glass": 310, "wool": 305, "spice": 205, "silk": 125, "perfume": 70, "jewelry": 30, "gem": 5},
+    "battlefield": "custom_battlefield_1_v2.json"
+  },
+  "level_28": {
+    "units": {"barbarian_warrior": 70, "barbarian_archer": 65, "barbarian_raider": 55, "tribal_shaman": 48, "bandit_leader": 30, "pirate_crew": 50, "pirate_captain": 16, "mercenary_veteran": 40, "rogue_mage": 15, "ancient_guardian": 5},
+    "rewards": {"wood": 16000, "stone": 11800, "cereal": 9400, "iron": 4700, "papyrus": 1880, "horse": 540, "marble": 535, "glass": 335, "wool": 330, "spice": 225, "silk": 140, "perfume": 80, "jewelry": 35, "gem": 7},
+    "battlefield": "Austerlitz.json"
+  },
+  "level_29": {
+    "units": {"barbarian_warrior": 72, "barbarian_archer": 68, "barbarian_raider": 58, "tribal_shaman": 50, "bandit_leader": 32, "pirate_crew": 52, "pirate_captain": 17, "mercenary_veteran": 42, "rogue_mage": 16, "ancient_guardian": 5},
+    "rewards": {"wood": 17000, "stone": 12500, "cereal": 10000, "iron": 5000, "papyrus": 2000, "horse": 580, "marble": 575, "glass": 360, "wool": 355, "spice": 245, "silk": 155, "perfume": 90, "jewelry": 40, "gem": 10},
+    "battlefield": "grande_carte_v2.json"
+  },
+  "level_30": {
+    "units": {"barbarian_warrior": 75, "barbarian_archer": 70, "barbarian_raider": 60, "tribal_shaman": 52, "bandit_leader": 35, "pirate_crew": 55, "pirate_captain": 18, "mercenary_veteran": 45, "rogue_mage": 17, "ancient_guardian": 6},
+    "rewards": {"wood": 18000, "stone": 13200, "cereal": 10600, "iron": 5300, "papyrus": 2120, "horse": 620, "marble": 615, "glass": 385, "wool": 380, "spice": 265, "silk": 170, "perfume": 100, "jewelry": 45, "gem": 12},
+    "battlefield": "Overload_beach.json"
+  },
+  "cooldown_hours": 24,
+  "max_level": 30,
+  "description": "Configuration des camps de sauvages - utilise les unités de la section enemy_units de unit_stats.json"
+}

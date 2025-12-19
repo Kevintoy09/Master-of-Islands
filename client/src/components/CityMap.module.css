@@ -1,0 +1,72 @@
+.city-map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Le conteneur parent (CityPage.tsx) définit 900×700 */
+}
+
+.city-map-slot {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.city-map-slot:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+  z-index: 10;
+}
+
+.city-map-slot.locked { 
+  background: #D3D3D3;
+  color: #5A4631;
+  cursor: not-allowed; 
+}
+
+.city-map-slot.building { 
+  background: #F5F1E8;
+  border-color: #DAA520;
+}
+
+.city-map-slot.construction { 
+  background: #E2725B;
+  border-color: #CD7F32;
+  animation: roman-glow 2s ease-in-out infinite;
+}
+
+@keyframes roman-glow {
+  0%, 100% { box-shadow: 0 0 5px #DAA520; }
+  50% { box-shadow: 0 0 20px #DAA520, 0 0 30px #DAA520; }
+}
+
+@keyframes bounce {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-8px); 
+  }
+}
+
+@media (max-width: 600px) {
+  .city-map-container {
+    width: 100vw;
+    height: calc(100vw * 7 / 9);
+    border-width: 2px;
+    margin-top: 16px;
+  }
+  .city-map-slot {
+    min-width: 100px;
+    min-height: 100px;
+    max-width: 140px;
+    max-height: 140px;
+    font-size: 1.4em;
+    border-width: 3px;
+  }
+}

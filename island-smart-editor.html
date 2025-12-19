@@ -1,0 +1,1015 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Island Editor - Master of Islands</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #667eea;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 180px);
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #f7fafc;
+            border-right: 2px solid #e2e8f0;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .template-selector h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .template-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .template-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .template-stats {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .city-count-selector {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .city-count-selector h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .city-count-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 4px;
+            background: #e2e8f0;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .city-count-btn:hover {
+            background: #cbd5e0;
+        }
+
+        .city-count-btn.selected {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .elements-list {
+            margin-top: 20px;
+        }
+
+        .element-category {
+            margin-bottom: 15px;
+        }
+
+        .element-category h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #e2e8f0;
+            border-radius: 5px;
+        }
+
+        .element-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .element-item:hover {
+            border-color: #48bb78;
+        }
+
+        .element-item.selected {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .element-item.optional {
+            border-style: dashed;
+            opacity: 0.7;
+        }
+
+        .element-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .element-coords {
+            font-size: 11px;
+            margin-top: 3px;
+            opacity: 0.8;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #1a202c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #islandCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            cursor: crosshair;
+            border: 2px solid #4a5568;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            max-width: 250px;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            font-size: 13px;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #92400e;
+        }
+
+        .element-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .badge-fixed {
+            background: #48bb78;
+            color: white;
+        }
+
+        .badge-optional {
+            background: #ed8936;
+            color: white;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .control-group input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Smart Island Editor</h1>
+            <div class="header-subtitle">Éditeur intelligent par template avec détection des variations</div>
+            <div class="header-buttons">
+                <button class="btn btn-primary" onclick="loadUniverseData()">📂 Charger universe.json</button>
+                <button class="btn btn-success" onclick="saveToFile()" id="saveBtn" disabled>💾 Sauvegarder</button>
+                <button class="btn btn-danger" onclick="resetToBackup()" id="resetBtn" disabled>↩️ Annuler</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="warning-box">
+                    <strong>🧠 Système Intelligent</strong><br>
+                    • <strong>Éléments fixes</strong> : appliqués à toutes les îles du template<br>
+                    • <strong>Villes optionnelles</strong> : appliquées selon le nombre de villes
+                </div>
+
+                <div class="template-selector">
+                    <h3>📋 Templates</h3>
+                    <div id="templateList"></div>
+                </div>
+
+                <div class="city-count-selector" id="cityCountSelector" style="display:none;">
+                    <h4>🏙️ Nombre de villes</h4>
+                    <div id="cityCountButtons"></div>
+                </div>
+
+                <div class="elements-list" id="elementsList"></div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="islandCanvas" width="2912" height="1632"></canvas>
+                
+                <div class="controls">
+                    <h4 style="margin-bottom:10px; font-size:14px;">📍 Coordonnées</h4>
+                    <div class="control-group">
+                        <label>Canvas X:</label>
+                        <input type="number" id="coordX" readonly>
+                    </div>
+                    <div class="control-group">
+                        <label>Canvas Y:</label>
+                        <input type="number" id="coordY" readonly>
+                    </div>
+                    <hr style="margin:10px 0; border:1px solid #e2e8f0;">
+                    <div class="control-group">
+                        <label>Stocké X:</label>
+                        <input type="number" id="coordStoredX" readonly>
+                    </div>
+                    <div class="control-group">
+                        <label>Stocké Y:</label>
+                        <input type="number" id="coordStoredY" readonly>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <div style="font-weight:600; margin-bottom:8px;">Instructions:</div>
+                    <div style="font-size:12px; line-height:1.6;">
+                        1. Sélectionnez un template<br>
+                        2. Choisissez le nombre de villes<br>
+                        3. Positionnez les éléments fixes<br>
+                        4. Positionnez les villes optionnelles<br>
+                        5. Ctrl+S pour sauvegarder
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let universeData = null;
+        let templates = {};
+        let currentTemplate = null;
+        let currentCityCount = null;
+        let selectedElement = null;
+        let canvas = null;
+        let ctx = null;
+        let backgroundImage = null;
+        let history = [];
+
+        window.onload = function() {
+            canvas = document.getElementById('islandCanvas');
+            ctx = canvas.getContext('2d');
+            setupEventListeners();
+            
+            ctx.fillStyle = '#2d3748';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('👆 Chargez universe.json pour commencer', canvas.width / 2, canvas.height / 2);
+        };
+
+        function setupEventListeners() {
+            canvas.addEventListener('click', function(e) {
+                if (!selectedElement) {
+                    alert('Sélectionnez d\'abord un élément');
+                    return;
+                }
+
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX;
+                const clickY = (e.clientY - rect.top) * scaleY;
+                
+                // Conversion inverse
+                const storedX = Math.round(clickX / 0.6);
+                const storedY = Math.round(clickY / 0.4);
+
+                updateElementPosition(selectedElement, storedX, storedY);
+            });
+
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX;
+                const clickY = (e.clientY - rect.top) * scaleY;
+                
+                document.getElementById('coordX').value = Math.round(clickX);
+                document.getElementById('coordY').value = Math.round(clickY);
+                document.getElementById('coordStoredX').value = Math.round(clickX / 0.6);
+                document.getElementById('coordStoredY').value = Math.round(clickY / 0.4);
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveToFile();
+                }
+
+                if (!selectedElement) return;
+
+                const step = e.shiftKey ? 10 : 1;
+                let coords = selectedElement.city_coords || selectedElement.position;
+
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        updateElementPosition(selectedElement, coords[0] - step, coords[1]);
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        updateElementPosition(selectedElement, coords[0] + step, coords[1]);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        updateElementPosition(selectedElement, coords[0], coords[1] - step);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        updateElementPosition(selectedElement, coords[0], coords[1] + step);
+                        break;
+                }
+            });
+        }
+
+        function loadUniverseData() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        console.log('Parsing JSON...');
+                        universeData = JSON.parse(event.target.result);
+                        console.log('✅ JSON parsé, îles:', universeData.islands.length);
+                        
+                        console.log('Analyse des templates...');
+                        analyzeTemplates();
+                        console.log('✅ Templates analysés:', Object.keys(templates).length);
+                        
+                        console.log('Population de la liste...');
+                        populateTemplateList();
+                        console.log('✅ Liste populée');
+                        
+                        document.getElementById('resetBtn').disabled = false;
+                        document.getElementById('saveBtn').disabled = false;
+                        
+                        alert(`✅ ${Object.keys(templates).length} templates analysés\n${universeData.islands.length} îles au total`);
+                    } catch (error) {
+                        console.error('❌ Erreur complète:', error);
+                        alert('❌ Erreur : ' + error.message + '\n\nOuvrez la console (F12) pour plus de détails');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        }
+
+        function analyzeTemplates() {
+            templates = {};
+            
+            universeData.islands.forEach(island => {
+                const bg = island.background;
+                
+                if (!templates[bg]) {
+                    templates[bg] = {
+                        background: bg,
+                        islands: [],
+                        cityCountGroups: {},
+                        fixedElements: [],
+                        minCityCount: Infinity,
+                        maxCityCount: 0
+                    };
+                }
+                
+                templates[bg].islands.push(island);
+                
+                // Compter les villes
+                const cityCount = island.elements.filter(el => el.type === 'city').length;
+                templates[bg].minCityCount = Math.min(templates[bg].minCityCount, cityCount);
+                templates[bg].maxCityCount = Math.max(templates[bg].maxCityCount, cityCount);
+                
+                if (!templates[bg].cityCountGroups[cityCount]) {
+                    templates[bg].cityCountGroups[cityCount] = [];
+                }
+                templates[bg].cityCountGroups[cityCount].push(island);
+            });
+            
+            // Déterminer les éléments fixes (présents sur toutes les îles)
+            Object.values(templates).forEach(template => {
+                const firstIsland = template.islands[0];
+                
+                // Éléments non-city et non-ressource-avancée
+                const baseElements = firstIsland.elements.filter(el => {
+                    if (el.type === 'city') return false;
+                    // Exclure les ressources avancées (gérées séparément)
+                    const isAdvanced = el.type.includes('glass') || el.type.includes('marble') || 
+                                      el.type.includes('horse') || el.type.includes('wine') || 
+                                      el.type === 'vineyard';
+                    return !isAdvanced;
+                });
+                
+                baseElements.forEach((element, idx) => {
+                    const isFixed = template.islands.every(island => {
+                        const sameTypeElements = island.elements.filter(el => el.type === element.type);
+                        return sameTypeElements.length > 0;
+                    });
+                    
+                    if (isFixed) {
+                        template.fixedElements.push({
+                            type: element.type,
+                            position: element.city_coords || [0, 0],
+                            isFixed: true
+                        });
+                    }
+                });
+            });
+            
+            console.log('Templates analysés:', templates);
+        }
+
+        function populateTemplateList() {
+            const container = document.getElementById('templateList');
+            container.innerHTML = '';
+            
+            Object.entries(templates).forEach(([bg, template]) => {
+                const div = document.createElement('div');
+                div.className = 'template-item';
+                
+                const name = bg.split('/').pop().replace('.jpg', '').replace('island_', '').replace(/_/g, ' ');
+                const cityRange = template.minCityCount === template.maxCityCount 
+                    ? `${template.minCityCount} villes`
+                    : `${template.minCityCount}-${template.maxCityCount} villes`;
+                
+                div.innerHTML = `
+                    <div class="template-name">${name}</div>
+                    <div class="template-stats">
+                        ${template.islands.length} îles • ${cityRange}<br>
+                        ${template.fixedElements.length} éléments fixes
+                    </div>
+                `;
+                
+                div.onclick = () => selectTemplate(bg, div);
+                container.appendChild(div);
+            });
+        }
+
+        function selectTemplate(bg, divElement) {
+            document.querySelectorAll('.template-item').forEach(el => el.classList.remove('selected'));
+            divElement.classList.add('selected');
+            
+            currentTemplate = templates[bg];
+            currentCityCount = null;
+            selectedElement = null;
+            
+            loadTemplateImage(bg);
+            showCityCountSelector();
+        }
+
+        function loadTemplateImage(bg) {
+            backgroundImage = new Image();
+            backgroundImage.onload = () => drawCanvas();
+            backgroundImage.onerror = () => {
+                alert('⚠️ Image introuvable : ' + bg);
+                drawCanvas();
+            };
+            backgroundImage.src = 'client/public/' + bg;
+        }
+
+        function showCityCountSelector() {
+            const selector = document.getElementById('cityCountSelector');
+            const buttonsContainer = document.getElementById('cityCountButtons');
+            
+            selector.style.display = 'block';
+            buttonsContainer.innerHTML = '';
+            
+            Object.keys(currentTemplate.cityCountGroups).sort((a, b) => a - b).forEach(count => {
+                const islandCount = currentTemplate.cityCountGroups[count].length;
+                const btn = document.createElement('div');
+                btn.className = 'city-count-btn';
+                btn.textContent = `${count} villes (${islandCount} îles)`;
+                btn.onclick = () => selectCityCount(count, btn);
+                buttonsContainer.appendChild(btn);
+            });
+        }
+
+        function selectCityCount(count, btnElement) {
+            document.querySelectorAll('.city-count-btn').forEach(el => el.classList.remove('selected'));
+            btnElement.classList.add('selected');
+            
+            currentCityCount = parseInt(count);
+            populateElementsList();
+            drawCanvas();
+        }
+
+        function populateElementsList() {
+            const container = document.getElementById('elementsList');
+            container.innerHTML = '';
+            
+            if (!currentCityCount) {
+                container.innerHTML = '<div style="padding:20px; text-align:center; color:#718096;">Sélectionnez un nombre de villes</div>';
+                return;
+            }
+            
+            // Vérifier que currentTemplate et cityCountGroups existent
+            if (!currentTemplate || !currentTemplate.cityCountGroups || !currentTemplate.cityCountGroups[currentCityCount]) {
+                container.innerHTML = '<div style="padding:20px; text-align:center; color:#e53e3e;">Erreur de chargement des données</div>';
+                return;
+            }
+            
+            // Éléments fixes
+            const fixedCategory = document.createElement('div');
+            fixedCategory.className = 'element-category';
+            fixedCategory.innerHTML = '<h4>🔒 Éléments Fixes (toutes les îles)</h4>';
+            
+            currentTemplate.fixedElements.forEach((element, idx) => {
+                const div = createElementItem(element, idx, false);
+                fixedCategory.appendChild(div);
+            });
+            
+            // Ajouter la ressource avancée (détection automatique)
+            const sampleIsland = currentTemplate.cityCountGroups[currentCityCount][0];
+            if (sampleIsland && sampleIsland.advanced_resource) {
+                const advancedResource = sampleIsland.advanced_resource;
+                const advancedResElement = sampleIsland.elements.find(el => 
+                    el.type.includes(advancedResource) || 
+                    (advancedResource === 'glass' && (el.type === 'glassworks' || el.type === 'glass_workshop')) ||
+                    (advancedResource === 'marble' && el.type === 'marble_mine') ||
+                    (advancedResource === 'marble' && el.type === 'marble_quarry') ||
+                    (advancedResource === 'horse' && el.type === 'horse_ranch') ||
+                    (advancedResource === 'meat' && (el.type === 'pasture' || el.type === 'hunting_ground'))
+                );
+                
+                if (advancedResElement) {
+                    // Créer un élément avec les coordonnées de la ressource avancée
+                    const advElement = {
+                        type: advancedResElement.type,
+                        city_coords: advancedResElement.city_coords || [0, 0],
+                        displayName: `🎯 Ressource Avancée (${advancedResource})`,
+                        isAdvancedResource: true,
+                        advanced_resource: advancedResource
+                    };
+                    const advDiv = createElementItem(advElement, -1, false);
+                    fixedCategory.appendChild(advDiv);
+                }
+            }
+            
+            container.appendChild(fixedCategory);
+            
+            // Villes
+            const citiesCategory = document.createElement('div');
+            citiesCategory.className = 'element-category';
+            citiesCategory.innerHTML = `<h4>🏙️ Villes (${currentCityCount} villes)</h4>`;
+            
+            // Réutiliser sampleIsland déjà déclaré plus haut
+            const islandForCities = currentTemplate.cityCountGroups[currentCityCount][0];
+            islandForCities.elements.filter(el => el.type === 'city').forEach((city, idx) => {
+                const isFixed = idx < currentTemplate.minCityCount;
+                const div = createElementItem(city, idx, !isFixed);
+                citiesCategory.appendChild(div);
+            });
+            container.appendChild(citiesCategory);
+        }
+
+        function createElementItem(element, index, isOptional) {
+            const div = document.createElement('div');
+            div.className = 'element-item' + (isOptional ? ' optional' : '');
+            
+            const coords = element.city_coords || element.position || [0, 0];
+            const name = getElementName(element);
+            const badge = isOptional 
+                ? '<span class="element-badge badge-optional">OPTION</span>'
+                : '<span class="element-badge badge-fixed">FIXE</span>';
+            
+            div.innerHTML = `
+                <div class="element-name">${name} ${badge}</div>
+                <div class="element-coords">[${coords[0]}, ${coords[1]}]</div>
+            `;
+            
+            div.onclick = () => selectElement(element, div, isOptional);
+            return div;
+        }
+
+        function getElementName(element) {
+            if (element.displayName) return element.displayName;
+            if (element.name) return element.name;
+            
+            const names = {
+                'forest': '🌲 Forêt',
+                'quarry': '⛏️ Carrière',
+                'iron_mine': '⚒️ Mine fer',
+                'grain_field': '🌾 Céréales',
+                'papyrus_pond': '📜 Papyrus',
+                'marble_mine': '🏛️ Marbre',
+                'horse_ranch': '🐴 Chevaux',
+                'vineyard': '🍇 Vignoble',
+                'glassworks': '🪟 Verrerie',
+                'glass_workshop': '🪟 Verrerie',
+                'cereal_field': '🌾 Céréales',
+                'marble_quarry': '🏛️ Marbre',
+                'papyrus_field': '📜 Papyrus',
+                'wild_camp': '⚔️ Camp des Sauvages',
+                'city': '🏛️ Ville'
+            };
+            
+            return names[element.type] || element.type;
+        }
+
+        function selectElement(element, divElement, isOptional) {
+            document.querySelectorAll('.element-item').forEach(el => el.classList.remove('selected'));
+            divElement.classList.add('selected');
+            
+            selectedElement = element;
+            selectedElement.isOptional = isOptional;
+            
+            const coords = element.city_coords || element.position || [0, 0];
+            document.getElementById('coordStoredX').value = coords[0];
+            document.getElementById('coordStoredY').value = coords[1];
+            document.getElementById('coordX').value = Math.round(coords[0] * 0.6);
+            document.getElementById('coordY').value = Math.round(coords[1] * 0.4);
+            
+            drawCanvas();
+        }
+
+        function updateElementPosition(element, x, y) {
+            history.push(JSON.stringify(universeData));
+            if (history.length > 50) history.shift();
+            
+            const newCoords = [x, y];
+            
+            // Mettre à jour dans le template
+            if (element.position) {
+                element.position = newCoords;
+            } else {
+                element.city_coords = newCoords;
+            }
+            
+            // Mettre à jour dans toutes les îles concernées
+            const isCity = element.type === 'city';
+            const isAdvancedResource = element.displayName && element.displayName.includes('Ressource Avancée');
+            const cityIndex = isCity ? currentTemplate.cityCountGroups[currentCityCount][0].elements.filter(el => el.type === 'city').indexOf(element) : -1;
+            
+            if (isAdvancedResource) {
+                // Ressource avancée : mettre à jour selon le type de chaque île
+                currentTemplate.islands.forEach(island => {
+                    const advResource = island.advanced_resource;
+                    const advElement = island.elements.find(el => 
+                        el.type.includes(advResource) || 
+                        (advResource === 'glass' && (el.type === 'glassworks' || el.type === 'glass_workshop')) ||
+                        (advResource === 'marble' && el.type === 'marble_mine') ||
+                        (advResource === 'horse' && el.type === 'horse_ranch') ||
+                        (advResource === 'wine' && el.type === 'vineyard')
+                    );
+                    if (advElement) {
+                        advElement.city_coords = newCoords;
+                    }
+                });
+            } else if (element.isOptional && isCity) {
+                // Ville optionnelle : appliquer uniquement aux îles avec ce nombre de villes
+                currentTemplate.cityCountGroups[currentCityCount].forEach(island => {
+                    const cities = island.elements.filter(el => el.type === 'city');
+                    if (cities[cityIndex]) {
+                        cities[cityIndex].city_coords = newCoords;
+                    }
+                });
+            } else {
+                // Élément fixe : appliquer à toutes les îles du template
+                currentTemplate.islands.forEach(island => {
+                    if (isCity) {
+                        const cities = island.elements.filter(el => el.type === 'city');
+                        if (cities[cityIndex]) {
+                            cities[cityIndex].city_coords = newCoords;
+                        }
+                    } else {
+                        const matchingElement = island.elements.find(el => el.type === element.type);
+                        if (matchingElement) {
+                            matchingElement.city_coords = newCoords;
+                        }
+                    }
+                });
+            }
+            
+            document.getElementById('coordStoredX').value = x;
+            document.getElementById('coordStoredY').value = y;
+            document.getElementById('coordX').value = Math.round(x * 0.6);
+            document.getElementById('coordY').value = Math.round(y * 0.4);
+            
+            populateElementsList();
+            drawCanvas();
+            
+            const affectedCount = element.isOptional && isCity 
+                ? currentTemplate.cityCountGroups[currentCityCount].length
+                : currentTemplate.islands.length;
+            console.log(`✅ ${affectedCount} îles mises à jour`);
+        }
+
+        function drawCanvas() {
+            ctx.fillStyle = '#2d3748';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (backgroundImage && backgroundImage.complete) {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            }
+            
+            if (!currentTemplate || !currentCityCount) return;
+            
+            const sampleIsland = currentTemplate.cityCountGroups[currentCityCount][0];
+            
+            // Dessiner éléments fixes
+            currentTemplate.fixedElements.forEach(element => {
+                drawElement(element, false);
+            });
+            
+            // Dessiner la ressource avancée
+            if (sampleIsland && sampleIsland.advanced_resource) {
+                const advancedResource = sampleIsland.advanced_resource;
+                const advancedResElement = sampleIsland.elements.find(el => 
+                    el.type.includes(advancedResource) || 
+                    (advancedResource === 'glass' && (el.type === 'glassworks' || el.type === 'glass_workshop')) ||
+                    (advancedResource === 'marble' && (el.type === 'marble_mine' || el.type === 'marble_quarry')) ||
+                    (advancedResource === 'horse' && el.type === 'horse_ranch') ||
+                    (advancedResource === 'wine' && el.type === 'vineyard')
+                );
+                
+                if (advancedResElement) {
+                    const advElement = {
+                        type: advancedResElement.type,
+                        city_coords: advancedResElement.city_coords || [0, 0],
+                        displayName: `🎯 Ressource Avancée (${advancedResource})`,
+                        isAdvancedResource: true
+                    };
+                    drawElement(advElement, false);
+                }
+            }
+            
+            // Dessiner villes
+            sampleIsland.elements.filter(el => el.type === 'city').forEach((city, idx) => {
+                const isFixed = idx < currentTemplate.minCityCount;
+                drawElement(city, !isFixed);
+            });
+        }
+
+        function drawElement(element, isOptional) {
+            const coords = element.city_coords || element.position || [0, 0];
+            const x = coords[0] * 0.6;
+            const y = coords[1] * 0.4;
+            
+            const isSelected = element === selectedElement;
+            
+            // Couleur selon type
+            if (element.isAdvancedResource) {
+                ctx.fillStyle = isSelected ? '#9f7aea' : '#b794f4'; // Violet pour ressource avancée
+            } else if (element.type === 'city') {
+                ctx.fillStyle = isOptional 
+                    ? (isSelected ? '#ed8936' : '#f6ad55')
+                    : (isSelected ? '#48bb78' : '#68d391');
+            } else if (element.type === 'wild_camp') {
+                ctx.fillStyle = isSelected ? '#f56565' : '#fc8181';
+            } else {
+                ctx.fillStyle = isSelected ? '#4299e1' : '#63b3ed';
+            }
+            
+            // Cercle
+            ctx.beginPath();
+            ctx.arc(x, y, isSelected ? 20 : 15, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Bordure
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = isSelected ? 4 : 2;
+            if (isOptional) {
+                ctx.setLineDash([5, 5]);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Label
+            ctx.fillStyle = 'white';
+            ctx.font = isSelected ? 'bold 14px Arial' : '12px Arial';
+            ctx.textAlign = 'center';
+            const label = getElementName(element).split(' ')[0];
+            ctx.fillText(label, x, y - 25);
+        }
+
+        function saveToFile() {
+            if (!universeData) {
+                alert('Aucune donnée');
+                return;
+            }
+            
+            // Format semi-compact : chaque île avec éléments sur plusieurs lignes
+            let result = '{\n  "islands": [\n';
+            
+            universeData.islands.forEach((island, idx) => {
+                const { elements, ...islandBase } = island;
+                
+                result += '    {\n';
+                // Métadonnées de l'île sur des lignes séparées
+                result += `      "id": ${JSON.stringify(island.id)},\n`;
+                result += `      "name": ${JSON.stringify(island.name)},\n`;
+                result += `      "coords": ${JSON.stringify(island.coords)},\n`;
+                result += `      "background": ${JSON.stringify(island.background)},\n`;
+                result += `      "miniature": ${JSON.stringify(island.miniature)},\n`;
+                result += `      "base_resource": ${JSON.stringify(island.base_resource)},\n`;
+                result += `      "advanced_resource": ${JSON.stringify(island.advanced_resource)},\n`;
+                result += `      "city_layout": ${JSON.stringify(island.city_layout)},\n`;
+                result += `      "resource_sites": ${JSON.stringify(island.resource_sites)},\n`;
+                
+                // Éléments : un par ligne
+                result += '      "elements": [\n';
+                island.elements.forEach((el, elIdx) => {
+                    result += '        ' + JSON.stringify(el);
+                    if (elIdx < island.elements.length - 1) {
+                        result += ',\n';
+                    } else {
+                        result += '\n';
+                    }
+                });
+                result += '      ]\n';
+                
+                result += '    }';
+                if (idx < universeData.islands.length - 1) {
+                    result += ',\n';
+                } else {
+                    result += '\n';
+                }
+            });
+            
+            result += '  ],\n  "city_layouts": ' + JSON.stringify(universeData.city_layouts, null, 2).split('\n').map((l, i) => i === 0 ? l : '  ' + l).join('\n') + '\n}';
+            
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'universe_updated.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            alert('✅ Sauvegardé !');
+        }
+
+        function resetToBackup() {
+            if (history.length === 0) {
+                alert('Rien à annuler');
+                return;
+            }
+            
+            if (confirm('Annuler la dernière modification ?')) {
+                universeData = JSON.parse(history.pop());
+                analyzeTemplates();
+                
+                if (currentTemplate) {
+                    const bg = currentTemplate.background;
+                    currentTemplate = templates[bg];
+                    if (currentCityCount) {
+                        populateElementsList();
+                    }
+                    drawCanvas();
+                }
+                
+                alert('✅ Annulé');
+            }
+        }
+    </script>
+</body>
+</html>
+

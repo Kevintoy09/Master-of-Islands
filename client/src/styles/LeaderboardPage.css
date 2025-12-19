@@ -1,0 +1,231 @@
+/* LeaderboardPage.css */
+
+.leaderboard-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Trajan Pro', serif;
+  background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc4 100%);
+  min-height: 100vh;
+}
+
+.leaderboard-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #8B4513, #A0522D);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.leaderboard-header h1 {
+  margin: 0 0 10px 0;
+  color: #FFD700;
+  font-size: 32px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.leaderboard-subtitle {
+  margin: 0;
+  color: #F5DEB3;
+  font-size: 16px;
+}
+
+/* Filtres de catégorie */
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.category-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #D2B48C, #C19A6B);
+  border: 2px solid #8B4513;
+  border-radius: 8px;
+  color: #4A3728;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.category-btn:hover {
+  background: linear-gradient(135deg, #E6D5B8, #D2B48C);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #fff;
+  border-color: #FF8C00;
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.5);
+}
+
+/* Titre de la catégorie */
+.category-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.category-title h2 {
+  color: #8B4513;
+  font-size: 28px;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Tableau de classement */
+.leaderboard-table-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table thead {
+  background: linear-gradient(135deg, #8B4513, #A0522D);
+}
+
+.leaderboard-table thead th {
+  padding: 15px;
+  color: #FFD700;
+  font-weight: bold;
+  text-align: left;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.leaderboard-table tbody tr {
+  border-bottom: 1px solid #E8E8E8;
+  transition: background 0.2s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+  background: #F9F9F9;
+}
+
+.leaderboard-table tbody td {
+  padding: 12px 15px;
+  color: #4A3728;
+  font-size: 14px;
+}
+
+/* Colonnes */
+.col-rank {
+  width: 80px;
+  text-align: center;
+}
+
+.col-username {
+  min-width: 200px;
+}
+
+.col-score {
+  width: 150px;
+  text-align: right;
+}
+
+.col-detail {
+  width: 120px;
+  text-align: right;
+  color: #666;
+}
+
+/* Badge de rang */
+.rank-badge {
+  display: inline-block;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Rangs spéciaux */
+.rank-gold {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+}
+
+.rank-silver {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.2), rgba(192, 192, 192, 0.1));
+}
+
+.rank-bronze {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.2), rgba(205, 127, 50, 0.1));
+}
+
+/* Utilisateur actuel */
+.current-user {
+  background: linear-gradient(90deg, rgba(100, 149, 237, 0.15), rgba(100, 149, 237, 0.05)) !important;
+  border-left: 4px solid #4169E1;
+}
+
+.you-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 8px;
+  background: #4169E1;
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* États */
+.loading, .no-data {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .leaderboard-page {
+    padding: 10px;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 24px;
+  }
+
+  .category-filters {
+    gap: 5px;
+  }
+
+  .category-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .category-title h2 {
+    font-size: 20px;
+  }
+
+  .leaderboard-table {
+    font-size: 12px;
+  }
+
+  .leaderboard-table thead th,
+  .leaderboard-table tbody td {
+    padding: 8px 10px;
+  }
+
+  .col-detail {
+    display: none;
+  }
+
+  .rank-badge {
+    font-size: 18px;
+  }
+}

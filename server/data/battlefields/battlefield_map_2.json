@@ -1,0 +1,130 @@
+{
+  "template": {
+    "id": "custom_battlefield_1_v2",
+    "name": "Mon Battlefield Personnalisé",
+    "description": "Un battlefield créé avec l'éditeur personnalisé",
+    "size": {
+      "width": 29,
+      "height": 29
+    },
+    "difficulty": "medium",
+    "deploymentZones": {
+      "attacker": {
+        "infantry": [[11,18],[10,18],[12,18],[9,18],[13,18]],
+        "ranged": [[10,19],[9,19],[11,19],[12,19]],
+        "cavalry": [[8,18],[8,19],[7,18]],
+        "artillery": [[9,20],[10,20],[8,20],[11,20]],
+        "support": [[10,21],[9,22],[8,22]],
+        "hero": [[9,21],[8,21]]
+      },
+      "defender": {
+        "infantry": [[21,7],[20,7],[22,7],[23,7],[24,7]],
+        "ranged": [[22,6],[21,6],[23,6],[24,6]],
+        "cavalry": [[19,7],[20,6],[25,6],[25,5]],
+        "artillery": [[23,5],[22,5],[24,5]],
+        "support": [[24,3],[23,3],[25,3]],
+        "hero": [[23,4],[24,4]]
+      }
+    },
+    "backgroundImage": "map_2.jpg"
+  },
+  "terrainDefinitions":   {
+      "A": {
+          "name": "base-attack",
+          "defenseBonus": 0,
+          "attackPenalty": 15,
+          "movementBonus": 0
+      },
+      "P": {
+          "name": "plains",
+          "defenseBonus": 0,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      },
+      "M": {
+          "name": "mountain",
+          "defenseBonus": 25,
+          "attackPenalty": -10,
+          "movementBonus": -2
+      },
+      "H": {
+          "name": "hill",
+          "defenseBonus": 15,
+          "attackPenalty": 5,
+          "movementBonus": -1
+      },
+      "R": {
+          "name": "river",
+          "defenseBonus": 5,
+          "attackPenalty": -10,
+          "movementBonus": -2
+      },
+      "V": {
+          "name": "village",
+          "defenseBonus": 20,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      },
+      "S": {
+          "name": "marsh",
+          "defenseBonus": 5,
+          "attackPenalty": -15,
+          "movementBonus": -3
+      },
+      "D": {
+          "name": "base-defense",
+          "defenseBonus": 20,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      },
+      "F": {
+          "name": "forest",
+          "defenseBonus": 10,
+          "attackPenalty": -5,
+          "movementBonus": -1
+      },
+      "W": {
+          "name": "wall",
+          "defenseBonus": 30,
+          "attackPenalty": -20,
+          "movementBonus": -5
+      },
+      "X": {
+          "name": "empty",
+          "defenseBonus": 0,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      }
+  },
+  "hexMap":   [
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXR",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXRRR",
+    "XXXXXXXXXXXXXXXXXXXXXXXXDDPRR",
+    "XXXXXXXXXXXXXXXXXXXXXXDDDPRRR",
+    "XXXXXXXXXXXXXXXXXXXXFFDPPPRXR",
+    "XXXXXXXXXXXXXXXXXXFFFPPPPPPRR",
+    "XXXXXXXXXXXXXXXXFFFFFPPPPPRRR",
+    "XXXXXXXXXXXXXXFFFFFFPPPPPRRRR",
+    "XXXXXXXXXXXXFMMMMMFFPPPPPRRRR",
+    "XXXXXXXXXXPPFMMMFPPPPPPRRRRRR",
+    "XXXXXXXXSPPPFFFFPPPPPPPRHHHRR",
+    "XXXXXXPPSPPPPPPPPPHHHHHHHHRRR",
+    "XXXXPPPSSSSSSSSFFHHHHHHHHRRRR",
+    "XXPSSPSPPPPPPPSFFHHHPPHRRRRRP",
+    "PPPPSSPPPPPPPPPPPPPPPHRRRRRPP",
+    "FFFFFPPPPPPPPPPPPPPHHRRRRPPXX",
+    "FFFFFPPPPPPPPPPPPSSRRRRRPXXXX",
+    "FFFFFHHHHPPPPPPPSRRRRRRXXXXXX",
+    "FFFFHHHHHPPPPPPRRRRRRXXXXXXXX",
+    "FFFHHFHHFPPPPRRRRRRXXXXXXXXXX",
+    "FFHHFFHFPPPPRRRRRXXXXXXXXXXXX",
+    "FHHFFFFFAAARRRRXXXXXXXXXXXXXX",
+    "HHFSSFFAAARSSXXXXXXXXXXXXXXXX",
+    "HSSPSSSSSSSXXXXXXXXXXXXXXXXXX",
+    "FFFPPPPPPXXXXXXXXXXXXXXXXXXXX",
+    "FFFPPPPXXXXXXXXXXXXXXXXXXXXXX",
+    "FFPPPXXXXXXXXXXXXXXXXXXXXXXXX",
+    "FPPXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "PXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  ]
+}

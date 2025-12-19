@@ -1,0 +1,307 @@
+/* ========================================
+   PAGE DE CONNEXION - STYLE ROMAIN
+   ======================================== */
+
+/* === ARRIÈRE-PLAN === */
+.login-background {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+/* === CONTENEUR PRINCIPAL === */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--spacing-md) !important;
+}
+
+/* === PANNEAU DE CONNEXION === */
+.login-panel {
+  background: linear-gradient(135deg, var(--parchment) 0%, #F0E68C 100%) !important;
+  border: var(--border-width-thick) solid var(--bronze) !important;
+  border-radius: var(--border-radius-large) !important;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1) !important;
+  padding: var(--spacing-xl) !important;
+  position: relative;
+  max-width: 500px;
+  width: 100%;
+  margin: var(--spacing-md);
+}
+
+.login-panel::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(135deg, var(--roman-gold) 0%, var(--bronze) 100%);
+  border-radius: var(--border-radius-large);
+  z-index: -1;
+  animation: border-glow 4s ease-in-out infinite;
+}
+
+@keyframes border-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(218, 165, 32, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.8);
+  }
+}
+
+/* === EN-TÊTE === */
+.login-header {
+  text-align: center;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  position: relative;
+}
+
+/* Logo animation */
+.login-logo {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.game-title {
+  font-family: var(--font-bold) !important;
+  color: var(--roman-red) !important;
+  text-shadow: 
+    3px 3px 6px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(218, 165, 32, 0.3) !important;
+  letter-spacing: 0.1em !important;
+  margin-bottom: var(--spacing-sm) !important;
+  animation: roman-glow 3s ease-in-out infinite;
+  background: linear-gradient(135deg, var(--roman-red) 0%, #8B0000 50%, var(--roman-red) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+}
+
+@keyframes roman-glow {
+  0%, 100% {
+    text-shadow: 
+      3px 3px 6px rgba(0, 0, 0, 0.5),
+      0 0 20px rgba(218, 165, 32, 0.3);
+    background-position: 0% center;
+  }
+  50% {
+    text-shadow: 
+      3px 3px 6px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(218, 165, 32, 0.6);
+    background-position: 100% center;
+  }
+}
+
+.game-subtitle {
+  font-family: var(--font-italic) !important;
+  color: var(--text-secondary) !important;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* === FORMULAIRE === */
+.login-form {
+  margin-bottom: var(--spacing-lg);
+}
+
+.roman-input {
+  margin-bottom: var(--spacing-md) !important;
+}
+
+.roman-input .MuiInputBase-root {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: var(--border-radius-medium);
+  font-family: var(--font-primary);
+  transition: all 0.3s ease;
+}
+
+.roman-input .MuiInputBase-root:focus-within {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 15px rgba(218, 165, 32, 0.4);
+  transform: translateY(-2px);
+}
+
+.input-icon {
+  color: var(--bronze) !important;
+}
+
+.password-toggle {
+  color: var(--bronze) !important;
+}
+
+.password-toggle:hover {
+  color: var(--roman-gold) !important;
+}
+
+/* === MESSAGES D'ERREUR === */
+.error-message {
+  background-color: rgba(139, 0, 0, 0.1);
+  border: 1px solid var(--roman-red);
+  border-radius: var(--border-radius-small);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+/* === BOUTONS === */
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--roman-gold) 0%, var(--bronze) 100%) !important;
+  border: 2px solid var(--bronze) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-bold) !important;
+  font-weight: bold !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+  transition: all var(--transition-medium) !important;
+  box-shadow: var(--shadow-medium) !important;
+}
+
+.primary-button:hover {
+  background: linear-gradient(135deg, var(--hover-gold) 0%, var(--active-bronze) 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-heavy) !important;
+}
+
+.primary-button:active {
+  transform: translateY(0) !important;
+  box-shadow: var(--shadow-light) !important;
+}
+
+.secondary-button {
+  background-color: transparent !important;
+  font-family: var(--font-primary) !important;
+  font-weight: 600 !important;
+  transition: all var(--transition-medium) !important;
+}
+
+.world-access-button {
+  font-family: var(--font-primary) !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+  transition: all var(--transition-medium) !important;
+}
+
+.world-access-button:hover {
+  background-color: rgba(34, 139, 34, 0.1) !important;
+  transform: scale(1.02) !important;
+}
+
+/* === FOOTER === */
+.login-footer {
+  text-align: center;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--bronze);
+}
+
+/* === RESPONSIVE MOBILE === */
+@media (max-width: 768px) {
+  .login-background {
+    background-attachment: scroll;
+    padding: var(--spacing-sm);
+  }
+
+  .login-container {
+    padding: var(--spacing-sm) !important;
+    min-height: 100vh;
+  }
+
+  .login-panel {
+    padding: var(--spacing-lg) !important;
+    margin: 0;
+    min-height: auto;
+  }
+
+  .game-title {
+    font-size: 2rem !important;
+  }
+
+  .game-subtitle {
+    font-size: 1rem !important;
+  }
+
+  .login-actions .MuiButton-root {
+    min-height: 52px !important;
+    font-size: 1.1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-panel {
+    padding: var(--spacing-md) !important;
+    border-radius: var(--border-radius-medium) !important;
+  }
+
+  .game-title {
+    font-size: 1.8rem !important;
+  }
+
+  .login-header {
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+/* === ANIMATIONS SPÉCIALES === */
+@keyframes slideInUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.login-panel {
+  animation: slideInUp 0.6s ease-out;
+}
+
+/* === ÉTATS DE CHARGEMENT === */
+.MuiCircularProgress-root {
+  color: var(--text-primary) !important;
+}
+
+/* === FOCUS ET ACCESSIBILITÉ === */
+.roman-input .MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 0 0 2px rgba(218, 165, 32, 0.3);
+}
+
+.primary-button:focus,
+.secondary-button:focus,
+.world-access-button:focus {
+  outline: 2px solid var(--roman-gold);
+  outline-offset: 2px;
+}
+
+/* === SUPPORT DARK MODE === */
+@media (prefers-color-scheme: dark) {
+  .roman-input .MuiInputBase-root {
+    background-color: rgba(245, 245, 220, 0.95);
+  }
+}

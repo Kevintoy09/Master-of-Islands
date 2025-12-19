@@ -1,0 +1,7 @@
+{
+  "tick_controls_visible": false,
+  "construction_time_multiplier": 1,
+  "auto_tick_enabled": true,
+  "auto_tick_interval_seconds": 1.0,
+  "ai_auto_enabled": true
+}

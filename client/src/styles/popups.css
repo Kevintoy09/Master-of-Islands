@@ -1,0 +1,950 @@
+/* ========================================
+   POPUPS - STYLE ROME ANTIQUE
+   ======================================== */
+
+/* Overlay pour fermer en cliquant à côté */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: flex;
+  align-items: flex-start; /* Alignement en haut au lieu du centre */
+  justify-content: center;
+  backdrop-filter: blur(0.5px);
+  padding-top: 16vh; /* Espacement depuis le HeaderBar (15vh + 1vh de marge) */
+  padding-bottom: 10vh; /* Espacement depuis le BottomNavBar (9vh + 1vh de marge) */
+  box-sizing: border-box;
+}
+
+/* Media queries pour très petits écrans */
+@media (max-height: 500px) {
+  .popup-overlay {
+    padding-top: 110px; /* Hauteur fixe pour très petits écrans */
+    padding-bottom: 60px; /* Ajusté pour nouveau BottomNavBar */
+  }
+}
+
+/* Media queries pour très grands écrans */
+@media (min-height: 1200px) {
+  .popup-overlay {
+    padding-top: 140px; /* Hauteur fixe pour très grands écrans */
+    padding-bottom: 85px; /* Ajusté pour nouveau BottomNavBar */
+  }
+}
+
+.popup-base {
+  background: var(--bg-light);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-heavy);
+  border: var(--border-width-thick) solid var(--bg-secondary);
+  padding: var(--spacing-md);
+  min-width: 260px;
+  max-width: 400px;
+  width: 90vw;
+  max-height: 75vh; /* Réduit pour tenir compte des paddings */
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: var(--font-primary);
+  position: relative;
+  /* Amélioration du scroll sur mobile */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) transparent;
+}
+
+/* Scrollbar personnalisée pour webkit */
+.popup-base::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popup-base::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup-base::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 3px;
+}
+
+.popup-base::-webkit-scrollbar-thumb:hover {
+  background: var(--hover-gold);
+}
+
+.popup-base::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: var(--accent-primary);
+  border-radius: var(--border-radius-large);
+  z-index: -1;
+}
+
+.popup-close-button {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-md);
+  font-weight: bold;
+  font-size: 48px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color var(--transition-medium);
+  font-family: var(--font-primary);
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-close-button:hover {
+  color: var(--roman-red);
+}
+
+.popup-error {
+  color: var(--roman-red);
+  margin-bottom: var(--spacing-md);
+  font-weight: bold;
+  padding: var(--spacing-sm);
+  background: rgba(139, 0, 0, 0.1);
+  border-radius: var(--border-radius-small);
+  border-left: 4px solid var(--roman-red);
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.popup-image {
+  width: 56px;
+  margin-right: 18px;
+  border-radius: var(--border-radius-small);
+}
+
+.popup-info {
+  flex: 1;
+  text-align: left;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.popup-title {
+  font-weight: bold;
+  font-size: 1.25em;
+  color: var(--roman-red);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-bold);
+}
+
+/* Titre centré en haut du popup */
+.popup-title-centered {
+  text-align: center;
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 2px solid var(--bronze);
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(139, 69, 19, 0.1));
+}
+
+.popup-title-centered h3 {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--roman-gold);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-bold);
+}
+
+/* Informations alignées à gauche sans l'image à côté */
+.popup-info-left {
+  text-align: left;
+  margin: var(--spacing-sm) 0;
+  padding: 0;
+}
+
+.popup-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.4;
+  font-style: italic;
+  text-align: left;
+  padding: 0;
+  margin-left: 0;
+}
+
+.popup-level {
+  font-size: 1em;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  text-align: left;
+  padding: 0;
+  margin-left: 0;
+}
+
+.popup-cost {
+  margin-top: var(--spacing-xs);
+}
+
+.popup-cost-label {
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.popup-cost-item {
+  margin-right: var(--spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.popup-cost-icon {
+  width: 16px;
+  vertical-align: middle;
+}
+
+.popup-timer {
+  margin: 8px 0;
+  color: var(--roman-gold);
+  font-weight: bold;
+  padding: var(--spacing-sm);
+  background: rgba(218, 165, 32, 0.1);
+  border-radius: var(--border-radius-small);
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.popup-effects-section {
+  margin-bottom: var(--spacing-sm);
+}
+
+.popup-effects-title {
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.popup-effects-content {
+  white-space: pre-line;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding: var(--spacing-sm);
+  background: rgba(245, 245, 220, 0.3);
+  border-radius: var(--border-radius-small);
+}
+
+/* Styles pour le tableau comparatif des effets */
+.popup-effects-table {
+  margin: var(--spacing-sm) 0;
+  border: 1px solid var(--bronze);
+  border-radius: var(--border-radius-small);
+  overflow: hidden;
+  background: rgba(245, 245, 220, 0.1);
+}
+
+.popup-effects-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  background: var(--roman-gold);
+  color: var(--text-dark);
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.popup-effects-table-header > div {
+  padding: 4px var(--spacing-sm);
+  border-right: 1px solid var(--bronze);
+  text-align: center;
+  line-height: 1.2;
+  font-size: 0.85em;
+}
+
+.popup-effects-table-header > div:last-child {
+  border-right: none;
+}
+
+.popup-effects-table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+.popup-effects-table-row:last-child {
+  border-bottom: none;
+}
+
+.popup-effects-table-row > div {
+  padding: 2px var(--spacing-sm);
+  border-right: 1px solid rgba(139, 69, 19, 0.2);
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+  line-height: 1.1;
+}
+
+.popup-effects-table-row > div:last-child {
+  border-right: none;
+}
+
+.popup-effects-table-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.popup-effects-table-current-value,
+.popup-effects-table-next-value {
+  justify-content: center;
+  text-align: center;
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+.popup-effects-table-next-value {
+  color: var(--roman-gold);
+}
+
+/* Styles pour la section coût/construction regroupée */
+.popup-cost-construction {
+  margin: var(--spacing-sm) 0;
+  padding: var(--spacing-sm);
+  background: rgba(245, 245, 220, 0.2);
+  border-radius: var(--border-radius-small);
+  border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.popup-cost-items {
+  margin-top: var(--spacing-xs);
+  color: var(--text-secondary);
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.popup-button {
+  flex: 1;
+  padding: var(--spacing-sm) 0;
+  font-weight: bold;
+  background: var(--accent-primary);
+  border: var(--border-width) solid var(--bronze);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-medium);
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  font-family: var(--font-primary);
+  box-shadow: var(--shadow-light);
+}
+
+.popup-button:hover {
+  background: var(--hover-gold);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.popup-button.destroy {
+  background: var(--roman-red);
+  color: var(--text-light);
+  border-color: var(--hover-red);
+}
+
+.popup-button.destroy:hover {
+  background: var(--hover-red);
+}
+
+.popup-button.instant {
+  background: var(--roman-gold);
+  color: var(--text-primary);
+  border-color: var(--bronze);
+}
+
+.popup-button.instant:hover {
+  background: var(--bronze);
+  color: var(--text-light);
+}
+
+.popup-button:disabled {
+  background: var(--marble-grey);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-light);
+}
+
+.popup-button:disabled:hover {
+  background: var(--marble-grey);
+  transform: none;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .popup-base {
+    padding: var(--spacing-md);
+    min-width: 260px;
+  }
+  
+  .popup-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .popup-image {
+    margin-right: 0;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .popup-buttons {
+    gap: 6px;
+  }
+  
+  .popup-button {
+    font-size: 0.8rem;
+    padding: 6px 4px;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.2;
+    height: auto;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ========================================
+   COMPOSANTS POPUP GÉNÉRIQUES RÉUTILISABLES
+   ======================================== */
+
+/* Conteneurs principaux */
+.popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.popup-section {
+  padding: 8px;
+  border-radius: var(--border-radius-medium);
+  border: 1px solid var(--bronze);
+  font-size: 0.9em;
+  line-height: 1.3;
+}
+
+.popup-section.highlight {
+  background-color: rgba(245, 245, 220, 0.4);
+  border: 2px solid var(--accent-primary);
+}
+
+.popup-section.info {
+  background-color: var(--bg-secondary);
+  border-color: var(--bronze);
+}
+
+.popup-section.warning {
+  background-color: rgba(245, 245, 220, 0.3);
+  border-color: var(--roman-gold);
+}
+
+/* Titres et textes */
+.popup-section-title {
+  font-size: 1em;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.popup-section-subtitle {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.popup-section-details {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+}
+
+/* Grilles et layouts */
+.popup-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  color: var(--text-primary);
+  font-size: 0.85em;
+}
+
+.popup-stats-grid.three-col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Contrôles de workers/ouvriers */
+.popup-worker-controls {
+  margin-bottom: 6px;
+}
+
+.popup-worker-title {
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  font-size: 0.9em;
+}
+
+.popup-input-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.popup-number-input {
+  width: 70px;
+  padding: 4px;
+  border: 1px solid var(--bronze);
+  border-radius: var(--border-radius-small);
+  text-align: center;
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 0.9em;
+}
+
+.popup-number-input:disabled {
+  background-color: var(--marble-grey);
+  cursor: not-allowed;
+}
+
+/* Boutons génériques */
+.popup-action-button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: var(--transition-medium);
+  font-family: var(--font-primary);
+  font-weight: bold;
+  font-size: 0.85em;
+  min-height: 32px;
+  touch-action: manipulation;
+}
+
+.popup-action-button.primary {
+  background-color: var(--roman-green);
+  color: var(--text-light);
+}
+
+.popup-action-button.primary:hover:not(:disabled) {
+  background-color: var(--hover-green);
+  transform: translateY(-1px);
+}
+
+.popup-action-button.secondary {
+  background-color: var(--marble-grey);
+  color: var(--text-light);
+}
+
+.popup-action-button.secondary:hover:not(:disabled) {
+  background-color: var(--text-secondary);
+}
+
+.popup-action-button:disabled {
+  background-color: var(--marble-grey);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Messages d'erreur génériques */
+.popup-error-message {
+  margin-top: 6px;
+  padding: 4px;
+  background-color: rgba(139, 0, 0, 0.1);
+  color: var(--roman-red);
+  border-radius: var(--border-radius-small);
+  font-size: 0.8em;
+  border-left: 3px solid var(--roman-red);
+}
+
+/* Actions footer */
+.popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  gap: 6px;
+}
+
+.popup-actions.center {
+  justify-content: center;
+}
+
+.popup-actions.space-between {
+  justify-content: space-between;
+}
+
+/* ========================================
+   EXTENSIONS MINIMALES - RÉUTILISATION MAX
+   ======================================== */
+
+/* Champs texte génériques */
+.popup-text-input {
+  padding: 4px 6px;
+  border: 1px solid var(--bronze);
+  border-radius: var(--border-radius-small);
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 0.9em;
+  min-height: 28px;
+}
+
+.popup-text-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(245, 245, 220, 0.3);
+}
+
+/* Boutons à options multiples */
+.popup-option-button {
+  padding: 3px 6px;
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-weight: bold;
+  min-width: 50px;
+  min-height: 28px;
+  transition: var(--transition-medium);
+  font-size: 0.8em;
+  touch-action: manipulation;
+}
+
+.popup-option-button.active {
+  background: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.popup-option-button.inactive {
+  background: var(--bg-primary);
+  color: var(--text-light);
+}
+
+.popup-option-button:hover {
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   TABLEAU POUR LISTES (villes, etc.)
+   ======================================== */
+
+.popup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8em;
+  margin-top: 8px;
+}
+
+/* ========================================
+   ATELIER D'ARCHITECTE - STYLES SPÉCIFIQUES
+   ======================================== */
+
+.architect-workshop-popup {
+  min-width: 550px;
+  max-width: 650px;
+}
+
+.architect-bonus-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.architect-bonus-card {
+  padding: 12px;
+  background: rgba(245, 245, 220, 0.15);
+  border: 1px solid var(--bronze);
+  border-radius: var(--border-radius-medium);
+  text-align: center;
+}
+
+.architect-bonus-title {
+  font-size: 0.9em;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.architect-bonus-value {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--roman-green);
+  margin-bottom: 4px;
+}
+
+.architect-bonus-description {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.architect-savings-section {
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(218, 165, 32, 0.08);
+  border: 1px solid var(--roman-gold);
+  border-radius: var(--border-radius-medium);
+}
+
+.architect-savings-title {
+  font-size: 1em;
+  font-weight: bold;
+  color: var(--roman-gold);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.architect-savings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.architect-savings-item {
+  text-align: center;
+  padding: 6px;
+  background: rgba(245, 245, 220, 0.1);
+  border-radius: var(--border-radius-small);
+}
+
+.architect-savings-building {
+  font-size: 0.8em;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.architect-savings-cost {
+  font-size: 0.75em;
+  color: var(--roman-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.architect-savings-time {
+  font-size: 0.75em;
+  color: var(--roman-gold);
+  margin-top: 2px;
+}
+
+.architect-level-comparison {
+  margin: 16px 0;
+  border: 1px solid var(--bronze);
+  border-radius: var(--border-radius-medium);
+  overflow: hidden;
+}
+
+.architect-comparison-header {
+  background: var(--bg-secondary);
+  padding: 8px 12px;
+  font-weight: bold;
+  color: var(--text-primary);
+  text-align: center;
+  border-bottom: 1px solid var(--bronze);
+}
+
+.architect-comparison-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 0;
+}
+
+.architect-comparison-row {
+  display: contents;
+}
+
+.architect-comparison-cell {
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 0.8em;
+  border-right: 1px solid var(--bronze);
+  border-bottom: 1px solid var(--bronze);
+}
+
+.architect-comparison-cell:last-child {
+  border-right: none;
+}
+
+.architect-comparison-cell.label {
+  text-align: left;
+  font-weight: bold;
+  color: var(--text-primary);
+  background: rgba(245, 245, 220, 0.05);
+}
+
+.architect-comparison-cell.current {
+  background: rgba(218, 165, 32, 0.1);
+  color: var(--roman-gold);
+  font-weight: bold;
+}
+
+.architect-comparison-cell.next {
+  background: rgba(34, 139, 34, 0.1);
+  color: var(--roman-green);
+  font-weight: bold;
+}
+
+.architect-no-savings {
+  text-align: center;
+  padding: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+  background: rgba(245, 245, 220, 0.05);
+  border-radius: var(--border-radius-medium);
+}
+
+/* Responsive pour Atelier d'Architecte */
+@media (max-width: 768px) {
+  .architect-workshop-popup {
+    min-width: 320px;
+    max-width: 95vw;
+  }
+  
+  .architect-bonus-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .architect-savings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .architect-comparison-grid {
+    grid-template-columns: 2fr 1fr 1fr;
+    font-size: 0.7em;
+  }
+  
+  .architect-comparison-cell {
+    padding: 4px 6px;
+  }
+}
+
+.popup-table-header {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 2fr;
+  gap: 4px;
+  padding: 6px 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-small);
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.popup-table-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 2fr;
+  gap: 4px;
+  padding: 4px;
+  border-bottom: 1px solid var(--bronze);
+  color: var(--text-primary);
+  font-size: 0.85em;
+}
+
+.popup-table-row:last-child {
+  border-bottom: none;
+}
+
+.popup-table-row:nth-child(even) {
+  background: rgba(245, 245, 220, 0.1);
+}
+
+/* ========================================
+   OPTIMISATIONS MOBILE SPÉCIFIQUES
+   ======================================== */
+
+@media (max-width: 480px) {
+  .popup-overlay {
+    padding: 10px;
+  }
+  
+  .popup-base {
+    max-width: 95vw;
+    max-height: 85vh;
+    padding: var(--spacing-sm);
+  }
+  
+  .popup-content {
+    gap: 6px;
+    padding: 4px;
+  }
+  
+  .popup-section {
+    padding: 6px;
+    font-size: 0.85em;
+  }
+  
+  .popup-stats-grid {
+    font-size: 0.8em;
+    gap: 3px;
+  }
+  
+  .popup-stats-grid.three-col {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  
+  .popup-input-group {
+    gap: 4px;
+  }
+  
+  .popup-action-button {
+    font-size: 0.8em;
+    padding: 3px 6px;
+    min-height: 28px;
+  }
+  
+  .popup-option-button {
+    min-width: 45px;
+    font-size: 0.75em;
+  }
+  
+  /* Tableau responsive */
+  .popup-table-header {
+    grid-template-columns: 1.5fr 1.5fr 0.8fr 1.5fr;
+    font-size: 0.75em;
+    padding: 4px 2px;
+  }
+  
+  .popup-table-row {
+    grid-template-columns: 1.5fr 1.5fr 0.8fr 1.5fr;
+    font-size: 0.75em;
+    padding: 3px 2px;
+  }
+}
+
+@media (max-height: 600px) {
+  .popup-base {
+    max-height: 90vh;
+  }
+  
+  .popup-content {
+    gap: 4px;
+  }
+  
+  .popup-section {
+    padding: 4px;
+    margin: 2px 0;
+  }
+}

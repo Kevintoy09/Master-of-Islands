@@ -1,0 +1,142 @@
+{
+  "template": {
+    "id": "custom_battlefield_1_v2_v2",
+    "name": "Mon Battlefield Personnalisé",
+    "description": "Un battlefield créé avec l'éditeur personnalisé",
+    "size": {
+      "width": 42,
+      "height": 48
+    },
+    "difficulty": "medium",
+    "deploymentZones": {
+      "attacker": {
+        "infantry": [[17,16],[16,17],[18,15],[15,18],[19,14],[14,19],[20,13]],
+        "ranged": [[16,16],[17,15],[15,17],[18,14],[14,18],[19,13]],
+        "cavalry": [[21,12],[13,20],[22,11],[12,21],[20,12],[13,19]],
+        "artillery": [[16,15],[15,16],[17,14],[14,17],[18,13]],
+        "support": [[14,16],[13,17],[17,13],[18,12]],
+        "hero": [[16,14],[15,15]]
+      },
+      "defender": {
+        "infantry": [[20,28],[21,27],[19,29],[22,26],[18,30],[23,25],[17,31],[24,24]],
+        "ranged": [[21,28],[22,27],[20,29],[23,26],[19,30],[24,25],[18,31]],
+        "cavalry": [[16,32],[25,23],[15,33],[25,24],[17,32]],
+        "artillery": [[22,28],[21,29],[23,27],[20,30],[24,26],[19,31]],
+        "support": [[20,31],[25,26],[24,27],[19,32]],
+        "hero": [[22,29],[23,28],[21,30]]
+      }
+    }
+  },
+  "terrainDefinitions":   {
+      "A": {
+          "name": "base-attack",
+          "defenseBonus": 0,
+          "attackPenalty": 15,
+          "movementBonus": 0
+      },
+      "P": {
+          "name": "plains",
+          "defenseBonus": 0,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      },
+      "M": {
+          "name": "mountain",
+          "defenseBonus": 25,
+          "attackPenalty": -10,
+          "movementBonus": -2
+      },
+      "H": {
+          "name": "hill",
+          "defenseBonus": 15,
+          "attackPenalty": 5,
+          "movementBonus": -1
+      },
+      "R": {
+          "name": "river",
+          "defenseBonus": 5,
+          "attackPenalty": -10,
+          "movementBonus": -2
+      },
+      "V": {
+          "name": "village",
+          "defenseBonus": 20,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      },
+      "S": {
+          "name": "marsh",
+          "defenseBonus": 5,
+          "attackPenalty": -15,
+          "movementBonus": -3
+      },
+      "D": {
+          "name": "base-defense",
+          "defenseBonus": 20,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      },
+      "F": {
+          "name": "forest",
+          "defenseBonus": 10,
+          "attackPenalty": -5,
+          "movementBonus": -1
+      },
+      "X": {
+          "name": "empty",
+          "defenseBonus": 0,
+          "attackPenalty": 0,
+          "movementBonus": 0
+      }
+  },
+  "hexMap":   [
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXPPPPXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXRRRPPPPFXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXSRRRRRRPPFFFFXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXSSSSRRRRRPFFFFFXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXPPSSSRRRRRFFFFFFFXX",
+    "XXXXXXXXXXXXXXXXXXXXPPPPPSSSRRRRRFFFFFFFXX",
+    "XXXXXXXXXXXXXXXXXXXPPPPPPSSRRPPRRFFFFFFFFF",
+    "XXXXXXXXXXXXXXXXXXPPPPPVPSSRHHPPRRRFFFFFFF",
+    "XXXXXXXXXXXXXXXXPPPAPPPVPSRRHHHHRRRRRRFFFX",
+    "XXXXXXXXXXXXXXXPPPAPPPVVPPRHHHHHHHMMMMMFFX",
+    "XXXXXXXXXXXXXXXPPAPPPPPPPPRHHHHHMMMMMMMFFX",
+    "XXXXXXXXXXXXXXPPAPPPPPPPPHRHHHHMMMMMMMMFFX",
+    "XXXXXXXXXXXXXPPAPPPPPPPPPHRHHHMMMMFFFFFFFX",
+    "XXXXXXXXXXXXPPAPPPPPPPPPPHRHHMMMFFFFFFFFXX",
+    "XXXXXXXXXXXPPAPPPPPPPPPPHRRHHMMMFFFFFFXXXX",
+    "XXXXXXXXXXPPAPPPPPPPPPPPHRHHHMMFFFFFFXXXXX",
+    "XXXXXXXXXPPPPPPPPPPPPPPPPRHPPPFFFFFFXXXXXX",
+    "XXXXXXXXPVVVPPPPPPPPPPPPPRPPPPPPFFXXXXXXXX",
+    "XXXXXXPPPPVPPPPPPPPPPPPPPRRPPPPPVXXXXXXXXX",
+    "XXXXXPPPPPPPPPPPPPPPPPPPPPRPPPPPXXXXXXXXXX",
+    "XXXXPPPPPPSPPPPPPPPPPPPPPPRRPPPXXXXXXXXXXX",
+    "XXXPPPPPPSPPPPPPPPPPPPPPPPPRPPXXXXXXXXXXXX",
+    "XXPPPPPPPPPPPPPPPPPPPPPPPPDRRXXXXXXXXXXXXX",
+    "XPPPPPSSFPPFFSSPPPPPPPPPPDPPXXXXXXXXXXXXXX",
+    "PPPPPPSFFFPPSSSPPPPPPPPPDPPXXXXXXXXXXXXXXX",
+    "PPPPPPFFFFFPSSSPPPPPPPPDPPXXXXXXXXXXXXXXXX",
+    "PPPPPFFFFFRPPPPPPPPPPPDPPXXXXXXXXXXXXXXXXX",
+    "RPPPPFFFFRRFPPPPPPPPPDPPXXXXXXXXXXXXXXXXXX",
+    "RRPPPFFRRRFPPPPPPPPPDPPXXXXXXXXXXXXXXXXXXX",
+    "RRRPPPRRPPPPPPPPPPPDPPXXXXXXXXXXXXXXXXXXXX",
+    "RRRRPRRPPPPPPPPPPPPPPXXXXXXXXXXXXXXXXXXXXX",
+    "RRRRRRPPPPPPPPPPPPPPXXXXXXXXXXXXXXXXXXXXXX",
+    "RRRRRRPPPPPPPPPPPPPXXXXXXXXXXXXXXXXXXXXXXX",
+    "RRRRRRRPPPPPPPRRPPPXXXXXXXXXXXXXXXXXXXXXXX",
+    "RRRRRRRRPPPPRRRPPPXXXXXXXXXXXXXXXXXXXXXXXX",
+    "RRRRRRRRRRRRRPPPPXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXRRRRRRRPPPPPPPXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXRRRRRRRRPPPPPXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXRRRRRRRRPPPXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXRRRRPPPXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  ]
+}

@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Éditeur de Battlefields</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #DAA520;
+        }
+
+        .main-editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-bottom: 2px solid #DAA520;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            background: radial-gradient(circle, #2a2a40, #1a1a2e);
+            min-height: 600px;
+            height: calc(100vh - 120px);
+        }
+        
+        .hex-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border: 2px solid #DAA520;
+            border-radius: 8px;
+            cursor: default;
+        }
+
+        h2 {
+            color: #DAA520;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(218, 165, 32, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #DAA520;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #DAA520;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.9em;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .terrain-palette {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .terrain-btn {
+            padding: 10px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .terrain-btn:hover {
+            transform: scale(1.05);
+            border-color: #DAA520;
+        }
+
+        .terrain-btn.active {
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .terrain-plains { background: #7FFF00; color: black; }
+        .terrain-forest { background: #006400; color: white; }
+        .terrain-hill { background: #D2691E; color: white; }
+        .terrain-river { background: #00BFFF; color: black; }
+        .terrain-mountain { background: #696969; color: white; }
+        .terrain-village { background: #DDA0DD; color: black; }
+        .terrain-road { background: #F4A460; color: black; }
+        .terrain-marsh { background: #8FBC8F; color: black; }
+        .terrain-base-attack { background: #DC143C; color: white; }
+        .terrain-base-defense { background: #4169E1; color: white; }
+        .terrain-wall { background: #808080; color: white; }
+        .terrain-empty { background: #2C2C2C; color: #888; border: 2px dashed #555; }
+
+        .btn {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: white;
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #A0522D, #CD853F);
+            border-color: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #228B22, #32CD32);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #DC143C, #FF6347);
+        }
+
+        /* Style hex-canvas déjà défini plus haut */
+
+        .stats {
+            background: rgba(218, 165, 32, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.8em;
+        }
+
+        .deployment-zones {
+            margin-top: 15px;
+        }
+
+        .zone-list {
+            max-height: 100px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #DAA520;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: #DAA520;
+            color: black;
+        }
+
+        #exportOutput {
+            width: 100%;
+            height: 150px;
+            font-family: monospace;
+            font-size: 0.8em;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>🛠️ Configuration du Battlefield</h2>
+            
+            <div class="section">
+                <div class="form-group">
+                    <label for="battlefieldId">ID du Battlefield</label>
+                    <input type="text" id="battlefieldId" value="custom_battlefield_1" placeholder="mon_battlefield">
+                </div>
+                
+                <div class="form-group">
+                    <label for="battlefieldName">Nom</label>
+                    <input type="text" id="battlefieldName" value="Mon Battlefield Personnalisé" placeholder="Nom du battlefield">
+                </div>
+                
+                <div class="form-group">
+                    <label for="battlefieldDesc">Description</label>
+                    <textarea id="battlefieldDesc" placeholder="Description du battlefield" rows="2">Un battlefield créé avec l'éditeur personnalisé</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="difficulty">Difficulté</label>
+                    <select id="difficulty">
+                        <option value="easy">Facile</option>
+                        <option value="medium" selected>Moyen</option>
+                        <option value="hard">Difficile</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📏 Dimensions</h2>
+                <div class="form-group">
+                    <label for="gridWidth">Largeur (hexagones)</label>
+                    <input type="number" id="gridWidth" value="16" min="8" max="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gridHeight">Hauteur (hexagones)</label>
+                    <input type="number" id="gridHeight" value="12" min="6" max="80">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gridShape">Forme du battlefield</label>
+                    <select id="gridShape">
+                        <option value="rectangle">🟦 Rectangle</option>
+                        <option value="hexagon">⬡ Hexagone</option>
+                        <option value="diamond">♦️ Diamant</option>
+                        <option value="oval">🥚 Ovale</option>
+                        <option value="cross">➕ Croix</option>
+                        <option value="custom">🎨 Personnalisé (côtés étendus)</option>
+                    </select>
+                </div>
+                
+                <button onclick="applyGridParameters()" style="background: #2196F3; margin-top: 10px; color: #fff; font-weight: bold;">
+                    🛠️ Appliquer la forme
+                </button>
+                <button onclick="addManualExtensions()" style="background: #4CAF50; margin-top: 10px;">
+                    ➕ Ajouter Extensions Manuelles
+                </button>
+            </div>
+
+            <!-- 🎯 NOUVELLE SECTION : Chargement de carte -->
+            <div class="section">
+                <h2>📁 Charger Carte</h2>
+                <div style="margin-bottom: 10px;">
+                    <input type="file" id="mapLoader" accept=".json" 
+                           style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #DAA520; border-radius: 4px; margin-bottom: 8px;">
+                    <button class="btn" onclick="loadExistingMap()" id="loadMapBtn" disabled
+                            style="width: 100%; background: #228B22; font-size: 0.9em; padding: 10px;">
+                        📂 Charger la Carte Sélectionnée
+                    </button>
+                </div>
+                <div style="font-size: 0.8em; color: #ccc;">
+                    Sélectionnez un fichier .json depuis client/public/data/battlefields/ puis cliquez sur Charger
+                </div>
+            </div>
+
+            <!-- 🖼️ NOUVELLE SECTION : Image de Fond -->
+            <div class="section">
+                <h2>🖼️ Image de Fond</h2>
+                <div class="form-group">
+                    <label for="backgroundImageInput">Charger une image :</label>
+                    <input type="file" id="backgroundImageInput" accept="image/*" 
+                           style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #DAA520; border-radius: 4px;">
+                </div>
+                <div id="imagePreview" style="width: 100%; height: 120px; background: rgba(0,0,0,0.5); border-radius: 6px; margin: 10px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <span style="color: #888; font-size: 0.85em;">Aucune image chargée</span>
+                </div>
+                <div class="form-group">
+                    <label for="backgroundImageName">Nom du fichier (sauvegarde) :</label>
+                    <input type="text" id="backgroundImageName" placeholder="map_1.jpg" value="">
+                </div>
+                <div class="form-group">
+                    <label for="hexOpacity">Transparence Hexagones: <span id="opacityValue" style="color: #FFD700;">50%</span></label>
+                    <input type="range" id="hexOpacity" min="0" max="100" value="50" 
+                           oninput="updateHexOpacity()" 
+                           style="width: 100%; cursor: pointer;">
+                </div>
+                <div style="font-size: 0.8em; color: #ccc; margin-top: 5px;">
+                    Ajustez pour voir l'image à travers les hexagones
+                </div>
+            </div>
+
+            <!-- 🎯 NOUVELLE SECTION : Zones de déploiement -->
+            <div class="section">
+                <h2>⚔️ Zones de Déploiement</h2>
+                
+                <!-- Sélection du côté : Attaquant/Défenseur -->
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 0.9em; margin-bottom: 8px; color: #DAA520;">Côté :</div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn side-btn active" data-side="attacker" onclick="selectSide('attacker')"
+                                style="background: #DC143C; font-size: 0.9em; flex: 1;">
+                            ⚔️ Attaquant
+                        </button>
+                        <button class="btn side-btn" data-side="defender" onclick="selectSide('defender')"
+                                style="background: #4169E1; font-size: 0.9em; flex: 1;">
+                            🛡️ Défenseur
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 0.9em; margin-bottom: 8px; color: #DAA520;">Catégorie d'unité :</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                        <button class="btn zone-btn" data-zone="infantry" onclick="selectDeploymentZone('infantry')"
+                                style="background: #8B4513; font-size: 0.8em;">
+                            🛡️ Infantry
+                        </button>
+                        <button class="btn zone-btn" data-zone="ranged" onclick="selectDeploymentZone('ranged')"
+                                style="background: #228B22; font-size: 0.8em;">
+                            🏹 Ranged
+                        </button>
+                        <button class="btn zone-btn" data-zone="cavalry" onclick="selectDeploymentZone('cavalry')"
+                                style="background: #4169E1; font-size: 0.8em;">
+                            🐎 Cavalry
+                        </button>
+                        <button class="btn zone-btn" data-zone="artillery" onclick="selectDeploymentZone('artillery')"
+                                style="background: #DC143C; font-size: 0.8em;">
+                            💥 Artillery
+                        </button>
+                        <button class="btn zone-btn" data-zone="support" onclick="selectDeploymentZone('support')"
+                                style="background: #DAA520; font-size: 0.8em;">
+                            🛠️ Support
+                        </button>
+                        <button class="btn zone-btn" data-zone="hero" onclick="selectDeploymentZone('hero')"
+                                style="background: #9932CC; font-size: 0.8em;">
+                            ⭐ Hero
+                        </button>
+                        <button class="btn zone-btn" data-zone="eraser" onclick="selectEraserMode()"
+                                style="background: #FF6B6B; font-size: 0.8em; grid-column: 1 / -1;">
+                            🧽 Gomme - Effacer une case
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-top: 8px;">
+                        <button class="btn" onclick="clearDeploymentZones()" 
+                                style="flex: 1; background: #666; font-size: 0.8em;">
+                            🗑️ Effacer Tout
+                        </button>
+                        <button class="btn" onclick="generateBalancedZones()" 
+                                style="flex: 1; background: #4CAF50; font-size: 0.8em;">
+                            ⚖️ Zones Auto
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                        <button class="btn" onclick="saveMapWithDeploymentZones()" 
+                                style="flex: 1; background: #228B22; font-size: 0.8em;">
+                            💾 Sauver
+                        </button>
+                    </div>
+                </div>
+                <div id="deploymentZoneInfo" style="font-size: 0.8em; color: #ccc; margin-top: 10px;">
+                    Sélectionnez un type de zone puis cliquez sur la carte
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎨 Palette de Terrains</h2>
+                <div class="terrain-palette">
+                    <div class="terrain-btn terrain-plains active" data-terrain="plains" onclick="selectTerrain('plains')">
+                        🌾<br>Plaines
+                    </div>
+                    <div class="terrain-btn terrain-forest" data-terrain="forest" onclick="selectTerrain('forest')">
+                        🌲<br>Forêt
+                    </div>
+                    <div class="terrain-btn terrain-hill" data-terrain="hill" onclick="selectTerrain('hill')">
+                        ⛰️<br>Collines
+                    </div>
+                    <div class="terrain-btn terrain-river" data-terrain="river" onclick="selectTerrain('river')">
+                        🌊<br>Rivière
+                    </div>
+                    <div class="terrain-btn terrain-mountain" data-terrain="mountain" onclick="selectTerrain('mountain')">
+                        🏔️<br>Montagne
+                    </div>
+                    <div class="terrain-btn terrain-village" data-terrain="village" onclick="selectTerrain('village')">
+                        🏘️<br>Village
+                    </div>
+                    <div class="terrain-btn terrain-road" data-terrain="road" onclick="selectTerrain('road')">
+                        🛤️<br>Route
+                    </div>
+                    <div class="terrain-btn terrain-marsh" data-terrain="marsh" onclick="selectTerrain('marsh')">
+                        🌿<br>Marais
+                    </div>
+                    <div class="terrain-btn terrain-base-attack" data-terrain="base-attack" onclick="selectTerrain('base-attack')">
+                        🔴<br>Base Att.
+                    </div>
+                    <div class="terrain-btn terrain-base-defense" data-terrain="base-defense" onclick="selectTerrain('base-defense')">
+                        🔵<br>Base Déf.
+                    </div>
+                    <div class="terrain-btn terrain-wall" data-terrain="wall" onclick="selectTerrain('wall')">
+                        🧱<br>Mur
+                    </div>
+                    <div class="terrain-btn terrain-empty" data-terrain="empty" onclick="selectTerrain('empty')">
+                        ❌<br>Vide
+                    </div>
+                    <div class="terrain-btn terrain-delete" data-terrain="delete" onclick="selectTerrain('delete')" style="background: #ff4444; color: white;">
+                        🗑️<br>Supprimer
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 Statistiques</h2>
+                <div class="stats">
+                    <div class="stats-grid">
+                        <div>Total: <span id="totalHexes">0</span></div>
+                        <div>Plaines: <span id="plainCount">0</span></div>
+                        <div>Forêt: <span id="forestCount">0</span></div>
+                        <div>Collines: <span id="hillCount">0</span></div>
+                        <div>Rivière: <span id="riverCount">0</span></div>
+                        <div>Montagne: <span id="mountainCount">0</span></div>
+                        <div>Village: <span id="villageCount">0</span></div>
+                        <div>Route: <span id="roadCount">0</span></div>
+                        <div>Marais: <span id="marshCount">0</span></div>
+                        <div>Bases Att: <span id="baseAttackCount">0</span></div>
+                        <div>Bases Déf: <span id="baseDefenseCount">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="section">
+                <h2>💾 Actions</h2>
+                <button class="btn btn-primary" onclick="fillRandomTerrain()">🎲 Remplir Aléatoire</button>
+                <button class="btn" onclick="clearGrid()">🗑️ Effacer Tout</button>
+                <button class="btn btn-primary" onclick="generateBattlefield()">✅ Générer JSON</button>
+                <button class="btn" onclick="loadPreset()">📁 Charger Preset</button>
+                
+                <div style="margin-top: 15px;">
+                    <label for="exportOutput">JSON Généré:</label>
+                    <textarea id="exportOutput" readonly placeholder="Le JSON apparaîtra ici..."></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="downloadBattlefield()" style="width: 100%; margin-top: 10px;">
+                    ⬇️ Télécharger Battlefield
+                </button>
+                <button class="btn" onclick="saveToServer()" style="width: 100%; margin-top: 5px; background: #4CAF50;">
+                    🚀 Sauvegarder sur Serveur
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Editor -->
+        <div class="main-editor">
+            <div class="toolbar">
+                <div style="color: #DAA520; font-weight: bold; font-size: 1.1em;">
+                    🗺️ Éditeur de Battlefields - Clic gauche: dessiner | Clic droit: déplacer
+                </div>
+                <div style="margin-left: auto; font-size: 0.9em; display: flex; gap: 20px; align-items: center;">
+                    <div>Terrain sélectionné: <span id="selectedTerrain" style="color: #FFD700;">🌾 plains</span></div>
+                    <div>Zoom: <span id="zoomLevel" style="color: #87CEEB;">100%</span></div>
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="hexCanvas" class="hex-canvas" width="1200" height="800"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Code JavaScript intégré pour éviter les problèmes de fichiers séparés
+        // Variables globales
+        let canvas, ctx;
+        let gridWidth = 16, gridHeight = 12;
+        
+        // 🖼️ Variables pour l'image de fond
+        let backgroundImage = null;
+        let backgroundImageName = '';
+        let hexOpacity = 0.5; // Transparence des hexagones (0 = invisible, 1 = opaque)
+        
+        // 🎯 FONCTIONS GLOBALES - Déclarations précoces pour les onclick HTML
+        
+        // 🔧 Fonctions utilitaires (doivent être définies en premier)
+        function getZoneIcon(zoneType) {
+            const icons = {
+                infantry: '🛡️',
+                ranged: '🏹',
+                cavalry: '🐎',
+                artillery: '💥',
+                support: '🛠️',
+                hero: '⭐'
+            };
+            return icons[zoneType] || '⚔️';
+        }
+
+        function getZoneColor(zoneType) {
+            const colors = {
+                infantry: '#8B4513',   // Brun
+                ranged: '#228B22',     // Vert
+                cavalry: '#4169E1',    // Bleu
+                artillery: '#DC143C',  // Rouge
+                support: '#DAA520',    // Or
+                hero: '#9932CC'        // Violet
+            };
+            return colors[zoneType] || '#DAA520';
+        }
+
+        function getTotalDeploymentZones() {
+            return Object.values(deploymentZones).reduce((total, zones) => total + zones.length, 0);
+        }
+
+        function updateDeploymentZoneInfo() {
+            const info = document.getElementById('deploymentZoneInfo');
+            if (!info) return;
+            
+            const sideIcon = selectedSide === 'attacker' ? '⚔️' : '🛡️';
+            const sideName = selectedSide === 'attacker' ? 'Attaquant' : 'Défenseur';
+            const sideColor = selectedSide === 'attacker' ? '#DC143C' : '#4169E1';
+            
+            // Mode gomme activé
+            if (isEraserMode) {
+                info.innerHTML = `
+                    <strong>🧽 Mode Gomme Activé</strong><br>
+                    Cliquez sur une zone pour l'effacer<br>
+                    <small>Sélectionnez une catégorie pour sortir du mode gomme</small>
+                `;
+                info.style.color = '#DC143C';
+                return;
+            }
+            
+            if (selectedDeploymentZoneType && deploymentZones[selectedSide] && deploymentZones[selectedSide][selectedDeploymentZoneType]) {
+                const zoneCount = deploymentZones[selectedSide][selectedDeploymentZoneType].length;
+                const zoneIcon = getZoneIcon(selectedDeploymentZoneType);
+                const sideCode = selectedSide === 'attacker' ? 'A' : 'D';
+                const unitCode = selectedDeploymentZoneType[0].toUpperCase();
+                
+                info.innerHTML = `
+                    <strong>${sideIcon} ${sideName} - ${zoneIcon} ${selectedDeploymentZoneType.toUpperCase()}</strong><br>
+                    Zones définies: ${zoneCount} (${sideCode}${unitCode}1, ${sideCode}${unitCode}2...)<br>
+                    <small>Cliquez sur la carte pour ajouter/supprimer des zones</small>
+                `;
+                info.style.color = getZoneColor(selectedDeploymentZoneType);
+            } else {
+                if (deploymentZones[selectedSide]) {
+                    const currentSideZones = deploymentZones[selectedSide];
+                    const totalZones = Object.values(currentSideZones).reduce((total, zones) => total + zones.length, 0);
+                    info.innerHTML = `
+                        <strong>${sideIcon} ${sideName}</strong> - Total zones: ${totalZones}<br>
+                        🛡️ Infantry: ${currentSideZones.infantry?.length || 0} |
+                        🏹 Ranged: ${currentSideZones.ranged?.length || 0} |
+                        🐎 Cavalry: ${currentSideZones.cavalry?.length || 0}<br>
+                        💥 Artillery: ${currentSideZones.artillery?.length || 0} |
+                        🛠️ Support: ${currentSideZones.support?.length || 0} |
+                        ⭐ Hero: ${currentSideZones.hero?.length || 0}<br>
+                        <small>Choisissez une catégorie d'unité</small>
+                    `;
+                } else {
+                    info.innerHTML = `
+                        <strong>${sideIcon} ${sideName}</strong><br>
+                        <small>Choisissez une catégorie d'unité</small>
+                    `;
+                }
+                info.style.color = sideColor;
+            }
+        }
+        
+        // �️ Gestion de l'image de fond
+        function updateHexOpacity() {
+            hexOpacity = parseInt(document.getElementById('hexOpacity').value) / 100;
+            document.getElementById('opacityValue').textContent = Math.round(hexOpacity * 100) + '%';
+            drawGrid(); // Redessiner avec la nouvelle opacité
+        }
+        
+        function loadBackgroundImage() {
+            const fileInput = document.getElementById('backgroundImageInput');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        backgroundImage = img;
+                        
+                        // Afficher la preview
+                        const preview = document.getElementById('imagePreview');
+                        preview.innerHTML = '';
+                        const previewImg = document.createElement('img');
+                        previewImg.src = e.target.result;
+                        previewImg.style.maxWidth = '100%';
+                        previewImg.style.maxHeight = '100%';
+                        previewImg.style.objectFit = 'contain';
+                        preview.appendChild(previewImg);
+                        
+                        // Mettre à jour le nom
+                        document.getElementById('backgroundImageName').value = file.name;
+                        backgroundImageName = file.name;
+                        
+                        // Redessiner avec l'image de fond
+                        drawGrid();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // �📋 Déclarations des fonctions principales (hoisted)
+        function loadExistingMap() {
+            console.log('🔄 Tentative de chargement de carte...');
+            const fileInput = document.getElementById('mapLoader');
+            const loadMapBtn = document.getElementById('loadMapBtn');
+            const file = fileInput?.files?.[0];
+            
+            if (!file) {
+                alert('❌ Veuillez d\'abord sélectionner un fichier à charger !');
+                return;
+            }
+            
+            // Indiquer le chargement en cours
+            if (loadMapBtn) {
+                loadMapBtn.innerHTML = '⏳ Chargement en cours...';
+                loadMapBtn.disabled = true;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const mapData = JSON.parse(e.target.result);
+                    console.log('📁 Chargement de la carte:', mapData);
+                    
+                    // Sauvegarder les données de la carte
+                    currentMapData = mapData;
+                    
+                    // 🔥 CHARGEMENT FORMAT V2 et ANCIEN FORMAT
+                    if (mapData.hexMap && Array.isArray(mapData.hexMap)) {
+                        // 🔥 NOUVEAU FORMAT V2 avec hexMap compact
+                        console.log('🔥 Chargement format V2 optimisé');
+                        hexGrid = convertHexMapToGrid(mapData.hexMap, mapData.terrainDefinitions);
+                        gridWidth = mapData.template?.size?.width || mapData.hexMap[0]?.length || 16;
+                        gridHeight = mapData.template?.size?.height || mapData.hexMap.length || 12;
+                        
+                        // Mettre à jour les champs du formulaire
+                        if (mapData.template) {
+                            document.getElementById('battlefieldId').value = mapData.template.id || 'custom_battlefield_v2';
+                            document.getElementById('battlefieldName').value = mapData.template.name || 'Battlefield V2';
+                            document.getElementById('battlefieldDesc').value = mapData.template.description || '';
+                            document.getElementById('difficulty').value = mapData.template.difficulty || 'medium';
+                            document.getElementById('gridWidth').value = gridWidth;
+                            document.getElementById('gridHeight').value = gridHeight;
+                        }
+                        
+                    } else if (mapData.hexCells && Array.isArray(mapData.hexCells)) {
+                        // 🔄 ANCIEN FORMAT avec hexCells (rétrocompatibilité)
+                        console.log('🔄 Chargement format ancien (hexCells)');
+                        hexGrid = mapData.hexCells.map(cell => ({
+                            q: cell.q,
+                            r: cell.r,
+                            terrain: cell.terrain || 'plains',
+                            zone: cell.zone || 'battlefield'
+                        }));
+                        
+                        // Calculer les dimensions de la grille
+                        const maxQ = Math.max(...hexGrid.map(h => h.q));
+                        const maxR = Math.max(...hexGrid.map(h => h.r));
+                        gridWidth = Math.max(gridWidth, maxQ + 2);
+                        gridHeight = Math.max(gridHeight, maxR + 2);
+                    }
+                    
+                    // Charger les zones de déploiement si elles existent
+                    if (mapData.template?.deploymentZones) {
+                        // 🔥 FORMAT V2 : zones au format [[q,r], [q,r], ...]
+                        console.log('🔥 Chargement zones de déploiement V2');
+                        deploymentZones = convertV2DeploymentZonesToEditor(mapData.template.deploymentZones);
+                    } else if (mapData.deployment_zones) {
+                        // Format intermédiaire ou ancien avec {q, r, zoneCode}
+                        if (mapData.deployment_zones.attacker) {
+                            deploymentZones = mapData.deployment_zones;
+                        } else {
+                            // Migration ancien format
+                            deploymentZones = {
+                                attacker: {
+                                    infantry: mapData.deployment_zones.infantry || [],
+                                    ranged: mapData.deployment_zones.ranged || [],
+                                    cavalry: mapData.deployment_zones.cavalry || [],
+                                    artillery: mapData.deployment_zones.artillery || [],
+                                    support: mapData.deployment_zones.support || [],
+                                    hero: mapData.deployment_zones.hero || []
+                                },
+                                defender: {
+                                    infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: []
+                                }
+                            };
+                        }
+                    }
+                    
+                    // Charger les camps de base si ils existent
+                    if (mapData.base_camps) {
+                        baseCamps = mapData.base_camps;
+                    }
+                    
+                    // 🖼️ Charger l'image de fond si elle existe
+                    if (mapData.template?.backgroundImage) {
+                        backgroundImageName = mapData.template.backgroundImage;
+                        document.getElementById('backgroundImageName').value = backgroundImageName;
+                        
+                        // Tenter de charger l'image depuis le serveur
+                        const imgPath = `/assets/battlefield_images/${backgroundImageName}`;
+                        const img = new Image();
+                        img.onload = function() {
+                            backgroundImage = img;
+                            
+                            // Afficher la preview
+                            const preview = document.getElementById('imagePreview');
+                            preview.innerHTML = '';
+                            const previewImg = document.createElement('img');
+                            previewImg.src = imgPath;
+                            previewImg.style.maxWidth = '100%';
+                            previewImg.style.maxHeight = '100%';
+                            previewImg.style.objectFit = 'contain';
+                            preview.appendChild(previewImg);
+                            
+                            console.log('🖼️ Image de fond chargée:', backgroundImageName);
+                            drawGrid(); // Redessiner avec l'image
+                        };
+                        img.onerror = function() {
+                            console.warn('⚠️ Image de fond introuvable:', imgPath);
+                        };
+                        img.src = imgPath;
+                    }
+                    
+                    // Redessiner
+                    drawGrid();
+                    updateStats();
+                    updateDeploymentZoneInfo();
+                    
+                    alert(`✅ Carte chargée avec succès !\n🗺️ ${hexGrid.length} hexagones\n⚔️ ${getTotalDeploymentZones()} zones de déploiement`);
+                    
+                    // Réactiver le bouton
+                    if (loadMapBtn) {
+                        loadMapBtn.innerHTML = '🔄 Recharger cette Carte';
+                        loadMapBtn.disabled = false;
+                        loadMapBtn.style.background = '#4169E1';
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Erreur lors du chargement:', error);
+                    alert('❌ Erreur lors du chargement du fichier. Vérifiez que c\'est un fichier JSON valide.');
+                    
+                    // Réactiver le bouton en cas d'erreur
+                    if (loadMapBtn) {
+                        loadMapBtn.innerHTML = '📂 Charger la Carte Sélectionnée';
+                        loadMapBtn.disabled = false;
+                        loadMapBtn.style.background = '#228B22';
+                    }
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function generateBalancedZones() {
+            if (!confirm('🔄 Générer des zones de déploiement automatiquement?\n\nCela va remplacer toutes les zones existantes.')) {
+                return;
+            }
+            
+            // Effacer toutes les zones existantes
+            clearDeploymentZones();
+            
+            // Calculer les zones attaquant (côté gauche/haut)
+            const attackerZones = {
+                infantry: [],
+                ranged: [],
+                cavalry: [],
+                artillery: [],
+                support: [],
+                hero: []
+            };
+            
+            // Calculer les zones défenseur (côté droit/bas) 
+            const defenderZones = {
+                infantry: [],
+                ranged: [],
+                cavalry: [],
+                artillery: [],
+                support: [],
+                hero: []
+            };
+            
+            // Zone attaquant : quart supérieur gauche
+            const attackerStartQ = Math.floor(gridWidth * 0.1);
+            const attackerEndQ = Math.floor(gridWidth * 0.4);
+            const attackerStartR = Math.floor(gridHeight * 0.1);
+            const attackerEndR = Math.floor(gridHeight * 0.4);
+            
+            // Zone défenseur : quart inférieur droit
+            const defenderStartQ = Math.floor(gridWidth * 0.6);
+            const defenderEndQ = Math.floor(gridWidth * 0.9);
+            const defenderStartR = Math.floor(gridHeight * 0.6);
+            const defenderEndR = Math.floor(gridHeight * 0.9);
+            
+            let attackerIndex = 1;
+            let defenderIndex = 1;
+            
+            // Générer zones attaquant
+            for (let unitType of ['infantry', 'ranged', 'cavalry', 'artillery', 'support', 'hero']) {
+                let zonesCount;
+                if (unitType === 'infantry') zonesCount = 6;
+                else if (unitType === 'ranged') zonesCount = 5;
+                else if (unitType === 'cavalry') zonesCount = 4;
+                else if (unitType === 'artillery') zonesCount = 4;
+                else if (unitType === 'support') zonesCount = 3;
+                else if (unitType === 'hero') zonesCount = 2;
+                
+                for (let i = 0; i < zonesCount; i++) {
+                    const q = attackerStartQ + (i % 3) * 2;
+                    const r = attackerStartR + Math.floor(i / 3) * 2;
+                    
+                    if (q <= attackerEndQ && r <= attackerEndR) {
+                        const sideCode = 'A';
+                        const unitCode = unitType[0].toUpperCase();
+                        attackerZones[unitType].push({
+                            q: q,
+                            r: r,
+                            zoneCode: `${sideCode}${unitCode}${attackerIndex++}`
+                        });
+                    }
+                }
+                attackerIndex = 1; // Reset pour chaque type
+            }
+            
+            // Générer zones défenseur (symétriques)
+            for (let unitType of ['infantry', 'ranged', 'cavalry', 'artillery', 'support', 'hero']) {
+                let zonesCount;
+                if (unitType === 'infantry') zonesCount = 6;
+                else if (unitType === 'ranged') zonesCount = 5;
+                else if (unitType === 'cavalry') zonesCount = 4;
+                else if (unitType === 'artillery') zonesCount = 4;
+                else if (unitType === 'support') zonesCount = 3;
+                else if (unitType === 'hero') zonesCount = 2;
+                
+                for (let i = 0; i < zonesCount; i++) {
+                    const q = defenderStartQ + (i % 3) * 2;
+                    const r = defenderStartR + Math.floor(i / 3) * 2;
+                    
+                    if (q <= defenderEndQ && r <= defenderEndR) {
+                        const sideCode = 'D';
+                        const unitCode = unitType[0].toUpperCase();
+                        defenderZones[unitType].push({
+                            q: q,
+                            r: r,
+                            zoneCode: `${sideCode}${unitCode}${defenderIndex++}`
+                        });
+                    }
+                }
+                defenderIndex = 1; // Reset pour chaque type
+            }
+            
+            // Appliquer les zones générées
+            deploymentZones.attacker = attackerZones;
+            deploymentZones.defender = defenderZones;
+            
+            // Redessiner et mettre à jour l'interface
+            drawGrid();
+            updateDeploymentZoneInfo();
+            
+            const totalAttacker = Object.values(attackerZones).reduce((sum, zones) => sum + zones.length, 0);
+            const totalDefender = Object.values(defenderZones).reduce((sum, zones) => sum + zones.length, 0);
+            
+            console.log('⚖️ Zones générées:', { 
+                attacker: totalAttacker, 
+                defender: totalDefender,
+                details: { attackerZones, defenderZones }
+            });
+            
+            alert(`⚖️ Zones de déploiement générées !\n\n🔴 Attaquant: ${totalAttacker} zones\n🔵 Défenseur: ${totalDefender} zones\n\nVous pouvez maintenant ajuster manuellement si nécessaire.`);
+        }
+        
+        function selectSide(side) {
+            selectedSide = side;
+            
+            // Mise à jour visuelle des boutons côté
+            document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('active'));
+            const sideBtn = document.querySelector(`[data-side="${side}"]`);
+            if (sideBtn) sideBtn.classList.add('active');
+            
+            // Mettre à jour l'affichage des infos
+            updateDeploymentZoneInfo();
+            
+            console.log(`🎖️ Côté sélectionné: ${side}`);
+        }
+        
+        function selectDeploymentZone(zoneType) {
+            selectedDeploymentZoneType = zoneType;
+            selectedTerrain = null; // Désactiver le mode terrain
+            isEraserMode = false; // Désactiver le mode gomme
+            
+            // Mise à jour visuelle des boutons
+            document.querySelectorAll('.terrain-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.zone-btn').forEach(btn => btn.classList.remove('active'));
+            const zoneBtn = document.querySelector(`[data-zone="${zoneType}"]`);
+            if (zoneBtn) zoneBtn.classList.add('active');
+            
+            // Mise à jour du curseur et des infos
+            if (canvas) canvas.style.cursor = 'crosshair';
+            updateDeploymentZoneInfo();
+            
+            console.log(`🎯 Mode zone de déploiement: ${zoneType}`);
+        }
+        
+        function selectEraserMode() {
+            isEraserMode = true;
+            selectedDeploymentZoneType = null;
+            selectedTerrain = null;
+            
+            // Mise à jour visuelle des boutons
+            document.querySelectorAll('.terrain-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.zone-btn').forEach(btn => btn.classList.remove('active'));
+            const eraserBtn = document.querySelector(`[data-zone="eraser"]`);
+            if (eraserBtn) eraserBtn.classList.add('active');
+            
+            // Mise à jour du curseur et des infos
+            if (canvas) canvas.style.cursor = 'crosshair';
+            updateDeploymentZoneInfo();
+            
+            console.log(`🧽 Mode gomme activé`);
+        }
+        
+        function clearDeploymentZones() {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir effacer toutes les zones de déploiement ?')) {
+                deploymentZones = {
+                    attacker: {
+                        infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: []
+                    },
+                    defender: {
+                        infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: []
+                    }
+                };
+                drawGrid();
+                updateDeploymentZoneInfo();
+                console.log('🗑️ Toutes les zones de déploiement ont été effacées');
+            }
+        }
+        
+        function saveMapWithDeploymentZones() {
+            if (!currentMapData) {
+                alert('❌ Veuillez d\'abord charger une carte existante');
+                return;
+            }
+            
+            // Créer les données à sauvegarder
+            const saveData = {
+                ...currentMapData,
+                hexCells: hexGrid,
+                deployment_zones: deploymentZones,
+                base_camps: baseCamps,
+                metadata: {
+                    ...currentMapData.metadata,
+                    last_modified: new Date().toISOString(),
+                    deployment_zones_count: getTotalDeploymentZones()
+                }
+            };
+            
+            // Créer et télécharger le fichier
+            const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentMapData.name || 'battlefield'}_with_zones.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log('💾 Carte sauvegardée avec les zones de déploiement');
+            alert(`✅ Carte sauvegardée avec ${getTotalDeploymentZones()} zones de déploiement !`);
+        }
+        
+        // 📁 Activer le bouton de chargement quand un fichier est sélectionné
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initialisation de l\'éditeur de battlefield');
+            
+            const mapLoader = document.getElementById('mapLoader');
+            const loadMapBtn = document.getElementById('loadMapBtn');
+            
+            if (mapLoader && loadMapBtn) {
+                mapLoader.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        loadMapBtn.disabled = false;
+                        loadMapBtn.innerHTML = '📂 Charger "' + this.files[0].name + '"';
+                        loadMapBtn.style.background = '#228B22';
+                        console.log('📁 Fichier sélectionné:', this.files[0].name);
+                    } else {
+                        loadMapBtn.disabled = true;
+                        loadMapBtn.innerHTML = '📂 Charger la Carte Sélectionnée';
+                        loadMapBtn.style.background = '#666';
+                    }
+                });
+            }
+            
+            // 🖼️ Event listener pour l'image de fond
+            const backgroundImageInput = document.getElementById('backgroundImageInput');
+            if (backgroundImageInput) {
+                backgroundImageInput.addEventListener('change', loadBackgroundImage);
+            }
+        });
+        let hexSize = 25;
+        let selectedTerrain = 'plains';
+        let deploymentMode = 'none';
+        let isDragging = false;
+        
+        // 🎯 NOUVELLES VARIABLES pour zones de déploiement
+        let selectedDeploymentZoneType = null; // 'infantry', 'ranged', 'cavalry', 'artillery', 'support', 'hero'
+        let selectedSide = 'attacker'; // 'attacker' ou 'defender'
+        let isEraserMode = false; // Mode gomme pour effacer des cases individuelles
+        let deploymentZones = {
+            attacker: {
+                infantry: [],  // AI1, AI2, AI3...
+                ranged: [],    // AR1, AR2, AR3...
+                cavalry: [],   // AC1, AC2, AC3...
+                artillery: [], // AA1, AA2, AA3...
+                support: [],   // AS1, AS2, AS3...
+                hero: []       // AH1, AH2, AH3...
+            },
+            defender: {
+                infantry: [],  // DI1, DI2, DI3...
+                ranged: [],    // DR1, DR2, DR3...
+                cavalry: [],   // DC1, DC2, DC3...
+                artillery: [], // DA1, DA2, DA3...
+                support: [],   // DS1, DS2, DS3...
+                hero: []       // DH1, DH2, DH3...
+            }
+        };
+        let currentMapData = null; // Données de la carte chargée
+        
+        // Variables pour le drag du battlefield
+        let isDraggingCanvas = false;
+        let dragStartX = 0, dragStartY = 0;
+        let offsetX = 100, offsetY = 50; // Position initiale du battlefield
+        
+        // 🔍 Variables pour le zoom
+        let zoomLevel = 1.0;
+        const zoomMin = 0.3;
+        const zoomMax = 3.0;
+        const zoomStep = 0.1;
+        
+        // Grille hexagonale
+        let hexGrid = [];
+        let baseCamps = { attacker: [], defender: [] };
+        
+        // Couleurs des terrains
+        const terrainColors = {
+            'plains': '#7FFF00', 'forest': '#006400', 'hill': '#D2691E',
+            'river': '#00BFFF', 'mountain': '#696969', 'village': '#DDA0DD',
+            'road': '#F4A460', 'marsh': '#8FBC8F',
+            'base-attack': '#DC143C', 'base-defense': '#4169E1', 'wall': '#808080', 'empty': '#2C2C2C'
+        };
+        
+        // Icônes des terrains
+        const terrainIcons = {
+            'plains': '🌾', 'forest': '🌲', 'hill': '⛰️', 'river': '🌊',
+            'mountain': '🏔️', 'village': '🏘️', 'road': '🛤️', 'marsh': '🌿',
+            'base-attack': '🔴', 'base-defense': '🔵', 'wall': '🧱', 'empty': '❌'
+        };
+        
+        // Bonus de terrain
+        const terrainBonuses = {
+            'plains': { defense: 0, attack: 0, movement: 0 },
+            'forest': { defense: 10, attack: -5, movement: -1 },
+            'hill': { defense: 15, attack: 5, movement: -1 },
+            'river': { defense: 5, attack: -10, movement: -2 },
+            'mountain': { defense: 25, attack: -10, movement: -2 },
+            'village': { defense: 20, attack: 0, movement: 0 },
+            'road': { defense: 0, attack: 0, movement: 1 },
+            'marsh': { defense: 5, attack: -15, movement: -3 },
+            'base-attack': { defense: 0, attack: 15, movement: 0 },
+            'base-defense': { defense: 20, attack: 0, movement: 0 },
+            'wall': { defense: 30, attack: -20, movement: -5 },
+            'empty': { defense: 0, attack: 0, movement: 0 }
+        };
+        
+        // Initialisation
+        window.onload = function() {
+            canvas = document.getElementById('hexCanvas');
+            ctx = canvas.getContext('2d');
+            setupEventListeners();
+            applyGridParameters();
+            updateZoomDisplay(); // Initialiser l'affichage du zoom
+            updateDeploymentZoneInfo(); // Initialiser l'affichage des zones de déploiement
+            console.log('🗺️ Éditeur de Battlefields initialisé avec zoom 🔍');
+        };
+        
+        function createCustomExtensions() {
+            // Fonction pour créer des extensions personnalisées
+            const extensions = [];
+            const midR = Math.floor(gridHeight / 2);
+            const midQ = Math.floor(gridWidth / 2);
+            
+            // Extensions latérales (gauche et droite)
+            for (let i = 0; i < 4; i++) {
+                // Extension gauche
+                extensions.push({ q: -1, r: midR + i - 2 });
+                extensions.push({ q: -2, r: midR + i - 2 });
+                
+                // Extension droite
+                extensions.push({ q: gridWidth, r: midR + i - 2 });
+                extensions.push({ q: gridWidth + 1, r: midR + i - 2 });
+            }
+            
+            // Extensions verticales (haut et bas)
+            for (let i = 0; i < 3; i++) {
+                // Extension haut
+                extensions.push({ q: midQ + i - 1, r: -1 });
+                extensions.push({ q: midQ + i - 1, r: -2 });
+                
+                // Extension bas
+                extensions.push({ q: midQ + i - 1, r: gridHeight });
+                extensions.push({ q: midQ + i - 1, r: gridHeight + 1 });
+            }
+            
+            return extensions;
+        }
+        
+        function addCustomExtensions() {
+            // Ajouter les extensions à la grille existante
+            const extensions = createCustomExtensions();
+            
+            for (const ext of extensions) {
+                // Vérifier que l'extension n'existe pas déjà
+                if (!hexGrid.some(hex => hex.q === ext.q && hex.r === ext.r)) {
+                    hexGrid.push({ 
+                        q: ext.q, 
+                        r: ext.r, 
+                        terrain: 'plains', 
+                        zone: 'battlefield' 
+                    });
+                }
+            }
+        }
+        
+        function initializeGrid() {
+            hexGrid = [];
+            const shape = document.getElementById('gridShape').value || 'rectangle';
+            
+            switch (shape) {
+                case 'rectangle':
+                    // Forme rectangulaire classique
+                    for (let q = 0; q < gridWidth; q++) {
+                        for (let r = 0; r < gridHeight; r++) {
+                            hexGrid.push({ q: q, r: r, terrain: 'plains', zone: 'battlefield' });
+                        }
+                    }
+                    break;
+                    
+                case 'hexagon':
+                    // Forme hexagonale
+                    const radius = Math.min(gridWidth, gridHeight) / 2;
+                    for (let q = -radius; q <= radius; q++) {
+                        for (let r = Math.max(-radius, -q - radius); r <= Math.min(radius, -q + radius); r++) {
+                            hexGrid.push({ q: q + radius, r: r + radius, terrain: 'plains', zone: 'battlefield' });
+                        }
+                    }
+                    break;
+                    
+                case 'diamond':
+                    // Forme diamant
+                    const centerQ = Math.floor(gridWidth / 2);
+                    const centerR = Math.floor(gridHeight / 2);
+                    const maxRadius = Math.min(centerQ, centerR);
+                    
+                    for (let q = 0; q < gridWidth; q++) {
+                        for (let r = 0; r < gridHeight; r++) {
+                            const distanceFromCenter = Math.abs(q - centerQ) + Math.abs(r - centerR);
+                            if (distanceFromCenter <= maxRadius) {
+                                hexGrid.push({ q: q, r: r, terrain: 'plains', zone: 'battlefield' });
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'oval':
+                    // Forme ovale
+                    const centerOvalQ = gridWidth / 2;
+                    const centerOvalR = gridHeight / 2;
+                    const radiusOvalQ = gridWidth / 2.2;
+                    const radiusOvalR = gridHeight / 2.2;
+                    
+                    for (let q = 0; q < gridWidth; q++) {
+                        for (let r = 0; r < gridHeight; r++) {
+                            const normalizedQ = (q - centerOvalQ) / radiusOvalQ;
+                            const normalizedR = (r - centerOvalR) / radiusOvalR;
+                            if (normalizedQ * normalizedQ + normalizedR * normalizedR <= 1) {
+                                hexGrid.push({ q: q, r: r, terrain: 'plains', zone: 'battlefield' });
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'cross':
+                    // Forme en croix
+                    const crossWidth = Math.floor(gridWidth * 0.3);
+                    const crossHeight = Math.floor(gridHeight * 0.3);
+                    
+                    for (let q = 0; q < gridWidth; q++) {
+                        for (let r = 0; r < gridHeight; r++) {
+                            // Bande horizontale
+                            const inHorizontal = (r >= crossHeight && r < gridHeight - crossHeight);
+                            // Bande verticale  
+                            const inVertical = (q >= crossWidth && q < gridWidth - crossWidth);
+                            
+                            if (inHorizontal || inVertical) {
+                                hexGrid.push({ q: q, r: r, terrain: 'plains', zone: 'battlefield' });
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'custom':
+                    // Forme personnalisée avec extensions sur les côtés
+                    for (let q = 0; q < gridWidth; q++) {
+                        for (let r = 0; r < gridHeight; r++) {
+                            let include = true;
+                            
+                            // Retirer les coins pour une forme plus organique
+                            const cornerSize = 2;
+                            if ((q < cornerSize && r < cornerSize) || 
+                                (q < cornerSize && r >= gridHeight - cornerSize) ||
+                                (q >= gridWidth - cornerSize && r < cornerSize) ||
+                                (q >= gridWidth - cornerSize && r >= gridHeight - cornerSize)) {
+                                include = false;
+                            }
+                            
+                            // Ajouter des extensions sur les côtés
+                            const midR = Math.floor(gridHeight / 2);
+                            const extensionSize = 3;
+                            
+                            // Extension gauche
+                            if (q === 0 && Math.abs(r - midR) <= extensionSize) {
+                                include = true;
+                            }
+                            // Extension droite
+                            if (q === gridWidth - 1 && Math.abs(r - midR) <= extensionSize) {
+                                include = true;
+                            }
+                            
+                            if (include) {
+                                hexGrid.push({ q: q, r: r, terrain: 'plains', zone: 'battlefield' });
+                            }
+                        }
+                    }
+                    
+                    // Si forme personnalisée, ajouter des extensions
+                    if (shape === 'custom') {
+                        addCustomExtensions();
+                    }
+                    break;
+            }
+        }
+        
+        function setupEventListeners() {
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseUp);
+            
+            // 🔍 Event listener pour le zoom avec la molette
+            canvas.addEventListener('wheel', handleWheel, { passive: false });
+            
+            // Désactiver le menu contextuel pour permettre le drag
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+        }
+        
+        function hexToPixel(q, r) {
+            // Pointy-top hexagons (comme dans le jeu)
+            const size = hexSize;
+            const x = size * (3/2 * q);
+            const y = size * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+            return { 
+                x: (x + offsetX) * zoomLevel, 
+                y: (y + offsetY) * zoomLevel 
+            };
+        }
+        
+        function pixelToHex(x, y) {
+            // Inverser le processus de hexToPixel
+            x = (x / zoomLevel) - offsetX; 
+            y = (y / zoomLevel) - offsetY;
+            
+            // Conversion inverse pour pointy-top
+            const size = hexSize;
+            const q = (2/3 * x) / size;
+            const r = (-1/3 * x + Math.sqrt(3)/3 * y) / size;
+            
+            return { q: Math.round(q), r: Math.round(r) };
+        }
+        
+        function drawHexagon(x, y, color, strokeColor = '#fff', strokeWidth = 1) {
+            ctx.beginPath();
+            const scaledHexSize = hexSize * zoomLevel;
+            // Pointy-top hexagons : angle de départ à 0
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i;
+                const hx = x + scaledHexSize * Math.cos(angle);
+                const hy = y + scaledHexSize * Math.sin(angle);
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            
+            // Appliquer l'opacité pour voir l'image de fond
+            ctx.save();
+            ctx.globalAlpha = hexOpacity;
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+            
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth * Math.max(0.5, zoomLevel * 0.8);
+            ctx.stroke();
+        }
+        
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 🖼️ Dessiner l'image de fond si disponible
+            if (backgroundImage) {
+                // L'image suit EXACTEMENT le même système de transformation que les hexagones
+                // Position fixe de l'image (coin supérieur gauche à 0,0 dans le système hex)
+                const imgX = 0;
+                const imgY = 0;
+                
+                // Calculer la taille de l'image pour qu'elle corresponde à la grille
+                // Utiliser hexSize comme référence pour la correspondance
+                const imgWidth = backgroundImage.width;
+                const imgHeight = backgroundImage.height;
+                
+                // Appliquer la MÊME transformation que les hexagones : (x + offsetX) * zoomLevel
+                const transformedX = (imgX + offsetX) * zoomLevel;
+                const transformedY = (imgY + offsetY) * zoomLevel;
+                const transformedWidth = imgWidth * zoomLevel;
+                const transformedHeight = imgHeight * zoomLevel;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.85; // Légère transparence pour l'image de fond
+                ctx.drawImage(backgroundImage, transformedX, transformedY, transformedWidth, transformedHeight);
+                ctx.restore();
+            }
+            
+            for (const hex of hexGrid) {
+                const { x, y } = hexToPixel(hex.q, hex.r);
+                let color = terrainColors[hex.terrain];
+                let strokeColor = '#ffffff', strokeWidth = 1;
+                
+                // 🎯 NOUVEAU SYSTÈME : Vérifier les zones de déploiement par catégorie et côté
+                let deploymentZoneType = null;
+                let deploymentSide = null;
+                let deploymentZoneCode = null;
+                
+                // Parcourir attaquant et défenseur
+                ['attacker', 'defender'].forEach(side => {
+                    if (deploymentZones[side]) {
+                        Object.keys(deploymentZones[side]).forEach(zoneType => {
+                            if (deploymentZones[side][zoneType]) {
+                                const zoneMatch = deploymentZones[side][zoneType].find(zone => zone.q === hex.q && zone.r === hex.r);
+                                if (zoneMatch) {
+                                    deploymentZoneType = zoneType;
+                                    deploymentSide = side;
+                                    deploymentZoneCode = zoneMatch.zoneCode || `${side[0].toUpperCase()}${zoneType[0].toUpperCase()}?`;
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                // Appliquer les couleurs selon la zone de déploiement
+                if (deploymentZoneType) {
+                    strokeColor = getZoneColor(deploymentZoneType);
+                    strokeWidth = 4;
+                    
+                    // Ajouter une légère teinte à la couleur de base
+                    const zoneColors = {
+                        infantry: 'rgba(139, 69, 19, 0.2)',     // Brun transparent
+                        ranged: 'rgba(34, 139, 34, 0.2)',      // Vert transparent
+                        cavalry: 'rgba(65, 105, 225, 0.2)',    // Bleu transparent
+                        artillery: 'rgba(220, 20, 60, 0.2)',   // Rouge transparent
+                        support: 'rgba(218, 165, 32, 0.2)',    // Or transparent
+                        hero: 'rgba(153, 50, 204, 0.2)'        // Violet transparent
+                    };
+                    
+                    // Mélanger la couleur de terrain avec la couleur de zone
+                    const overlayColor = zoneColors[deploymentZoneType];
+                    if (overlayColor) {
+                        // D'abord dessiner l'hexagone de base
+                        drawHexagon(x, y, color, strokeColor, strokeWidth);
+                        
+                        // Puis ajouter l'overlay de zone
+                        ctx.globalAlpha = 0.3;
+                        ctx.fillStyle = overlayColor;
+                        drawHexagonPath(x, y);
+                        ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                    }
+                } else {
+                    drawHexagon(x, y, color, strokeColor, strokeWidth);
+                }
+                
+                // Dessiner l'icône de terrain (adaptée au zoom)
+                const terrainIcon = terrainIcons[hex.terrain];
+                if (terrainIcon && zoomLevel > 0.4) { // Masquer les icônes si zoom trop faible
+                    const fontSize = Math.max(8, 14 * zoomLevel);
+                    ctx.font = `${fontSize}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#000';
+                    ctx.fillText(terrainIcon, x, y - 8 * zoomLevel);
+                }
+                
+                // Dessiner le code de zone de déploiement si applicable
+                if (deploymentZoneType && deploymentZoneCode && zoomLevel > 0.5) {
+                    const fontSize = Math.max(8, 10 * zoomLevel);
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // Couleur selon le côté
+                    const textColor = deploymentSide === 'attacker' ? '#DC143C' : '#4169E1';
+                    
+                    ctx.fillStyle = '#FFF';
+                    ctx.strokeStyle = textColor;
+                    ctx.lineWidth = Math.max(1, zoomLevel);
+                    
+                    // Dessiner le texte avec contour blanc
+                    ctx.strokeText(deploymentZoneCode, x, y + 8 * zoomLevel);
+                    ctx.fillStyle = textColor;
+                    ctx.fillText(deploymentZoneCode, x, y + 8 * zoomLevel);
+                }
+            }
+        }
+        
+        // Fonction helper pour dessiner seulement le chemin de l'hexagone
+        function drawHexagonPath(x, y) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i;
+                const hx = x + hexSize * Math.cos(angle);
+                const hy = y + hexSize * Math.sin(angle);
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+        }
+        
+        function handleMouseDown(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            if (event.button === 2) { // Clic droit pour drag
+                isDraggingCanvas = true;
+                dragStartX = x - offsetX;
+                dragStartY = y - offsetY;
+                canvas.style.cursor = 'grabbing';
+            } else { // Clic gauche pour dessiner
+                isDragging = true;
+                draw(event);
+            }
+        }
+        
+        function handleMouseMove(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            if (isDraggingCanvas) {
+                // Déplacer le battlefield
+                offsetX = x - dragStartX;
+                offsetY = y - dragStartY;
+                drawGrid();
+            } else if (isDragging) {
+                // Dessiner/peindre
+                draw(event);
+            }
+        }
+        
+        function handleMouseUp(event) {
+            if (isDraggingCanvas) {
+                isDraggingCanvas = false;
+                canvas.style.cursor = 'default';
+            }
+            if (isDragging) {
+                isDragging = false;
+            }
+        }
+        
+        // 🔍 Gestion du zoom avec la molette de souris
+        function handleWheel(event) {
+            event.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            
+            // Calculer le zoom
+            const zoomDirection = event.deltaY > 0 ? -1 : 1;
+            const oldZoom = zoomLevel;
+            zoomLevel += zoomDirection * zoomStep;
+            
+            // Limiter le zoom
+            zoomLevel = Math.max(zoomMin, Math.min(zoomMax, zoomLevel));
+            
+            // Si le zoom a vraiment changé
+            if (zoomLevel !== oldZoom) {
+                // Calculer le nouveau offset pour zoomer vers la position de la souris
+                const zoomRatio = zoomLevel / oldZoom;
+                
+                // Point vers lequel zoomer (en coordonnées canvas)
+                const zoomPointX = mouseX / oldZoom - offsetX;
+                const zoomPointY = mouseY / oldZoom - offsetY;
+                
+                // Ajuster l'offset pour que le zoom se concentre sur la position de la souris
+                offsetX = mouseX / zoomLevel - zoomPointX;
+                offsetY = mouseY / zoomLevel - zoomPointY;
+                
+                // Redessiner la grille
+                drawGrid();
+                updateZoomDisplay();
+                
+                console.log(`🔍 Zoom: ${(zoomLevel * 100).toFixed(0)}%`);
+            }
+        }
+        
+        // Afficher le niveau de zoom
+        function updateZoomDisplay() {
+            const zoomPercentage = Math.round(zoomLevel * 100);
+            const zoomElement = document.getElementById('zoomLevel');
+            if (zoomElement) {
+                zoomElement.textContent = `${zoomPercentage}%`;
+                // Changer la couleur selon le niveau de zoom
+                if (zoomLevel < 0.5) {
+                    zoomElement.style.color = '#FF6B6B'; // Rouge pour zoom faible
+                } else if (zoomLevel > 2) {
+                    zoomElement.style.color = '#4ECDC4'; // Cyan pour zoom élevé
+                } else {
+                    zoomElement.style.color = '#87CEEB'; // Bleu ciel normal
+                }
+            }
+            canvas.title = `Zoom: ${zoomPercentage}% | Molette: zoom | Clic droit + glisser: déplacer la vue`;
+        }
+        
+        function startDrawing(event) {
+            handleMouseDown(event);
+        }
+        
+        function draw(event) {
+            if (!isDragging && event.type !== 'mousedown') return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const { q, r } = pixelToHex(x, y);
+            
+            // Trouver l'hexagone à cette position (même s'il est en dehors de la grille de base)
+            const hexIndex = hexGrid.findIndex(h => h.q === q && h.r === r);
+            
+            if (selectedTerrain === 'delete') {
+                // Mode suppression : retirer l'hexagone de la grille
+                if (hexIndex !== -1) {
+                    hexGrid.splice(hexIndex, 1);
+                    drawGrid();
+                    updateStats();
+                }
+                return;
+            }
+            
+            // Mode gomme : effacer une zone de déploiement individuelle
+            if (isEraserMode) {
+                let zoneRemoved = false;
+                
+                // Chercher et supprimer la zone à cette position
+                ['attacker', 'defender'].forEach(side => {
+                    Object.keys(deploymentZones[side]).forEach(zoneType => {
+                        const zones = deploymentZones[side][zoneType];
+                        const existingIndex = zones.findIndex(zone => zone.q === q && zone.r === r);
+                        
+                        if (existingIndex !== -1) {
+                            const removedZone = zones[existingIndex];
+                            zones.splice(existingIndex, 1);
+                            
+                            // Renuméroter les zones restantes
+                            zones.forEach((zone, idx) => {
+                                const sideCode = side === 'attacker' ? 'A' : 'D';
+                                const unitCode = zoneType[0].toUpperCase();
+                                zone.zoneCode = `${sideCode}${unitCode}${idx + 1}`;
+                            });
+                            
+                            console.log(`🧽 Zone ${removedZone.zoneCode} effacée en (${q}, ${r})`);
+                            zoneRemoved = true;
+                        }
+                    });
+                });
+                
+                if (zoneRemoved) {
+                    drawGrid();
+                    updateDeploymentZoneInfo();
+                }
+                return;
+            }
+            
+                // 🎯 NOUVEAU SYSTÈME DE ZONES DE DÉPLOIEMENT PAR CATÉGORIE
+            if (selectedDeploymentZoneType && selectedSide) {
+                // Mode zones de déploiement par catégorie d'unité (sans limite de grille)
+                let hex = hexGrid.find(h => h.q === q && h.r === r);
+                
+                // Si l'hexagone n'existe pas, le créer
+                if (!hex) {
+                    hex = { q: q, r: r, terrain: 'plains', zone: 'battlefield' };
+                    hexGrid.push(hex);
+                }
+                
+                const position = { q, r };
+                
+                // Vérifier que la structure existe
+                if (!deploymentZones[selectedSide]) {
+                    deploymentZones[selectedSide] = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+                }
+                if (!deploymentZones[selectedSide][selectedDeploymentZoneType]) {
+                    deploymentZones[selectedSide][selectedDeploymentZoneType] = [];
+                }
+                
+                const currentZones = deploymentZones[selectedSide][selectedDeploymentZoneType];                    // Vérifier si cette position est déjà dans cette zone
+                const existingIndex = currentZones.findIndex(zone => zone.q === q && zone.r === r);
+                    
+                    if (existingIndex === -1) {
+                        // Ajouter la position à la zone sélectionnée avec numérotation
+                        const zoneNumber = currentZones.length + 1;
+                        const sideCode = selectedSide === 'attacker' ? 'A' : 'D';
+                        const unitCode = selectedDeploymentZoneType[0].toUpperCase();
+                        const zoneCode = `${sideCode}${unitCode}${zoneNumber}`;
+                        
+                        currentZones.push({ ...position, zoneCode });
+                        console.log(`➕ Zone ${zoneCode} (${selectedSide} ${selectedDeploymentZoneType}) ajoutée en (${q}, ${r})`);
+                        
+                        // Retirer cette position des autres zones/côtés si elle y était
+                        ['attacker', 'defender'].forEach(side => {
+                            Object.keys(deploymentZones[side]).forEach(zoneType => {
+                                if (side !== selectedSide || zoneType !== selectedDeploymentZoneType) {
+                                    const otherZones = deploymentZones[side][zoneType];
+                                    const otherIndex = otherZones.findIndex(zone => zone.q === q && zone.r === r);
+                                    if (otherIndex !== -1) {
+                                        const removedZone = otherZones[otherIndex];
+                                        otherZones.splice(otherIndex, 1);
+                                        // Renuméroter les zones restantes
+                                        otherZones.forEach((zone, idx) => {
+                                            const sideCodeOther = side === 'attacker' ? 'A' : 'D';
+                                            const unitCodeOther = zoneType[0].toUpperCase();
+                                            zone.zoneCode = `${sideCodeOther}${unitCodeOther}${idx + 1}`;
+                                        });
+                                        console.log(`➖ Position retirée de la zone ${removedZone.zoneCode || side + ' ' + zoneType}`);
+                                    }
+                                }
+                            });
+                        });
+                    } else {
+                        // Retirer la position de la zone sélectionnée (toggle)
+                        const removedZone = currentZones[existingIndex];
+                        currentZones.splice(existingIndex, 1);
+                        
+                        // Renuméroter les zones restantes
+                        currentZones.forEach((zone, idx) => {
+                            const sideCode = selectedSide === 'attacker' ? 'A' : 'D';
+                            const unitCode = selectedDeploymentZoneType[0].toUpperCase();
+                            zone.zoneCode = `${sideCode}${unitCode}${idx + 1}`;
+                        });
+                        
+                        console.log(`➖ Zone ${removedZone.zoneCode} retirée de (${q}, ${r})`);
+                    }
+                    
+                    drawGrid();
+                    updateDeploymentZoneInfo();
+                return;
+            }
+            
+            // Mode terrain classique (sans limite de grille - permettre d'ajouter partout)
+            let hex = hexGrid.find(h => h.q === q && h.r === r);
+            
+            // Si l'hexagone n'existe pas, le créer
+            if (!hex) {
+                hex = { q: q, r: r, terrain: selectedTerrain || 'plains', zone: 'battlefield' };
+                hexGrid.push(hex);
+            } else if (selectedTerrain) {
+                // Modifier le terrain existant
+                hex.terrain = selectedTerrain;
+            }
+            
+            drawGrid();
+            updateStats();
+        }
+        
+        function stopDrawing() {
+            handleMouseUp();
+        }
+        
+        function resizeGrid() {
+            // Désactivé, la grille est générée uniquement via le bouton 'Appliquer la forme'
+        }
+
+        function applyGridParameters() {
+            gridWidth = parseInt(document.getElementById('gridWidth').value);
+            gridHeight = parseInt(document.getElementById('gridHeight').value);
+            initializeGrid();
+            deploymentZones.attacker = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+            deploymentZones.defender = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+            drawGrid();
+            updateStats();
+            updateDeploymentZonesDisplay();
+        }
+        
+        function selectTerrain(terrain) {
+            selectedTerrain = terrain;
+            document.querySelectorAll('.terrain-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-terrain="${terrain}"]`).classList.add('active');
+            
+            // Affichage spécial pour le mode suppression
+            if (terrain === 'delete') {
+                document.getElementById('selectedTerrain').textContent = '🗑️ Mode Suppression';
+                canvas.style.cursor = 'crosshair';
+            } else {
+                document.getElementById('selectedTerrain').textContent = (terrainIcons[terrain] || '🌾') + ' ' + terrain;
+                canvas.style.cursor = 'default';
+            }
+            
+            setDeploymentMode('none');
+        }
+        
+        function setDeploymentMode(mode) {
+            deploymentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            if (mode !== 'none') {
+                document.querySelector(`[onclick="setDeploymentMode('${mode}')"]`).classList.add('active');
+            } else {
+                document.querySelector(`[onclick="setDeploymentMode('none')"]`).classList.add('active');
+            }
+        }
+        
+        function updateStats() {
+            const counts = {};
+            for (const terrain in terrainColors) counts[terrain] = 0;
+            for (const hex of hexGrid) counts[hex.terrain]++;
+            
+            document.getElementById('totalHexes').textContent = hexGrid.length;
+            document.getElementById('plainCount').textContent = counts.plains || 0;
+            document.getElementById('forestCount').textContent = counts.forest || 0;
+            document.getElementById('hillCount').textContent = counts.hill || 0;
+            document.getElementById('riverCount').textContent = counts.river || 0;
+            document.getElementById('mountainCount').textContent = counts.mountain || 0;
+            document.getElementById('villageCount').textContent = counts.village || 0;
+            document.getElementById('roadCount').textContent = counts.road || 0;
+            document.getElementById('marshCount').textContent = counts.marsh || 0;
+            document.getElementById('baseAttackCount').textContent = counts['base-attack'] || 0;
+            document.getElementById('baseDefenseCount').textContent = counts['base-defense'] || 0;
+        }
+        
+        function updateDeploymentZonesDisplay() {
+            const attackerDiv = document.getElementById('attackerZones');
+            const defenderDiv = document.getElementById('defenderZones');
+            
+            if (deploymentZones.attacker.length === 0) {
+                attackerDiv.textContent = 'Aucune zone définie';
+            } else {
+                attackerDiv.textContent = deploymentZones.attacker
+                    .map(zone => `(${zone.q},${zone.r})`).join(', ');
+            }
+            
+            if (deploymentZones.defender.length === 0) {
+                defenderDiv.textContent = 'Aucune zone définie';
+            } else {
+                defenderDiv.textContent = deploymentZones.defender
+                    .map(zone => `(${zone.q},${zone.r})`).join(', ');
+            }
+        }
+        
+        function fillRandomTerrain() {
+            const terrains = ['plains', 'forest', 'hill', 'river'];
+            const weights = [40, 30, 20, 10];
+            
+            for (const hex of hexGrid) {
+                const rand = Math.random() * 100;
+                if (rand < weights[0]) hex.terrain = terrains[0];
+                else if (rand < weights[0] + weights[1]) hex.terrain = terrains[1];
+                else if (rand < weights[0] + weights[1] + weights[2]) hex.terrain = terrains[2];
+                else hex.terrain = terrains[3];
+            }
+            drawGrid();
+            updateStats();
+        }
+        
+        function clearGrid() {
+            for (const hex of hexGrid) hex.terrain = 'plains';
+            deploymentZones.attacker = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+            deploymentZones.defender = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+            drawGrid();
+            updateStats();
+            updateDeploymentZonesDisplay();
+        }
+        
+        // 🔥 NOUVELLES FONCTIONS POUR FORMAT V2
+        
+        function convertHexMapToGrid(hexMap, terrainDefinitions) {
+            // Convertir hexMap (strings) vers hexGrid (objets avec q, r, terrain)
+            const grid = [];
+            
+            // Mapping des codes courts vers noms complets
+            const codeToTerrain = {};
+            if (terrainDefinitions) {
+                Object.keys(terrainDefinitions).forEach(code => {
+                    codeToTerrain[code] = terrainDefinitions[code].name;
+                });
+            }
+            
+            // Fallback si pas de définitions
+            const defaultMapping = {
+                'A': 'base-attack', 'P': 'plains', 'M': 'mountain', 'H': 'hill',
+                'R': 'river', 'V': 'village', 'S': 'marsh', 'D': 'base-defense', 'F': 'forest', 'X': 'empty'
+            };
+            
+            for (let r = 0; r < hexMap.length; r++) {
+                const row = hexMap[r];
+                for (let q = 0; q < row.length; q++) {
+                    const code = row[q];
+                    
+                    // Ignorer les cases vides (X)
+                    if (code === 'X') {
+                        continue;
+                    }
+                    
+                    const terrainName = codeToTerrain[code] || defaultMapping[code] || 'plains';
+                    
+                    grid.push({
+                        q: q,
+                        r: r,
+                        terrain: terrainName,
+                        zone: 'battlefield'
+                    });
+                }
+            }
+            
+            console.log('🔄 HexMap convertie vers grid:', grid.length, 'hexagones');
+            return grid;
+        }
+        
+        function convertV2DeploymentZonesToEditor(v2Zones) {
+            // Convertir [[q, r], [q, r], ...] vers {q, r, zoneCode} pour l'éditeur
+            const editorZones = {
+                attacker: { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] },
+                defender: { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] }
+            };
+            
+            ['attacker', 'defender'].forEach(side => {
+                if (v2Zones[side]) {
+                    Object.keys(v2Zones[side]).forEach(unitType => {
+                        const coords = v2Zones[side][unitType] || [];
+                        editorZones[side][unitType] = coords.map((coord, index) => {
+                            const sideCode = side === 'attacker' ? 'A' : 'D';
+                            const unitCode = unitType[0].toUpperCase();
+                            return {
+                                q: coord[0],
+                                r: coord[1],
+                                zoneCode: `${sideCode}${unitCode}${index + 1}`
+                            };
+                        });
+                    });
+                }
+            });
+            
+            console.log('🔄 Zones V2 converties pour éditeur:', editorZones);
+            return editorZones;
+        }
+        
+        function loadPreset() {
+            // 🔥 Charger directement depuis le serveur Flask
+            const presets = [
+                { name: 'Default Working V2', file: 'default_working_v2.json' },
+                { name: 'Grande Carte V2', file: 'grande_carte_v2.json' }
+            ];
+            
+            const selectedPreset = prompt(
+                '🗺️ Choisir un preset à charger:\n\n' +
+                presets.map((p, i) => `${i + 1}. ${p.name}`).join('\n') +
+                '\n\nEntrez le numéro (1-' + presets.length + '):'
+            );
+            
+            const presetIndex = parseInt(selectedPreset) - 1;
+            if (presetIndex >= 0 && presetIndex < presets.length) {
+                const preset = presets[presetIndex];
+                
+                console.log('🔄 Chargement preset:', preset.name);
+                
+                // Charger depuis le serveur Flask
+                fetch(`http://localhost:5000/data/battlefields/${preset.file}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(mapData => {
+                        console.log('📁 Preset chargé:', mapData);
+                        
+                        // Utiliser le même code que loadExistingMap
+                        currentMapData = mapData;
+                        
+                        // Chargement format V2
+                        if (mapData.hexMap && Array.isArray(mapData.hexMap)) {
+                            hexGrid = convertHexMapToGrid(mapData.hexMap, mapData.terrainDefinitions);
+                            gridWidth = mapData.template?.size?.width || mapData.hexMap[0]?.length || 16;
+                            gridHeight = mapData.template?.size?.height || mapData.hexMap.length || 12;
+                            
+                            // Mettre à jour les champs du formulaire
+                            if (mapData.template) {
+                                document.getElementById('battlefieldId').value = mapData.template.id || 'preset_v2';
+                                document.getElementById('battlefieldName').value = mapData.template.name || preset.name;
+                                document.getElementById('battlefieldDesc').value = mapData.template.description || '';
+                                document.getElementById('difficulty').value = mapData.template.difficulty || 'medium';
+                                document.getElementById('gridWidth').value = gridWidth;
+                                document.getElementById('gridHeight').value = gridHeight;
+                            }
+                            
+                            // Charger les zones de déploiement V2
+                            if (mapData.template?.deploymentZones) {
+                                deploymentZones = convertV2DeploymentZonesToEditor(mapData.template.deploymentZones);
+                            }
+                            
+                            // Redessiner
+                            drawGrid();
+                            updateStats();
+                            updateDeploymentZoneInfo();
+                            
+                            alert(`✅ Preset "${preset.name}" chargé avec succès!\n🗺️ ${hexGrid.length} hexagones`);
+                        } else {
+                            throw new Error('Format de preset non supporté');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Erreur chargement preset:', error);
+                        alert(`❌ Erreur lors du chargement du preset:\n${error.message}\n\nVérifiez que le serveur Flask est démarré.`);
+                    });
+            }
+        }
+        
+        function convertDeploymentZonesToV2Format(deploymentZones) {
+            // Convertir de {q, r, zoneCode} vers [[q, r], [q, r], ...]
+            const v2Zones = {
+                attacker: {},
+                defender: {}
+            };
+            
+            ['attacker', 'defender'].forEach(side => {
+                Object.keys(deploymentZones[side]).forEach(unitType => {
+                    const zones = deploymentZones[side][unitType];
+                    v2Zones[side][unitType] = zones.map(zone => [zone.q, zone.r]);
+                });
+            });
+            
+            console.log('🔄 Zones converties au format V2:', v2Zones);
+            return v2Zones;
+        }
+        
+        function generateHexMapFromGrid() {
+            // Créer une grille 2D de codes de terrain
+            const hexMap = [];
+            
+            // Mapping des terrains vers codes courts
+            const terrainToCode = {
+                'plains': 'P',
+                'forest': 'F',
+                'hill': 'H',
+                'mountain': 'M',
+                'river': 'R',
+                'village': 'V',
+                'marsh': 'S',
+                'base-attack': 'A',
+                'base-defense': 'D',
+                'wall': 'W',
+                'empty': 'X'
+            };
+            
+            for (let r = 0; r < gridHeight; r++) {
+                let row = '';
+                for (let q = 0; q < gridWidth; q++) {
+                    // Chercher l'hexagone à cette position
+                    const hex = hexGrid.find(h => h.q === q && h.r === r);
+                    const terrainCode = hex ? (terrainToCode[hex.terrain] || 'P') : 'X';
+                    row += terrainCode;
+                }
+                hexMap.push(row);
+            }
+            
+            console.log('🗺️ HexMap généré:', hexMap);
+            return hexMap;
+        }
+        
+
+        function generateBattlefield() {
+            const id = document.getElementById('battlefieldId').value || 'custom_battlefield';
+            const name = document.getElementById('battlefieldName').value || 'Battlefield Personnalisé';
+            const description = document.getElementById('battlefieldDesc').value || 'Un battlefield créé avec l\'éditeur';
+            const difficulty = document.getElementById('difficulty').value || 'medium';
+            
+            // � Calculer les dimensions réelles basées sur les hexagones existants
+            if (hexGrid.length > 0) {
+                const minQ = Math.min(...hexGrid.map(h => h.q));
+                const maxQ = Math.max(...hexGrid.map(h => h.q));
+                const minR = Math.min(...hexGrid.map(h => h.r));
+                const maxR = Math.max(...hexGrid.map(h => h.r));
+                
+                gridWidth = maxQ - minQ + 1;
+                gridHeight = maxR - minR + 1;
+                
+                // Normaliser les coordonnées pour commencer à (0, 0)
+                if (minQ !== 0 || minR !== 0) {
+                    console.log(`📏 Normalisation des coordonnées: offset Q=${minQ}, R=${minR}`);
+                    hexGrid.forEach(hex => {
+                        hex.q -= minQ;
+                        hex.r -= minR;
+                    });
+                    
+                    // Normaliser aussi les zones de déploiement
+                    ['attacker', 'defender'].forEach(side => {
+                        Object.keys(deploymentZones[side]).forEach(zoneType => {
+                            deploymentZones[side][zoneType].forEach(zone => {
+                                zone.q -= minQ;
+                                zone.r -= minR;
+                            });
+                        });
+                    });
+                }
+                
+                console.log(`📏 Dimensions calculées: ${gridWidth}x${gridHeight} (vraies dimensions de la carte)`);
+                
+                // Mettre à jour les champs UI
+                document.getElementById('gridWidth').value = gridWidth;
+                document.getElementById('gridHeight').value = gridHeight;
+            }
+            
+            // �🔥 FORMAT V2 OPTIMISE : Template avec zones de déploiement au format [q, r]
+            const template = {
+                id: id + '_v2', // Ajouter suffix V2
+                name: name,
+                description: description,
+                size: { width: gridWidth, height: gridHeight },
+                difficulty: difficulty,
+                deploymentZones: convertDeploymentZonesToV2Format(deploymentZones)
+            };
+            
+            // 🔥 FORMAT V2 : terrainDefinitions avec codes courts
+            const terrainDefinitions = {
+                'A': { name: 'base-attack', defenseBonus: 0, attackPenalty: 15, movementBonus: 0 },
+                'P': { name: 'plains', defenseBonus: 0, attackPenalty: 0, movementBonus: 0 },
+                'M': { name: 'mountain', defenseBonus: 25, attackPenalty: -10, movementBonus: -2 },
+                'H': { name: 'hill', defenseBonus: 15, attackPenalty: 5, movementBonus: -1 },
+                'R': { name: 'river', defenseBonus: 5, attackPenalty: -10, movementBonus: -2 },
+                'V': { name: 'village', defenseBonus: 20, attackPenalty: 0, movementBonus: 0 },
+                'S': { name: 'marsh', defenseBonus: 5, attackPenalty: -15, movementBonus: -3 },
+                'D': { name: 'base-defense', defenseBonus: 20, attackPenalty: 0, movementBonus: 0 },
+                'F': { name: 'forest', defenseBonus: 10, attackPenalty: -5, movementBonus: -1 },
+                'W': { name: 'wall', defenseBonus: 30, attackPenalty: -20, movementBonus: -5 },
+                'X': { name: 'empty', defenseBonus: 0, attackPenalty: 0, movementBonus: 0 }
+            };
+            
+            // 🔥 FORMAT V2 : hexMap compact - tableau de strings
+            const hexMap = generateHexMapFromGrid();
+            
+            // 🔥 FORMAT V2 FINAL
+            const battlefield = { 
+                template: template, 
+                terrainDefinitions: terrainDefinitions,
+                hexMap: hexMap 
+            };
+            
+            // SOLUTION BRUTALE QUI MARCHE : Construction manuelle du JSON
+            let jsonOutput = '{\n';
+            jsonOutput += '  "template": {\n';
+            jsonOutput += `    "id": "${battlefield.template.id}",\n`;
+            jsonOutput += `    "name": "${battlefield.template.name}",\n`;
+            jsonOutput += `    "description": "${battlefield.template.description}",\n`;
+            jsonOutput += '    "size": {\n';
+            jsonOutput += `      "width": ${battlefield.template.size.width},\n`;
+            jsonOutput += `      "height": ${battlefield.template.size.height}\n`;
+            jsonOutput += '    },\n';
+            jsonOutput += `    "difficulty": "${battlefield.template.difficulty}",\n`;
+            jsonOutput += '    "deploymentZones": {\n';
+            
+            // ATTACKER - FORMAT COMPACT FORCÉ
+            jsonOutput += '      "attacker": {\n';
+            const attackerZones = battlefield.template.deploymentZones.attacker;
+            const attackerKeys = Object.keys(attackerZones);
+            
+            attackerKeys.forEach((unitType, index) => {
+                const zones = attackerZones[unitType];
+                const compactZones = zones.map(z => `[${z[0]},${z[1]}]`).join(',');
+                jsonOutput += `        "${unitType}": [${compactZones}]`;
+                if (index < attackerKeys.length - 1) jsonOutput += ',';
+                jsonOutput += '\n';
+            });
+            
+            jsonOutput += '      },\n';
+            
+            // DEFENDER - FORMAT COMPACT FORCÉ  
+            jsonOutput += '      "defender": {\n';
+            const defenderZones = battlefield.template.deploymentZones.defender;
+            const defenderKeys = Object.keys(defenderZones);
+            
+            defenderKeys.forEach((unitType, index) => {
+                const zones = defenderZones[unitType];
+                const compactZones = zones.map(z => `[${z[0]},${z[1]}]`).join(',');
+                jsonOutput += `        "${unitType}": [${compactZones}]`;
+                if (index < defenderKeys.length - 1) jsonOutput += ',';
+                jsonOutput += '\n';
+            });
+            
+            jsonOutput += '      }\n';
+            jsonOutput += '    }';
+            
+            // 🖼️ Ajouter l'image de fond si elle existe
+            if (backgroundImageName && backgroundImageName.trim() !== '') {
+                jsonOutput += ',\n';
+                jsonOutput += `    "backgroundImage": "${backgroundImageName}"`;
+            }
+            
+            jsonOutput += '\n';
+            jsonOutput += '  },\n';
+            
+            // Ajouter le reste en JSON normal
+            jsonOutput += '  "terrainDefinitions": ' + JSON.stringify(battlefield.terrainDefinitions, null, 4).replace(/^/gm, '  ') + ',\n';
+            jsonOutput += '  "hexMap": ' + JSON.stringify(battlefield.hexMap, null, 2).replace(/^/gm, '  ') + '\n';
+            jsonOutput += '}';
+            
+            document.getElementById('exportOutput').value = jsonOutput;
+            console.log('✅ Battlefield V2 généré:', battlefield.template.id);
+            return battlefield;
+        }
+        
+        function addManualExtensions() {
+            // Ajouter des extensions manuelles aux côtés
+            const midR = Math.floor(gridHeight / 2);
+            const midQ = Math.floor(gridWidth / 2);
+            
+            const newExtensions = [
+                // Extensions gauche
+                { q: -1, r: midR - 1 }, { q: -1, r: midR }, { q: -1, r: midR + 1 },
+                { q: -2, r: midR },
+                
+                // Extensions droite
+                { q: gridWidth, r: midR - 1 }, { q: gridWidth, r: midR }, { q: gridWidth, r: midR + 1 },
+                { q: gridWidth + 1, r: midR },
+                
+                // Extensions haut
+                { q: midQ - 1, r: -1 }, { q: midQ, r: -1 }, { q: midQ + 1, r: -1 },
+                { q: midQ, r: -2 },
+                
+                // Extensions bas
+                { q: midQ - 1, r: gridHeight }, { q: midQ, r: gridHeight }, { q: midQ + 1, r: gridHeight },
+                { q: midQ, r: gridHeight + 1 }
+            ];
+            
+            for (const ext of newExtensions) {
+                // Vérifier que l'extension n'existe pas déjà
+                if (!hexGrid.some(hex => hex.q === ext.q && hex.r === ext.r)) {
+                    hexGrid.push({ 
+                        q: ext.q, 
+                        r: ext.r, 
+                        terrain: 'plains', 
+                        zone: 'battlefield' 
+                    });
+                }
+            }
+            
+            drawGrid();
+            updateStats();
+            console.log('➕ Extensions ajoutées aux côtés du battlefield');
+        }
+        
+        function downloadBattlefield() {
+            const battlefield = generateBattlefield();
+            // UTILISER LE CONTENU DÉJÀ FORMATÉ DE LA TEXTAREA AU LIEU DE REGENERER
+            const formattedJson = document.getElementById('exportOutput').value;
+            const blob = new Blob([formattedJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${battlefield.template.id}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function saveToServer() {
+            const battlefield = generateBattlefield();
+            const filename = `${battlefield.template.id}.json`;
+            
+            if (!confirm(`🚀 Sauvegarder "${battlefield.template.name}" sur le serveur?\n\n📁 Fichier: ${filename}`)) {
+                return;
+            }
+            
+            // Note: Cette fonction nécessiterait une API serveur pour accepter les uploads
+            // Pour l'instant, on peut seulement télécharger localement
+            console.log('🚀 Sauvegarde serveur demandée pour:', filename);
+            console.log('📋 Contenu battlefield:', battlefield);
+            
+            // Placeholder - ici on pourrait faire un POST vers le serveur Flask
+            // fetch('http://localhost:5000/api/upload-battlefield', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ filename, data: battlefield })
+            // })
+            
+            alert(`🚀 Fonctionnalité en développement!\n\nPour l'instant, utilisez "⬇️ Télécharger" puis copiez manuellement le fichier vers:\nserver/data/battlefields/${filename}`);
+            
+            // Télécharger en attendant l'API serveur
+            downloadBattlefield();
+        }
+    </script>
+// Correction : Ajout des fonctions globales manquantes
+function applyGridParameters() {
+    gridWidth = parseInt(document.getElementById('gridWidth').value);
+    gridHeight = parseInt(document.getElementById('gridHeight').value);
+    initializeGrid();
+    deploymentZones.attacker = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+    deploymentZones.defender = { infantry: [], ranged: [], cavalry: [], artillery: [], support: [], hero: [] };
+    drawGrid();
+    updateStats();
+    updateDeploymentZonesDisplay();
+}
+
+function addManualExtensions() {
+    // Ajouter des extensions manuelles aux côtés
+    const midR = Math.floor(gridHeight / 2);
+    const midQ = Math.floor(gridWidth / 2);
+    const newExtensions = [
+        { q: -1, r: midR - 1 }, { q: -1, r: midR }, { q: -1, r: midR + 1 },
+        { q: -2, r: midR },
+        { q: gridWidth, r: midR - 1 }, { q: gridWidth, r: midR }, { q: gridWidth, r: midR + 1 },
+        { q: gridWidth + 1, r: midR },
+        { q: midQ - 1, r: -1 }, { q: midQ, r: -1 }, { q: midQ + 1, r: -1 },
+        { q: midQ, r: -2 },
+        { q: midQ - 1, r: gridHeight }, { q: midQ, r: gridHeight }, { q: midQ + 1, r: gridHeight },
+        { q: midQ, r: gridHeight + 1 }
+    ];
+    for (const ext of newExtensions) {
+        if (!hexGrid.some(hex => hex.q === ext.q && hex.r === ext.r)) {
+            hexGrid.push({ q: ext.q, r: ext.r, terrain: 'plains', zone: 'battlefield' });
+        }
+    }
+    drawGrid();
+    updateStats();
+    console.log('➕ Extensions ajoutées aux côtés du battlefield');
+}
+
+        // ✅ Fonctions utilitaires déjà définies plus haut
+    </script>
+</body>
+</html>

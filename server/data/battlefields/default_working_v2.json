@@ -1,0 +1,103 @@
+{
+  "template": {
+    "id": "custom_battlefield_1_v2",
+    "name": "Mon Battlefield Personnalisé",
+    "description": "Un battlefield créé avec l'éditeur personnalisé",
+    "size": {
+      "width": 20,
+      "height": 19
+    },
+    "difficulty": "medium",
+    "deploymentZones": {
+      "attacker": {
+        "infantry": [[7,4],[6,5],[8,4],[5,6],[9,4],[4,7],[10,4]],
+        "ranged": [[7,3],[6,4],[8,3],[5,5],[9,3],[4,6],[10,3]],
+        "cavalry": [[3,8],[11,4],[2,9],[12,4],[3,7],[11,3],[2,8],[12,3]],
+        "hero": [[7,5],[8,5],[6,6],[9,5]]
+      },
+      "defender": {
+        "infantry": [[13,14],[14,13],[12,14],[15,12],[11,14],[16,11],[10,14],[17,10]],
+        "ranged": [[13,15],[14,14],[12,15],[15,13],[11,15],[16,12],[10,15],[17,11]],
+        "cavalry": [[9,14],[18,9],[8,14],[19,8],[9,15],[18,10],[8,15],[19,9]],
+        "hero": [[13,13],[12,13],[14,12],[11,13]]
+      }
+    }
+  },
+  "terrainDefinitions": {
+    "A": {
+      "name": "base-attack",
+      "defenseBonus": 0,
+      "attackPenalty": 15,
+      "movementBonus": 0
+    },
+    "P": {
+      "name": "plains",
+      "defenseBonus": 0,
+      "attackPenalty": 0,
+      "movementBonus": 0
+    },
+    "M": {
+      "name": "mountain",
+      "defenseBonus": 25,
+      "attackPenalty": -10,
+      "movementBonus": -2
+    },
+    "H": {
+      "name": "hill",
+      "defenseBonus": 15,
+      "attackPenalty": 5,
+      "movementBonus": -1
+    },
+    "R": {
+      "name": "river",
+      "defenseBonus": 5,
+      "attackPenalty": -10,
+      "movementBonus": -2
+    },
+    "V": {
+      "name": "village",
+      "defenseBonus": 20,
+      "attackPenalty": 0,
+      "movementBonus": 0
+    },
+    "S": {
+      "name": "marsh",
+      "defenseBonus": 5,
+      "attackPenalty": -15,
+      "movementBonus": -3
+    },
+    "D": {
+      "name": "base-defense",
+      "defenseBonus": 20,
+      "attackPenalty": 0,
+      "movementBonus": 0
+    },
+    "F": {
+      "name": "forest",
+      "defenseBonus": 10,
+      "attackPenalty": -5,
+      "movementBonus": -1
+    }
+  },
+  "hexMap": [
+    "PPPPPPPPPPPPPPPPPPPP",
+    "PPPPPPPAAAAPPPPPPPPP",
+    "PPPPPPAPPPPPPFFFPPPR",
+    "PPPPPAPPPPPPPPPFFPPR",
+    "PPPPAPPPPPPPPPPPFFRP",
+    "PPPAPPPPPPPPPPPPFFRP",
+    "PPAPPPPPPPPPPPPPRRFP",
+    "PPPPPPPPPPPPPPRRFFFP",
+    "PPPPVPPSPPPPPPPPFFFP",
+    "PPMVVSSRPPPPPPPVVFFP",
+    "PPHHHRRSSPPPPPPVVPPP",
+    "PPHHRSSSPPPPPPPPPPPP",
+    "PPHRHSSPPPPPPPPPPPDP",
+    "PPRHMPPPPPPPPPPPPDPP",
+    "PPHMMPPPPPPPPPPPDPPP",
+    "PPMMPPPPPPPPPPPDPPPP",
+    "PPPPPPPPPPPPPPDPPPPP",
+    "PPPPPPPPPDDDDDPPPPPP",
+    "PPPPPPPPPPPPPPPPPPPP"
+  ]
+}

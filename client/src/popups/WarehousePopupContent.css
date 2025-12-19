@@ -1,0 +1,285 @@
+/* Styles pour le popup de l'entrepôt */
+.warehouse-popup {
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: fadeInScale 0.3s ease-out;
+}
+
+.warehouse-header {
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.warehouse-header h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 1.4em;
+}
+
+.warehouse-summary {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.warehouse-section {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.warehouse-section h4 {
+  margin: 0 0 15px 0;
+  color: #34495e;
+  font-size: 1.1em;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.warehouse-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.warehouse-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px 0;
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+}
+
+.btn-close {
+  padding: 10px 25px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-close:hover {
+  background: #c0392b;
+}
+
+/* ===== STYLES AVANCÉS POUR LE TABLEAU DE STOCKAGE ===== */
+.storage-table-container {
+  overflow-x: auto;
+  margin: 15px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: white;
+}
+
+.storage-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: white !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  border: 3px solid #34495e !important;
+  margin: 0 auto !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+.storage-table.compact {
+  font-size: 0.9em;
+}
+
+.storage-table.mobile-optimized {
+  font-size: 0.85em !important;
+}
+
+.storage-table.mobile-optimized th {
+  padding: 10px 8px !important;
+  font-size: 0.9em !important;
+}
+
+.storage-table.mobile-optimized td {
+  padding: 8px 6px !important;
+  font-size: 0.95em !important;
+}
+
+/* En-têtes avec dégradé élégant */
+.storage-table thead {
+  background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+  color: white !important;
+}
+
+.storage-table th {
+  padding: 15px 12px !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #1a252f !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-size: 0.9em !important;
+  position: relative !important;
+}
+
+.storage-table th:last-child {
+  border-right: none !important;
+}
+
+.storage-table th:before {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent) !important;
+}
+
+/* Lignes du tableau avec animations */
+.storage-table tbody tr {
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+
+.storage-table tbody tr:nth-child(even) {
+  background: rgba(52, 73, 94, 0.03) !important;
+}
+
+.storage-table tbody tr:hover {
+  background: rgba(52, 73, 94, 0.08) !important;
+  transform: scale(1.01) !important;
+  box-shadow: 0 2px 8px rgba(52, 73, 94, 0.2) !important;
+}
+
+.storage-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.storage-table td {
+  padding: 12px !important;
+  text-align: center !important;
+  border-bottom: 1px solid rgba(52, 73, 94, 0.1) !important;
+  border-right: 1px solid rgba(52, 73, 94, 0.1) !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.storage-table td:last-child {
+  border-right: none !important;
+}
+
+/* ===== STYLES COLORÉS POUR LES COLONNES ===== */
+.resource-name {
+  font-size: 1.2em !important;
+  font-weight: 600 !important;
+}
+
+.current-amount {
+  color: #2980b9 !important;
+  font-weight: 600 !important;
+  text-shadow: 1px 1px 2px rgba(41, 128, 185, 0.3) !important;
+}
+
+.secure-amount {
+  color: #27ae60 !important;
+  font-weight: 600 !important;
+  text-shadow: 1px 1px 2px rgba(39, 174, 96, 0.3) !important;
+}
+
+.pillage-amount {
+  color: #e74c3c !important;
+  font-weight: 600 !important;
+  text-shadow: 1px 1px 2px rgba(231, 76, 60, 0.3) !important;
+}
+
+.max-capacity {
+  color: #8e44ad !important;
+  font-weight: 600 !important;
+  text-shadow: 1px 1px 2px rgba(142, 68, 173, 0.3) !important;
+}
+
+/* ===== RESPONSIVE DESIGN MOBILE ===== */
+@media (max-width: 768px) {
+  .warehouse-popup {
+    max-width: 95vw;
+    max-height: 90vh;
+  }
+  
+  .storage-table {
+    font-size: 0.85em !important;
+    margin: 10px 0 !important;
+  }
+  
+  .storage-table th {
+    padding: 8px 4px !important;
+    font-size: 0.7em !important;
+    letter-spacing: 0.2px !important;
+  }
+  
+  .storage-table td {
+    padding: 6px 3px !important;
+    font-size: 0.8em !important;
+  }
+  
+  .resource-name {
+    font-size: 1.1em !important;
+  }
+  
+  .warehouse-summary {
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.8em;
+  }
+  
+  .warehouse-section {
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .warehouse-section h4 {
+    font-size: 1em;
+    margin-bottom: 10px;
+  }
+  
+  .warehouse-header h3 {
+    font-size: 1.2em;
+  }
+}
+
+/* Extra compact pour très petits écrans */
+@media (max-width: 480px) {
+  .storage-table {
+    font-size: 0.75em !important;
+  }
+  
+  .storage-table th,
+  .storage-table td {
+    padding: 4px 2px !important;
+  }
+  
+  .storage-table th {
+    font-size: 0.65em !important;
+  }
+  
+  .resource-name {
+    font-size: 1em !important;
+  }
+}
+
+/* Animation d'apparition du popup */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

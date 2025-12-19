@@ -1,0 +1,527 @@
+{
+  "researches": [
+    {
+      "id": "maison_chef",
+      "level": 0,
+      "name": "Maison du Chef de Village",
+      "age": "Pierre",
+      "description": "Débloque la construction de la Maison du Chef de Village, qui donne accès aux quêtes quotidiennes et hebdomadaires.",
+      "cost": { "research_points": 5 },
+      "prerequisites": [],
+      "effect": { "unlock_building": "Maison du Chef de Village" },
+      "category": "economy"
+    },
+    {
+      "id": "acces_ressources",
+      "level": 1,
+      "name": "Accès Ressources de Base",
+      "age": "Pierre",
+      "description": "Permet l'affectation des ouvriers sur les sites d'exploitation de ressources.",
+      "cost": { "research_points": 50 },
+      "prerequisites": ["maison_chef"],
+      "effect": { "unlock": "resource_sites_assignment" },
+      "category": "economy"
+    },
+    {
+      "id": "conservation",
+      "level": 2,
+      "name": "Conservation",
+      "age": "Pierre",
+      "description": "Débloque la construction de l'Entrepôt.",
+      "cost": { "research_points": 100 },
+      "prerequisites": ["acces_ressources"],
+      "effect": { "unlock_building": "Entrepôt" },
+      "category": "economy"
+    },
+    {
+      "id": "abattage_forestier",
+      "level": 3,
+      "name": "Abattage Forestier",
+      "age": "Pierre",
+      "description": "Améliore les techniques de coupe du bois.",
+      "cost": { "research_points": 200 },
+      "prerequisites": ["conservation"],
+      "effect": { "resource_bonus": { "wood": 15 } },
+      "category": "economy"
+    },
+    {
+      "id": "extraction_miniere",
+      "level": 4,
+      "name": "Extraction Minière",
+      "age": "Pierre",
+      "description": "Débloque la construction du Centre de Ressources.",
+      "cost": { "research_points": 250, "gold": 500 },
+      "prerequisites": ["abattage_forestier"],
+      "effect": { "unlock_building": "Centre de Ressources" },
+      "category": "economy"
+    },
+    {
+      "id": "architecte",
+      "level": 5,
+      "name": "Architecte",
+      "age": "Pierre",
+      "description": "Débloque la construction de l'Atelier d'Architecte et les routes commerciales.",
+      "cost": { "research_points": 400, "gold": 500 },
+      "prerequisites": ["extraction_miniere"],
+      "effect": { "unlock_building": "Atelier d'Architecte" },
+      "category": "economy"
+    },
+    {
+      "id": "marches",
+      "level": 6,
+      "name": "Marchés",
+      "age": "Pierre",
+      "description": "Débloque la construction du Marché.",
+      "cost": { "research_points": 500, "gold": 1000 },
+      "prerequisites": ["architecte"],
+      "effect": { "unlock_building": "Marché" },
+      "category": "economy"
+    },
+    {
+      "id": "carrieres_avancees",
+      "level": 7,
+      "name": "Carrières Avancées",
+      "age": "Pierre",
+      "description": "Spécialisation : améliore grandement la production de pierre.",
+      "cost": { "research_points": 750, "gold": 75 },
+      "prerequisites": ["architecte"],
+      "effect": { "resource_bonus": { "stone": 15 } },
+      "category": "economy",
+      "exclusive_group": "specialisation_pierre"
+    },
+    {
+      "id": "recolte_papyrus",
+      "level": 7,
+      "name": "Récolte de Papyrus",
+      "age": "Pierre",
+      "description": "Spécialisation : améliore grandement la production de papyrus.",
+      "cost": { "research_points": 750, "gold": 75 },
+      "prerequisites": ["architecte"],
+      "effect": { "resource_bonus": { "papyrus": 15 } },
+      "category": "economy",
+      "exclusive_group": "specialisation_pierre"
+    },
+    {
+      "id": "forge_primitive",
+      "level": 7,
+      "name": "Forge Primitive",
+      "age": "Pierre",
+      "description": "Spécialisation : améliore grandement la production de fer.",
+      "cost": { "research_points": 750, "gold": 75 },
+      "prerequisites": ["architecte"],
+      "effect": { "resource_bonus": { "iron": 15 } },
+      "category": "economy",
+      "exclusive_group": "specialisation_pierre"
+    },
+    {
+      "id": "irrigation",
+      "level": 8,
+      "name": "Irrigation",
+      "age": "Pierre",
+      "description": "Canaux d'irrigation : augmente la production de céréales de toutes vos villes.",
+      "cost": { "research_points": 1000, "gold": 2000 },
+      "prerequisites": ["architecte"],
+      "effect": { 
+        "resource_bonus": { "cereal": 30 }
+      },
+      "category": "economy"
+    },
+    {
+      "id": "ressources_avancees",
+      "level": 9,
+      "name": "Ressources Avancées",
+      "age": "Fer",
+      "description": "Débloque l'exploitation des ressources précieuses : marbre, vin, chevaux et verre.",
+      "cost": { "research_points": 250, "gold": 100 },
+      "prerequisites": ["irrigation"],
+      "effect": { "unlock_resources": ["marble", "wine", "horse", "glass"] },
+      "category": "economy"
+    },
+    {
+      "id": "recolte_optimisee",
+      "level": 13,
+      "name": "Récolte Optimisée",
+      "age": "Fer",
+      "description": "Augmente la production de toutes les ressources.",
+      "cost": { "research_points": 450, "gold": 200 },
+      "prerequisites": ["ressources_avancees"],
+      "effect": { "production_bonus": { "all": 10 } },
+      "category": "economy"
+    },
+    {
+      "id": "sablier",
+      "level": 1,
+      "name": "Sablier",
+      "age": "Pierre",
+      "description": "Fini les pertes de temps sur les chantiers: Permet de terminer instantanément les constructions quand il reste moins de 30 secondes.",
+      "cost": { "research_points": 50 },
+      "prerequisites": [],
+      "effect": { 
+        "unlock": "sablier",
+        "instant_finish_threshold": 30
+      },
+      "category": "science"
+    },
+    {
+      "id": "nombre_or",
+      "level": 2,
+      "name": "Nombre d'Or",
+      "age": "Pierre",
+      "description": "Construire avec des proportions idéales réduit les coûts de construction.",
+      "cost": { "research_points": 75 },
+      "prerequisites": ["sablier"],
+      "effect": { "construction_cost_reduction": 4 },
+      "category": "science"
+    },
+    {
+      "id": "puits",
+      "level": 3,
+      "name": "Construction de Puits",
+      "age": "Pierre",
+      "description": "Améliore l'hygiène et la satisfaction de la population.",
+      "cost": { "research_points": 100 },
+      "prerequisites": ["nombre_or"],
+      "effect": { "satisfaction_bonus": 10 },
+      "category": "science"
+    },
+    {
+      "id": "ecriture",
+      "level": 4,
+      "name": "Écriture",
+      "age": "Pierre",
+      "description": "Augmente les points de recherche générés de 10%.",
+      "cost": { "research_points": 125, "gold": 50 },
+      "prerequisites": ["puits"],
+      "effect": { "research_points_bonus": 10 },
+      "category": "science"
+    },
+    {
+      "id": "mathematiques",
+      "level": 5,
+      "name": "Mathématiques",
+      "age": "Pierre",
+      "description": "Réduit les coûts de construction des bâtiments.",
+      "cost": { "research_points": 150, "gold": 60 },
+      "prerequisites": ["ecriture"],
+      "effect": { "construction_cost_reduction": 4 },
+      "category": "science",
+      "exclusive_group": "specialisation_science"
+    },
+    {
+      "id": "philosophie",
+      "level": 5,
+      "name": "Philosophie",
+      "age": "Pierre",
+      "description": "Améliore la satisfaction de la population.",
+      "cost": { "research_points": 150, "gold": 60 },
+      "prerequisites": ["ecriture"],
+      "effect": { 
+        "satisfaction_bonus": 10
+      },
+      "category": "science",
+      "exclusive_group": "specialisation_science"
+    },
+    {
+      "id": "outils_acier",
+      "level": 6,
+      "name": "Outils en Acier",
+      "age": "Pierre",
+      "description": "Outils en acier forgé : améliore la production de toutes les ressources de 5%.",
+      "cost": { "research_points": 200, "gold": 80 },
+      "prerequisites": ["ecriture"],
+      "effect": { 
+        "resource_bonus": {
+          "wood": 5,
+          "stone": 5,
+          "iron": 5,
+          "cereal": 5,
+          "papyrus": 5,
+          "marble": 5,
+          "wine": 5,
+          "horse": 5,
+          "glass": 5,
+          "coal": 5,
+          "gunpowder": 5,
+          "spices": 5,
+          "cotton": 5
+        },
+        "construction_speed_bonus": 5
+      },
+      "category": "science"
+    },
+    {
+      "id": "ingenierie",
+      "level": 11,
+      "name": "Ingénierie",
+      "age": "Fer",
+      "description": "Débloque des bâtiments avancés : ponts et aqueducs.",
+      "cost": { "research_points": 350, "gold": 150 },
+      "prerequisites": ["outils_acier"],
+      "effect": { 
+        "unlock": ["bridge", "aqueduct"],
+        "construction_time_reduction": 5
+      },
+      "category": "science"
+    },
+    {
+      "id": "cartographie",
+      "level": 10,
+      "name": "Cartographie",
+      "age": "Fer",
+      "description": "Améliore l'exploration des îles et révèle les ressources.",
+      "cost": { "research_points": 400, "gold": 175 },
+      "prerequisites": ["ingenierie"],
+      "effect": { "exploration_bonus": 15 },
+      "category": "science"
+    },
+    {
+      "id": "medecine",
+      "level": 8,
+      "name": "Médecine",
+      "age": "Fer",
+      "description": "Augmente la capacité de population et réduit la consommation de céréales.",
+      "cost": { "research_points": 300, "gold": 125 },
+      "prerequisites": ["outils_acier"],
+      "effect": { 
+        "population_capacity_bonus": 20,
+        "cereal_consumption_reduction": 10
+      },
+      "category": "science",
+      "exclusive_group": "alchimie_fer"
+    },
+    {
+      "id": "astronomie_avancee",
+      "level": 8,
+      "name": "Astronomie Avancée",
+      "age": "Fer",
+      "description": "Améliore grandement l'exploration et la navigation maritime.",
+      "cost": { "research_points": 300, "gold": 125 },
+      "prerequisites": ["outils_acier"],
+      "effect": { 
+        "exploration_range": 10,
+        "ship_speed_bonus": 5
+      },
+      "category": "science",
+      "exclusive_group": "alchimie_fer"
+    },
+    {
+      "id": "physique",
+      "level": 11,
+      "name": "Physique",
+      "age": "Découvertes",
+      "description": "Améliore la vitesse de recherche et débloque les machines.",
+      "cost": { "research_points": 500, "gold": 250 },
+      "prerequisites": ["cartographie"],
+      "effect": { 
+        "research_speed_bonus": 25,
+        "unlock": "machines"
+      },
+      "category": "science"
+    },
+    {
+      "id": "armee_metier",
+      "level": 1,
+      "name": "Armée de Métier",
+      "age": "Pierre",
+      "description": "Débloque la Caserne et l'infanterie légère.",
+      "cost": { "research_points": 100, "gold": 50 },
+      "prerequisites": [],
+      "effect": { 
+        "unlock_building": "Caserne",
+        "unlock": "infantry_light"
+      },
+      "category": "warfare"
+    },
+    {
+      "id": "premiers_heros",
+      "level": 2,
+      "name": "Premiers Héros",
+      "age": "Pierre",
+      "description": "Débloque l'académie des héros et permet de recruter votre premier héros légendaire.",
+      "cost": { "research_points": 350, "gold": 75 },
+      "prerequisites": ["armee_metier"],
+      "effect": { "unlock": "hero_academy", "special_action": "choose_first_hero" },
+      "category": "warfare"
+    },
+    {
+      "id": "archers",
+      "level": 3,
+      "name": "Archers",
+      "age": "Pierre",
+      "description": "Débloque le recrutement d'archers.",
+      "cost": { "research_points": 160, "gold": 70 },
+      "prerequisites": ["premiers_heros"],
+      "effect": { "unlock": "archers" },
+      "category": "warfare"
+    },
+    {
+      "id": "maitrise_epees",
+      "level": 3,
+      "name": "Maîtrise des Épées",
+      "age": "Pierre",
+      "description": "Débloque la construction de la Forge.",
+      "cost": { "research_points": 175, "gold": 80 },
+      "prerequisites": ["premiers_heros"],
+      "effect": { "unlock_building": "Forge" },
+      "category": "warfare"
+    },
+    {
+      "id": "muraille",
+      "level": 4,
+      "name": "Muraille",
+      "age": "Pierre",
+      "description": "Débloque la construction du Mur défensif.",
+      "cost": { "research_points": 200, "gold": 100 },
+      "prerequisites": ["maitrise_epees"],
+      "effect": { "unlock_building": "Muraille" },
+      "category": "warfare"
+    },
+    {
+      "id": "siege",
+      "level": 5,
+      "name": "Siège",
+      "age": "Pierre",
+      "description": "Débloque les Catapultes.",
+      "cost": { "research_points": 225, "gold": 125 },
+      "prerequisites": ["muraille"],
+      "effect": { "unlock": "catapults" },
+      "category": "warfare"
+    },
+    {
+      "id": "soumission_peuples",
+      "level": 6,
+      "name": "Soumission des Peuples",
+      "age": "Pierre",
+      "description": "Permet de capturer des unités ennemies lors des batailles.",
+      "cost": { "research_points": 250, "gold": 150 },
+      "prerequisites": ["siege"],
+      "effect": { "unlock": "capture_units" },
+      "category": "warfare"
+    },
+    {
+      "id": "astronomie_primitive",
+      "level": 1,
+      "name": "Astronomie Primitive",
+      "age": "Pierre",
+      "description": "Navigation par les étoiles : augmente la portée d'exploration.",
+      "cost": { "research_points": 100, "gold": 50 },
+      "prerequisites": [],
+      "effect": { "exploration_range": 5 },
+      "category": "marine"
+    },
+    {
+      "id": "expansion",
+      "level": 2,
+      "name": "Expansion",
+      "age": "Pierre",
+      "description": "Permet la construction de l'Ambassade et d'un second Port.",
+      "cost": { "research_points": 400, "gold": 60 },
+      "prerequisites": ["astronomie_primitive"],
+      "effect": { 
+        "unlock_building": "Ambassade",
+        "building_max_instances": { "Port": 2 }
+      },
+      "category": "marine"
+    },
+    {
+      "id": "barques",
+      "level": 3,
+      "name": "Barques",
+      "age": "Pierre",
+      "description": "Augmente la vitesse des bateaux de transport.",
+      "cost": { "research_points": 150, "gold": 75 },
+      "prerequisites": ["expansion"],
+      "effect": { "ship_speed_bonus": 10 },
+      "category": "marine"
+    },
+    {
+      "id": "chantier_naval",
+      "level": 4,
+      "name": "Chantier Naval",
+      "age": "Pierre",
+      "description": "Débloque la construction du Chantier Naval.",
+      "cost": { "research_points": 175, "gold": 85 },
+      "prerequisites": ["barques"],
+      "effect": { "unlock_building": "Chantier Naval" },
+      "category": "marine"
+    },
+    {
+      "id": "navigation",
+      "level": 5,
+      "name": "Navigation",
+      "age": "Fer",
+      "description": "Réduit les coûts de transport maritime.",
+      "cost": { "research_points": 200, "gold": 100 },
+      "prerequisites": ["barques"],
+      "effect": { "transport_cost_reduction": 10 },
+      "category": "marine"
+    },
+    {
+      "id": "caravelles",
+      "level": 6,
+      "name": "Caravelles",
+      "age": "Fer",
+      "description": "Débloque les Caravelles pour explorer.",
+      "cost": { "research_points": 300, "gold": 150 },
+      "prerequisites": ["navigation"],
+      "effect": { "unlock": "caravel" },
+      "category": "marine"
+    },
+    {
+      "id": "marine_marchande",
+      "level": 7,
+      "name": "Marine Marchande",
+      "age": "Fer",
+      "description": "Améliore les gains des routes maritimes.",
+      "cost": { "research_points": 400, "gold": 200 },
+      "prerequisites": ["caravelles"],
+      "effect": { "trade_bonus": 20 },
+      "category": "marine"
+    },
+    {
+      "id": "coming_soon_economy",
+      "level": 999,
+      "name": "Âge des Découvertes",
+      "age": "Découvertes",
+      "description": "De nouvelles recherches économiques seront disponibles prochainement...",
+      "cost": { "research_points": 0 },
+      "prerequisites": ["recolte_optimisee"],
+      "effect": { "coming_soon": true },
+      "category": "economy"
+    },
+    {
+      "id": "coming_soon_science",
+      "level": 999,
+      "name": "Âge des Découvertes",
+      "age": "Découvertes",
+      "description": "De nouvelles recherches scientifiques seront disponibles prochainement...",
+      "cost": { "research_points": 0 },
+      "prerequisites": ["physique"],
+      "effect": { "coming_soon": true },
+      "category": "science"
+    },
+    {
+      "id": "coming_soon_warfare",
+      "level": 999,
+      "name": "Âge des Découvertes",
+      "age": "Découvertes",
+      "description": "De nouvelles recherches militaires seront disponibles prochainement...",
+      "cost": { "research_points": 0 },
+      "prerequisites": ["soumission_peuples"],
+      "effect": { "coming_soon": true },
+      "category": "warfare"
+    },
+    {
+      "id": "coming_soon_marine",
+      "level": 999,
+      "name": "Âge des Découvertes",
+      "age": "Découvertes",
+      "description": "De nouvelles recherches maritimes seront disponibles prochainement...",
+      "cost": { "research_points": 0 },
+      "prerequisites": ["marine_marchande"],
+      "effect": { "coming_soon": true },
+      "category": "marine"
+    }
+  ],
+  "categories": ["economy", "science", "warfare", "marine"]
+}

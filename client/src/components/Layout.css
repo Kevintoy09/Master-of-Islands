@@ -1,0 +1,32 @@
+/* Layout responsive pour HeaderBar et BottomNavBar */
+.layout-container {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 9vh; /* BottomNavBar agrandie pour smartphone */
+  padding-top: 15vh; /* HeaderBar */
+  box-sizing: border-box;
+}
+
+/* Protection pour très petits écrans */
+@media (max-height: 500px) {
+  .layout-container {
+    padding-top: 105px; /* Hauteur fixe minimum pour HeaderBar réduite */
+    padding-bottom: 58px; /* Hauteur fixe minimum pour BottomNavBar agrandie */
+  }
+}
+
+/* Protection pour très grands écrans */
+@media (min-height: 1200px) {
+  .layout-container {
+    padding-top: 135px; /* Hauteur fixe maximum pour HeaderBar réduite */
+    padding-bottom: 85px; /* Hauteur fixe maximum pour BottomNavBar agrandie */
+  }
+}
+
+/* Optimisation pour tablettes en mode portrait */
+@media (min-height: 800px) and (max-height: 1199px) {
+  .layout-container {
+    padding-top: clamp(105px, 15vh, 135px);
+    padding-bottom: clamp(58px, 9vh, 85px);
+  }
+}

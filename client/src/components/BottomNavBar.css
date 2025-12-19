@@ -1,0 +1,192 @@
+.bottom-nav-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 9vh; /* Hauteur augmentée pour smartphone */
+  min-height: 65px; /* Hauteur minimum augmentée */
+  max-height: 85px; /* Hauteur maximum augmentée */
+  background: var(--bg-secondary);
+  border-top: 3px solid var(--accent-primary);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column; /* Disposition verticale pour 2 lignes */
+  justify-content: center;
+  align-items: stretch;
+  z-index: 999;
+  font-family: var(--font-primary);
+  padding: 4px 8px; /* Padding augmenté pour smartphone */
+  overflow: hidden;
+}
+
+.bottom-nav-bar::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-primary);
+}
+
+.nav-btn {
+  background: var(--accent-primary);
+  border: 2px solid var(--bronze);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-weight: bold;
+  font-size: 1.0rem; /* Taille de police augmentée */
+  padding: 8px 12px; /* Padding augmenté */
+  border-radius: var(--border-radius-medium);
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 75px; /* Largeur minimum augmentée */
+  position: relative; /* Pour la pastille de notification */
+  flex: 0 0 auto; /* Ne pas rétrécir */
+}
+
+.nav-btn:hover {
+  background: var(--hover-gold);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.nav-btn:active, .nav-btn:focus, .nav-btn.active {
+  background: var(--roman-red);
+  color: var(--text-light);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px rgba(245, 245, 220, 0.5);
+  transform: translateY(0);
+}
+
+/* Lignes dans la barre de navigation */
+.nav-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+}
+
+.nav-resources-line {
+  padding-bottom: 1px;
+}
+
+.nav-buttons-line {
+  padding-top: 2px;
+}
+
+/* Boutons de ressources du joueur (cliquables) */
+.nav-resource-btn {
+  background: var(--accent-primary);
+  border: 1px solid var(--bronze);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  flex: 0 0 auto;
+  min-width: 50px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-resource-btn:hover {
+  background: var(--hover-gold);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.nav-resource-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+  .bottom-nav-bar {
+    height: 8vh; /* Adapté aux nouvelles tailles */
+    min-height: 58px;
+    padding: 3px 6px;
+  }
+  .nav-line {
+    gap: 6px;
+  }
+  .nav-btn {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    min-width: 65px;
+  }
+  .nav-resource-btn {
+    font-size: 0.8rem;
+    padding: 3px 6px;
+    min-width: 45px;
+  }
+}
+
+/* Badge de notification pour la barre de navigation */
+.nav-btn .notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Badge de messagerie pour la barre de navigation (coin supérieur gauche) */
+.nav-btn .message-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  background: #2196f3;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bounce {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-8px); 
+  }
+}

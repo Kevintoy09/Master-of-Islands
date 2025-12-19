@@ -1,0 +1,1420 @@
+/* ========== GESTION MOBILE VIEWPORT ========== */
+/* Forcer le viewport mobile à utiliser la hauteur réelle sans la barre de navigation */
+:root {
+  --vh: 1vh;
+}
+
+/* ⏱️ Animation pour le timer en urgence */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@supports (height: 100dvh) {
+  .battlefield-mobile-container {
+    height: 100dvh !important; /* Dynamic Viewport Height - exclut la barre de navigation */
+  }
+}
+
+@supports not (height: 100dvh) {
+  .battlefield-mobile-container {
+    height: calc(var(--vh, 1vh) * 100) !important;
+    height: calc(100vh - env(keyboard-inset-height, 0px)) !important;
+  }
+}
+
+/* Forcer l'utilisation de la hauteur calculée dynamiquement */
+.battlefield-mobile-container {
+  min-height: calc(var(--vh, 1vh) * 100 - 156px) !important; /* 156px = topbar (56px) + bottombar (40px) + navigation (60px) */
+}
+
+.battlefield-container {
+  top: 65px; /* Hauteur du topbar desktop par défaut */
+}
+
+/* Règles spécifiques pour mobile - PRIORITÉ ABSOLUE */
+@media (max-width: 768px) {
+  .battlefield-container {
+    top: 32px !important; /* Hauteur du topbar mobile compact réduit */
+    bottom: 134px !important; /* 50px (bottombar) + 60px (nav) + 14px (marge) */
+  }
+  
+  .battlefield-bottombar {
+    bottom: 0 !important;
+    z-index: 2000 !important;
+    min-height: 60px !important;
+    padding: 0.3rem 1rem !important;
+    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  
+  /* Boutons compacts sur mobile - SPÉCIFICITÉ ÉLEVÉE */
+  .battlefield-bottombar .battlefield-bottombar .btn-compact,
+  .battlefield-bottombar .btn-compact.btn-compact {
+    padding: 0.15rem 0.4rem !important; /* Padding légèrement augmenté */
+    font-size: 0.7rem !important; /* Texte un peu plus grand */
+    min-height: 28px !important; /* Hauteur légèrement augmentée */
+    border-radius: 3px !important;
+    line-height: 1.1 !important; /* Espacement vertical amélioré */
+    height: 22px !important; /* Force la hauteur exacte */
+  }
+}
+
+/* ========== BANDEAU SUPÉRIEUR RESPONSIVE ========== */
+.battlefield-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 2px solid #0f3460;
+  font-family: 'TrajanPro-Bold', serif;
+  z-index: 1001;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  
+  /* VERSION DESKTOP PAR DÉFAUT */
+  padding: 0.6rem 1.5rem;
+  height: 65px;
+  font-size: 0.95rem;
+}
+
+/* VERSION MOBILE COMPACTE */
+@media (max-width: 768px) {
+  .battlefield-topbar {
+    padding: 0.15rem 0.3rem !important;
+    height: auto !important;
+    min-height: 32px !important;
+    max-height: 40px !important;
+    font-size: 0.6rem !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Équipes compactes */
+.topbar-team {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .topbar-team {
+    gap: 0.15rem !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+    flex: 0 1 33% !important; /* Max 33% de la largeur */
+    min-width: 0 !important;
+    max-width: 33% !important;
+  }
+}
+
+.team-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffd700;
+  white-space: nowrap;
+}
+
+.team-title .title-icon {
+  margin-left: 0.3rem;
+}
+
+@media (max-width: 768px) {
+  .team-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0rem;
+    font-size: 0.5rem !important;
+  }
+  
+  .team-title .title-icon {
+    margin-left: 0;
+    order: 2;
+  }
+  
+  .team-title .title-text {
+    order: 1;
+  }
+}
+
+.team-stats-compact {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .team-stats-compact {
+    gap: 0.15rem;
+    padding: 0.1rem 0.2rem !important;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+    min-width: 0 !important;
+  }
+}
+
+.battlefield-stat-compact {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.1rem;
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+.battlefield-stat-label {
+  font-size: 0.75rem;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.battlefield-stat-num {
+  font-size: 0.9rem;
+  color: #ecf0f1;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .battlefield-stat-label {
+    font-size: 0.4rem !important;
+  }
+  
+  .battlefield-stat-num {
+    font-size: 0.5rem !important;
+  }
+}
+
+.moral-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.moral-bar-mini {
+  width: 50px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 768px) {
+  .moral-bar-mini {
+    width: 22px;
+    height: 4px;
+  }
+}
+
+.moral-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+/* Centre compact */
+.topbar-center-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  flex: 1;
+  max-width: 200px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .topbar-center-compact {
+    gap: 0.25rem;
+    max-width: 120px;
+  }
+}
+
+.round-compact {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  padding: 0.3rem 0.6rem;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .round-compact {
+    font-size: 0.55rem;
+    padding: 0.15rem 0.3rem;
+  }
+}
+
+/* Badge joueur mini */
+.player-badge-mini {
+  padding: 0.35rem 0.7rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .player-badge-mini {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.5rem;
+  }
+}
+
+.player-badge-mini.att {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: 1px solid #ff6b6b;
+}
+
+.player-badge-mini.def {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: 1px solid #5dade2;
+}
+
+/* Timer mini circulaire */
+.timer-mini {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffd700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 0 0 3px #1a1a2e;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .timer-mini {
+    width: 22px;
+    height: 22px;
+    font-size: 0.6rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #1a1a2e;
+  }
+}
+
+/* Alignement droite pour défenseur */
+.topbar-team.defender {
+  flex-direction: row-reverse;
+}
+
+.topbar-team.defender .team-stats-compact {
+  flex-direction: row-reverse;
+}
+
+.topbar-team.defender .stat-compact {
+  align-items: flex-end;
+}
+
+/* ========== BANDEAU INFÉRIEUR ========== */
+.battlefield-bottombar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(90deg, #232b3a 0%, #34495e 100%);
+  border-top: 2px solid #ecf0f1;
+  min-height: 44px;
+  font-size: 0.95rem;
+  font-family: 'TrajanPro-Regular', serif;
+  z-index: 1001;
+  position: fixed;
+  bottom: env(safe-area-inset-bottom, 60px);
+  left: 0;
+  right: 0;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+.bottombar-section {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+.bottombar-info {
+  flex: 2;
+}
+.bottombar-actions {
+  flex: 1;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.bottombar-coords, .bottombar-terrain, .bottombar-zone {
+  color: #ecf0f1;
+  font-size: 1rem;
+}
+.bottombar-bonuses {
+  color: #f39c12;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+.bottombar-hint {
+  color: #bdc3c7;
+  font-style: italic;
+}
+
+/* ========== BOUTONS COMPACTS - PRIORITÉ ABSOLUE ========== */
+.battlefield-bottombar .btn-compact {
+  padding: 0.24rem 0.5rem !important; /* Réduit de 40% : 0.4rem -> 0.24rem, 0.8rem -> 0.5rem */
+  font-size: 0.75rem !important; /* Réduit de 0.85rem à 0.75rem */
+  font-weight: bold !important;
+  border: none !important;
+  border-radius: 4px !important; /* Légèrement réduit */
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-family: 'TrajanPro-Regular', serif !important;
+  min-width: auto !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  outline: none !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  line-height: 1.2 !important; /* Optimise la hauteur */
+  height: auto !important;
+  line-height: normal !important;
+}
+
+.simple-battlefield-v2-fullscreen .battlefield-bottombar .btn-compact.btn-primary,
+.SimpleBattlefieldV2 .battlefield-bottombar .btn-compact.btn-primary,
+.battlefield-bottombar .btn-compact.btn-primary {
+  background: linear-gradient(135deg, #27ae60, #229954) !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3) !important;
+  border: 2px solid #229954 !important;
+  font-family: inherit !important;
+  font-weight: bold !important;
+}
+
+.simple-battlefield-v2-fullscreen .battlefield-bottombar .btn-compact.btn-primary:hover,
+.SimpleBattlefieldV2 .battlefield-bottombar .btn-compact.btn-primary:hover,
+.battlefield-bottombar .btn-compact.btn-primary:hover {
+  background: linear-gradient(135deg, #229954, #1e8449) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4) !important;
+  border-color: #1e8449 !important;
+}
+
+.simple-battlefield-v2-fullscreen .battlefield-bottombar .btn-compact.btn-warning,
+.SimpleBattlefieldV2 .battlefield-bottombar .btn-compact.btn-warning,
+.battlefield-bottombar .btn-compact.btn-warning {
+  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(243, 156, 18, 0.3) !important;
+  border: 2px solid #e67e22 !important;
+  font-family: inherit !important;
+  font-weight: bold !important;
+}
+
+.simple-battlefield-v2-fullscreen .battlefield-bottombar .btn-compact.btn-warning:hover,
+.SimpleBattlefieldV2 .battlefield-bottombar .btn-compact.btn-warning:hover,
+.battlefield-bottombar .btn-compact.btn-warning:hover {
+  background: linear-gradient(135deg, #e67e22, #d35400) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(243, 156, 18, 0.4) !important;
+  border-color: #d35400 !important;
+}
+
+.simple-battlefield-v2-fullscreen .battlefield-bottombar .btn-compact.btn-secondary,
+.SimpleBattlefieldV2 .battlefield-bottombar .btn-compact.btn-secondary,
+.battlefield-bottombar .btn-compact.btn-secondary {
+  background: linear-gradient(135deg, #8e44ad, #7d3c98) !important;
+  color: white !important;
+  box-shadow: 0 2px 4px rgba(142, 68, 173, 0.3) !important;
+  border: 2px solid #7d3c98 !important;
+  font-family: inherit !important;
+  font-weight: bold !important;
+}
+
+.simple-battlefield-v2-fullscreen .battlefield-bottombar .btn-compact.btn-secondary:hover,
+.SimpleBattlefieldV2 .battlefield-bottombar .btn-compact.btn-secondary:hover,
+.battlefield-bottombar .btn-compact.btn-secondary:hover {
+  background: linear-gradient(135deg, #7d3c98, #6c3483) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(142, 68, 173, 0.4) !important;
+  border-color: #6c3483 !important;
+}
+
+/* Annulation de TOUS les autres effets de bouton */
+.battlefield-bottombar .btn-compact::before,
+.battlefield-bottombar .btn-compact::after {
+  display: none !important;
+  content: none !important;
+}
+
+.battlefield-bottombar .btn-compact:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3) !important;
+}
+
+.battlefield-bottombar .btn-compact:active {
+  transform: translateY(0px) !important;
+}
+
+/* Suppression de TOUS les styles de boutons génériques */
+.battlefield-bottombar .btn-compact[class*="btn-"] {
+  background-image: none !important;
+  text-shadow: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+/* ========== STYLES FULLSCREEN BATTLEFIELD ========== */
+.simple-battlefield-v2-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: hidden;
+  font-family: 'TrajanPro-Regular', 'Arial', serif;
+  color: #ecf0f1;
+}
+
+/* ========== EN-TÊTE TACTIQUE ENRICHI ========== */
+.battlefield-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 1rem 2rem;
+  background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+  border-bottom: 2px solid #ecf0f1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  min-height: 100px;
+}
+
+.battle-status {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.battle-info {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.round-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 200px;
+}
+
+.battlefield-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 250px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #34495e;
+}
+
+.round-number {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #ecf0f1;
+  font-family: 'TrajanPro-Bold', serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.battle-id, .game-phase, .current-player, .battlefield-template, .hex-count, .units-deployed, .target-city {
+  font-size: 0.9rem;
+  color: #bdc3c7;
+  font-family: monospace;
+  opacity: 0.9;
+}
+
+.tactical-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #34495e;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+  min-width: 280px;
+  max-width: 300px;
+}
+
+.tactical-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.tactical-title {
+  font-weight: bold;
+  color: #f39c12;
+  font-size: 1rem;
+}
+
+.tactical-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tactical-coords, .tactical-terrain, .tactical-zone, .defense-bonus, .attack-penalty, .movement-bonus {
+  font-size: 0.85rem;
+  color: #ecf0f1;
+}
+
+.defense-bonus {
+  color: #2ecc71;
+}
+
+.attack-penalty {
+  color: #e74c3c;
+}
+
+.movement-bonus {
+  color: #3498db;
+}
+
+.army-stats-detailed {
+  display: flex;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.attacker-stats, .defender-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border: 1px solid #34495e;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+  min-width: 220px;
+}
+
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.team-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.team-label {
+  font-weight: bold;
+  font-size: 1rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.team-advantage {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.attacker-stats .team-label {
+  color: #e74c3c;
+}
+
+.defender-stats .team-label {
+  color: #3498db;
+}
+
+.units-count, .moral-value, .unit-breakdown {
+  font-size: 0.85rem;
+  color: #ecf0f1;
+}
+
+.unit-breakdown {
+  font-size: 0.8rem;
+  color: #bdc3c7;
+  font-style: italic;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attacker-stats .team-label {
+  color: #e74c3c;
+}
+
+.defender-stats .team-label {
+  color: #3498db;
+}
+
+.units-count, .moral-value {
+  font-size: 0.85rem;
+  color: #ecf0f1;
+}
+
+/* ========== CONTRÔLES UNIFIÉS ========== */
+.battlefield-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* ========== STYLES BOUTONS UNIFORMISÉS THÈME JEU ========== */
+.btn-game {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'TrajanPro-Regular', serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-game::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-game:hover::before {
+  left: 100%;
+}
+
+.btn-game:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.btn-game:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: #ffffff;
+  border: 2px solid #c0392b;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  border-color: #a93226;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: #ffffff;
+  border: 2px solid #7f8c8d;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #7f8c8d 0%, #6c7b7d 100%);
+  border-color: #6c7b7d;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: #ffffff;
+  border: 2px solid #e67e22;
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  border-color: #d35400;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: #ffffff;
+  border: 2px solid #c0392b;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  border-color: #a93226;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: #ffffff;
+  border: 2px solid #2980b9;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+  border-color: #21618c;
+}
+
+.btn-dark {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  color: #ecf0f1;
+  border: 2px solid #2c3e50;
+}
+
+.btn-dark:hover {
+  background: linear-gradient(135deg, #2c3e50 0%, #1b2631 100%);
+  border-color: #1b2631;
+}
+
+/* ========== CHAMP DE BATAILLE PRINCIPAL ========== */
+.battlefield-container {
+  flex: 1;
+  position: relative;
+  overflow: visible;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: calc(100vh - 160px); /* Soustrait les 2 barres (56px + padding + border = ~80px chacune) */
+}
+
+.battlefield-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hexagonal-grid-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 10;
+  pointer-events: auto;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hexagonal-grid {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  transform: none;
+  user-select: none;
+  z-index: 10;
+  opacity: 1;
+  pointer-events: auto;
+  background: none;
+}
+
+/* ========== STYLES HEXAGONES ========== */
+.hex {
+  transition: all 0.2s ease;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  fill-opacity: 0.5; /* Transparence par défaut pour voir l'image de fond */
+}
+
+.hex:hover {
+  filter: brightness(1.2) !important;
+  stroke: #e5ff00 !important;
+  stroke-width: 2.2 !important;
+  cursor: pointer;
+  fill-opacity: 0.6 !important;
+}
+
+.hex.selected {
+  stroke-width: 2.5 !important;
+  filter: brightness(1.3) !important;
+  fill-opacity: 0.7 !important;
+}
+
+/* Zones de déploiement */
+.hex.attacker-deployment {
+  stroke: #e74c3c;
+  stroke-dasharray: 5,5;
+  animation: pulseBorder 2s infinite;
+}
+
+.hex.defender-deployment {
+  stroke: #3498db;
+  stroke-dasharray: 5,5;
+  animation: pulseBorder 2s infinite;
+}
+
+@keyframes pulseBorder {
+  0%, 100% { stroke-opacity: 0.6; }
+  50% { stroke-opacity: 1.0; }
+}
+
+/* ========== MOBILE RESPONSIVE - CONSOLIDÉ ========== */
+@media (max-width: 768px) {
+  /* Bandeau supérieur mobile */
+  .battlefield-topbar {
+    flex-direction: row !important;
+    padding: 0.5rem !important;
+    min-height: 60px !important;
+    gap: 0.3rem !important;
+  }
+  
+  .topbar-section {
+    justify-content: center !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* Règle topbar-label consolidée plus bas */
+  
+  .topbar-units, .topbar-moral {
+    font-size: 0.8rem !important;
+  }
+  
+  .topbar-zoom {
+    display: block !important;
+    order: 3 !important;
+    font-size: 0.7rem !important;
+    opacity: 0.8 !important;
+    background: rgba(0,0,0,0.3) !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 4px !important;
+    margin-left: 0 !important;
+  }
+  
+  /* ========== BANDEAU INFÉRIEUR MOBILE ========== */
+  .battlefield-bottombar {
+    flex-direction: column !important;
+    padding: 0.5rem !important;
+    height: auto !important;
+    min-height: 90px !important;
+    gap: 0.5rem !important;
+  }
+  
+  .bottombar-section {
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 0.5rem !important;
+  }
+  
+  .bottombar-info {
+    order: 1 !important;
+    text-align: center !important;
+  }
+  
+  .bottombar-actions {
+    order: 2 !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+  
+  .bottombar-coords, .bottombar-terrain, .bottombar-bonuses {
+    font-size: 0.8rem !important;
+  }
+  
+  .bottombar-hint {
+    font-size: 0.8rem !important;
+  }
+  
+  /* ========== BOUTONS MOBILE ========== */
+  .battlefield-bottombar .btn-compact {
+    padding: 0.5rem 0.6rem !important;
+    font-size: 0.7rem !important;
+    min-width: 70px !important;
+    margin: 0.1rem !important;
+    min-height: 36px !important; /* Taille minimale pour tactile */
+    touch-action: manipulation !important;
+  }
+  
+  .battlefield-bottombar .btn-compact:active {
+    transform: scale(0.95) !important;
+    background-color: rgba(255,255,255,0.2) !important;
+  }
+  
+  /* ========== AJUSTEMENT CONTAINER MOBILE ========== */
+  .battlefield-container {
+    top: 70px !important;
+    bottom: 90px !important;
+  }
+  
+  /* ========== ANCIENS STYLES CONSERVÉS ========== */
+  .battlefield-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    min-height: auto;
+  }
+  
+  .battle-status {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+  
+  .army-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tactical-display {
+    display: none; /* Masquer sur mobile pour économiser l'espace */
+  }
+  
+  .battlefield-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .btn-game {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* ========== TRÈS PETIT ÉCRAN - OPTIMISATION SUPPLÉMENTAIRE ========== */
+  .battlefield-topbar {
+    min-height: 60px !important;
+    padding: 0.3rem !important;
+  }
+  
+  .topbar-section {
+    gap: 0.5rem !important;
+  }
+  
+  .topbar-label {
+    display: inline-block !important; /* Affiche les labels "Attaquant" et "Défenseur" */
+    font-size: 0.72rem !important; /* Taille optimisée */
+    margin-right: 0.25rem !important; /* Espacement équilibré */
+    font-weight: bold !important; /* Meilleure lisibilité */
+  }
+  
+  .topbar-center {
+    font-size: 0.9rem !important;
+  }
+  
+  .topbar-units, .topbar-moral {
+    font-size: 0.7rem !important;
+  }
+  
+  .battlefield-bottombar {
+    min-height: 80px !important;
+    padding: 0.3rem !important;
+  }
+  
+  .bottombar-coords, .bottombar-terrain, .bottombar-bonuses {
+    font-size: 0.7rem !important;
+  }
+  
+  .battlefield-bottombar .btn-compact {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.6rem !important;
+    min-width: 60px !important;
+    min-height: 32px !important; /* Taille minimale pour très petit écran */
+  }
+  
+  /* Permettre l'affichage de tous les boutons en les organisant mieux */
+  .bottombar-actions {
+    flex-wrap: wrap !important;
+    gap: 0.2rem !important;
+    max-height: 60px !important;
+    overflow-y: auto !important;
+  }
+  
+  .battlefield-container {
+    top: 60px !important;
+    bottom: 80px !important;
+  }
+  
+  /* ========== ANCIENS STYLES CONSERVÉS ========== */
+  .battlefield-header {
+    padding: 0.5rem;
+  }
+  
+  .round-number {
+    font-size: 1.2rem;
+  }
+  
+  .btn-game {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    min-width: 80px;
+  }
+  
+  .army-stats {
+    display: none; /* Masquer sur très petit écran */
+  }
+}
+
+/* ========== ZOOM & TOUCH MOBILE ========== */
+.battlefield-container {
+  touch-action: auto !important; /* Permettre TOUS les gestes tactiles */
+  -ms-touch-action: auto !important;
+  user-select: none !important; /* Évite la sélection de texte accidentelle */
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.battlefield-layers-container {
+  transition: none !important; /* Pas de transition pour éviter les conflits */
+  transform-origin: center center !important; /* Centre du zoom */
+  backface-visibility: hidden !important; /* Optimisation performance */
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Permettre TOUS les gestes tactiles sans restriction */
+.simple-battlefield-v2-fullscreen {
+  touch-action: auto !important; /* Aucune restriction tactile */
+  -ms-touch-action: auto !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  /* Optimisations performances tactiles */
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.simple-battlefield-v2-fullscreen {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* ========== ACCESSIBILITY ========== */
+.btn-game:focus {
+  outline: 2px solid #f39c12;
+  outline-offset: 2px;
+}
+
+.hex:focus {
+  outline: none;
+  stroke: #f39c12;
+  stroke-width: 3;
+}
+
+/* ========== MASQUER LES BARRES DU JEU PRINCIPAL ========== */
+/* Masquer HeaderBar et BottomNavBar quand SimpleBattlefieldV2 est ouvert */
+body.battlefield-fullscreen .header-bar {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  z-index: -999 !important;
+  pointer-events: none !important;
+}
+
+body.battlefield-fullscreen .bottom-nav-bar {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  z-index: -999 !important;
+  pointer-events: none !important;
+}
+
+/* S'assurer que le battlefield utilise tout l'écran */
+body.battlefield-fullscreen {
+  overflow: hidden !important;
+}
+
+body.battlefield-fullscreen .layout-container {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ========================================
+   🔔 NOTIFICATIONS DE BATAILLE
+   ======================================== */
+
+/* Badge de notification dans la topbar */
+.notification-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+  animation: bellRing 2s ease-in-out infinite;
+}
+
+.notification-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.6);
+}
+
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(-10deg); }
+  20%, 40% { transform: rotate(10deg); }
+}
+
+.notification-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.notification-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #fff;
+  color: #e74c3c;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Overlay de la liste */
+.notifications-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  z-index: 10001;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Panneau des notifications */
+.notifications-panel {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 70vh;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* En-tête */
+.notifications-header {
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.notifications-header button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notifications-header button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Liste */
+.notifications-list {
+  max-height: calc(70vh - 64px);
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.no-notifications {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+/* Item de notification */
+.notification-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  position: relative;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.notification-item.unread {
+  border-left: 4px solid #3498db;
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.notification-item.victory {
+  border-left-color: #2ecc71;
+}
+
+.notification-item.defeat {
+  border-left-color: #e74c3c;
+}
+
+.notification-item .notification-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.notification-battle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 4px;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.notification-unread-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  background: #3498db;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .notification-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notification-icon {
+    font-size: 18px;
+  }
+
+  .notifications-panel {
+    width: 95%;
+    max-height: 80vh;
+  }
+
+  .notification-item {
+    padding: 10px;
+  }
+}

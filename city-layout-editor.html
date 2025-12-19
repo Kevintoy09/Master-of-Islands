@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur de City Layouts - Master of Islands</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Panneau gauche - Liste des slots */
+        .sidebar {
+            width: 320px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 10;
+        }
+        
+        .sidebar h1 {
+            font-size: 20px;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .layout-selector {
+            margin-bottom: 20px;
+        }
+        
+        .layout-selector label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        
+        .layout-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .layout-selector select:hover {
+            border-color: #667eea;
+        }
+        
+        .slots-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .slot-item {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .slot-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        
+        .slot-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .slot-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .slot-coords {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .slot-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge-general {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .badge-defensive {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .badge-marine {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .badge-locked {
+            background: #718096;
+            color: white;
+        }
+        
+        /* Zone centrale - Canvas */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .canvas-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .canvas-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .canvas-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .info-label {
+            font-weight: 600;
+        }
+        
+        .info-value {
+            padding: 4px 10px;
+            background: #edf2f7;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .canvas-wrapper {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #canvas {
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: crosshair;
+            background: #f7fafc;
+        }
+        
+        /* Panneau droit - Contrôles */
+        .controls-panel {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: -2px 0 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+        
+        .controls-section {
+            margin-bottom: 25px;
+        }
+        
+        .controls-section h3 {
+            font-size: 16px;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+        
+        .control-group input[type="number"],
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .control-group input[type="number"]:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .zoom-controls input[type="range"] {
+            flex: 1;
+        }
+        
+        .zoom-value {
+            min-width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
+        
+        .preview-mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #edf2f7;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .preview-mode-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .preview-mode-toggle label {
+            cursor: pointer;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        
+        .preview-warning {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #856404;
+        }
+        
+        .keyboard-shortcuts {
+            font-size: 12px;
+            color: #718096;
+            line-height: 1.6;
+        }
+        
+        .keyboard-shortcuts strong {
+            color: #4a5568;
+        }
+        
+        .success-msg {
+            background: #c6f6d5;
+            border: 2px solid #48bb78;
+            color: #22543d;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #edf2f7;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Panneau gauche - Liste des slots -->
+        <div class="sidebar">
+            <h1>🏛️ Éditeur de City Layouts</h1>
+            
+            <div class="layout-selector">
+                <label>Sélectionner un layout :</label>
+                <select id="layoutSelect" onchange="switchLayout()">
+                    <option value="">-- Choisir un layout --</option>
+                </select>
+            </div>
+            
+            <h3 style="font-size: 14px; color: #4a5568; margin-bottom: 10px;">📍 Emplacements de bâtiments</h3>
+            <div id="slotsList" class="slots-list">
+                <!-- Les slots seront ajoutés ici dynamiquement -->
+            </div>
+        </div>
+        
+        <!-- Zone centrale - Canvas -->
+        <div class="canvas-area">
+            <div class="canvas-header">
+                <div class="canvas-title" id="canvasTitle">Chargement...</div>
+                <div class="canvas-info">
+                    <div class="info-item">
+                        <span class="info-label">X:</span>
+                        <input type="number" id="coordX" class="info-value" readonly style="width: 80px; border: none; text-align: center;">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Y:</span>
+                        <input type="number" id="coordY" class="info-value" readonly style="width: 80px; border: none; text-align: center;">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-wrapper">
+                <canvas id="canvas" width="900" height="700"></canvas>
+            </div>
+        </div>
+        
+        <!-- Panneau droit - Contrôles -->
+        <div class="controls-panel">
+            <div class="controls-section">
+                <h3>⚙️ Contrôles</h3>
+                
+                <div class="preview-mode-toggle">
+                    <input type="checkbox" id="previewMode" onchange="togglePreviewMode(this.checked)">
+                    <label for="previewMode">
+                        <span>🎮 Mode Aperçu (comme le jeu)</span>
+                    </label>
+                </div>
+                
+                <div id="previewWarning" class="preview-warning" style="display: none;">
+                    ⚠️ <strong>MODE APERÇU ACTIVÉ</strong><br>
+                    Les slots sont affichés comme dans CityPage. Cliquez pour positionner avec la transformation appliquée.
+                </div>
+                
+                <div class="control-group">
+                    <label>🔍 Zoom</label>
+                    <div class="zoom-controls">
+                        <input type="range" id="zoomSlider" min="10" max="200" value="100" oninput="updateZoom(this.value)">
+                        <span class="zoom-value" id="zoomValue">100%</span>
+                    </div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="fitToScreen()">📐 Ajuster à l'écran</button>
+            </div>
+            
+            <div class="controls-section">
+                <h3>💾 Actions</h3>
+                <button class="btn btn-primary" onclick="saveData()">💾 Sauvegarder (Ctrl+S)</button>
+                <button class="btn btn-secondary" onclick="undo()">↩️ Annuler (Ctrl+Z)</button>
+                <button class="btn btn-danger" onclick="resetPositions()">🔄 Réinitialiser les positions</button>
+            </div>
+            
+            <div class="controls-section">
+                <h3>⌨️ Raccourcis</h3>
+                <div class="keyboard-shortcuts">
+                    <strong>Ctrl+S</strong> : Sauvegarder<br>
+                    <strong>Ctrl+Z</strong> : Annuler<br>
+                    <strong>Flèches</strong> : Déplacer le slot sélectionné<br>
+                    <strong>Clic</strong> : Positionner le slot
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let universeData = null;
+        let currentLayoutId = null;
+        let currentLayout = null;
+        let selectedSlot = null;
+        let canvas = null;
+        let ctx = null;
+        let backgroundImage = null;
+        let zoomLevel = 1.0;
+        let history = [];
+        let previewMode = false; // Mode aperçu CityPage
+        
+        // Initialisation
+        window.onload = function() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            loadUniverseData();
+            setupEventListeners();
+        };
+        
+        function loadUniverseData() {
+            console.log('📂 Chargement de universe.json...');
+            
+            fetch('server/data/universe.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('Fichier introuvable');
+                    return response.json();
+                })
+                .then(data => {
+                    universeData = data;
+                    console.log('✅ Universe.json chargé avec succès');
+                    console.log('📊 City layouts trouvés:', Object.keys(data.city_layouts).length);
+                    populateLayoutSelector();
+                })
+                .catch(error => {
+                    console.error('❌ Erreur de chargement:', error);
+                    alert('⚠️ Erreur de chargement de universe.json\n\nAssurez-vous que le fichier city-layout-editor.html est dans le dossier game57/');
+                });
+        }
+        
+        function populateLayoutSelector() {
+            const select = document.getElementById('layoutSelect');
+            select.innerHTML = '<option value="">-- Choisir un layout --</option>';
+            
+            Object.keys(universeData.city_layouts).forEach(layoutId => {
+                const option = document.createElement('option');
+                option.value = layoutId;
+                option.textContent = layoutId;
+                select.appendChild(option);
+            });
+        }
+        
+        function switchLayout() {
+            const select = document.getElementById('layoutSelect');
+            const layoutId = select.value;
+            
+            if (!layoutId) return;
+            
+            currentLayoutId = layoutId;
+            currentLayout = universeData.city_layouts[layoutId];
+            selectedSlot = null;
+            
+            console.log('🏛️ Layout sélectionné:', layoutId);
+            console.log('📍 Nombre de slots:', currentLayout.slots.length);
+            
+            document.getElementById('canvasTitle').textContent = `Layout: ${layoutId} (${currentLayout.slots.length} slots)`;
+            
+            loadBackgroundImage();
+            populateSlotsList();
+        }
+        
+        function loadBackgroundImage() {
+            backgroundImage = new Image();
+            backgroundImage.onload = function() {
+                console.log('✅ Image de fond chargée:', currentLayout.background);
+                drawCanvas();
+                
+                // Ajuster automatiquement le zoom à l'écran
+                setTimeout(fitToScreen, 100);
+            };
+            backgroundImage.onerror = function() {
+                console.error('❌ Erreur de chargement de l\'image:', backgroundImage.src);
+                alert('⚠️ Image de fond introuvable : ' + currentLayout.background + '\n\nAssurez-vous que le fichier city-layout-editor.html est dans le dossier game57/');
+                drawCanvas();
+            };
+            
+            const bgPath = 'client/public/' + currentLayout.background;
+            console.log('📂 Tentative de chargement:', bgPath);
+            backgroundImage.src = bgPath;
+        }
+        
+        function populateSlotsList() {
+            const container = document.getElementById('slotsList');
+            container.innerHTML = '';
+            
+            if (!currentLayout || !currentLayout.slots) return;
+            
+            currentLayout.slots.forEach((slot, index) => {
+                const div = document.createElement('div');
+                div.className = 'slot-item';
+                
+                const badge = getSlotBadge(slot);
+                const coords = `x: ${Math.round(slot.x)}px, y: ${Math.round(slot.y)}px`;
+                
+                div.innerHTML = `
+                    <div class="slot-name">${slot.id} ${badge}</div>
+                    <div class="slot-coords">${coords}</div>
+                `;
+                
+                div.onclick = function() {
+                    selectSlot(slot, div);
+                };
+                
+                container.appendChild(div);
+            });
+        }
+        
+        function getSlotBadge(slot) {
+            const badges = {
+                'general': '<span class="slot-badge badge-general">GÉNÉRAL</span>',
+                'defensive': '<span class="slot-badge badge-defensive">DÉFENSIF</span>',
+                'marine': '<span class="slot-badge badge-marine">MARINE</span>'
+            };
+            
+            let badge = badges[slot.type] || '';
+            if (slot.locked) {
+                badge += '<span class="slot-badge badge-locked">🔒 VERROUILLÉ</span>';
+            }
+            return badge;
+        }
+        
+        function selectSlot(slot, divElement) {
+            // Retirer la sélection précédente
+            document.querySelectorAll('.slot-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Ajouter la nouvelle sélection
+            divElement.classList.add('selected');
+            selectedSlot = slot;
+            
+            // Mettre à jour les champs de coordonnées
+            document.getElementById('coordX').value = Math.round(slot.x);
+            document.getElementById('coordY').value = Math.round(slot.y);
+            
+            drawCanvas();
+        }
+        
+        function updateSlotPosition(slot, x, y) {
+            // Sauvegarder dans l'historique
+            history.push(JSON.stringify(universeData));
+            if (history.length > 50) history.shift();
+            
+            // Mettre à jour les coordonnées (valeurs en pixels 0-900 pour x, 0-700 pour y)
+            // Pas de clamping strict - on accepte toutes les valeurs pour flexibilité
+            slot.x = Math.round(x);
+            slot.y = Math.round(y);
+            
+            // Redessiner et rafraîchir la liste
+            drawCanvas();
+            populateSlotsList();
+            
+            // Resélectionner le slot
+            const items = document.querySelectorAll('.slot-item');
+            items.forEach(item => {
+                if (item.textContent.includes(slot.id)) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+        
+        function drawCanvas() {
+            // Nettoyer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessiner l'image de fond si elle est chargée
+            if (backgroundImage && backgroundImage.complete) {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            } else {
+                // Fond gris si pas d'image
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Dessiner les slots
+            if (!currentLayout || !currentLayout.slots) return;
+            
+            currentLayout.slots.forEach(slot => {
+                // Les coordonnées sont en pixels absolus (0-900 pour x, 0-700 pour y)
+                // En mode édition, on affiche directement
+                // En mode aperçu, on applique la transformation 0.6x/0.4y comme CityPage
+                let displayX, displayY;
+                if (previewMode) {
+                    displayX = slot.x * 0.6;
+                    displayY = slot.y * 0.4;
+                } else {
+                    displayX = slot.x;
+                    displayY = slot.y;
+                }
+                
+                // Couleur selon le type
+                let color = '#48bb78'; // general
+                if (slot.type === 'defensive') color = '#ed8936';
+                if (slot.type === 'marine') color = '#4299e1';
+                if (slot.locked) color = '#718096';
+                
+                // Dessiner le cercle
+                ctx.beginPath();
+                ctx.arc(displayX, displayY, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = slot === selectedSlot ? '#ffd700' : 'white';
+                ctx.lineWidth = slot === selectedSlot ? 4 : 2;
+                ctx.stroke();
+                
+                // Dessiner l'ID du slot
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(slot.id.replace('slot_', ''), displayX, displayY);
+            });
+        }
+        
+        function setupEventListeners() {
+            // Clic sur le canvas
+            canvas.addEventListener('click', function(e) {
+                if (!selectedSlot) {
+                    alert('Veuillez d\'abord sélectionner un slot dans la liste de gauche');
+                    return;
+                }
+
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX;
+                const clickY = (e.clientY - rect.top) * scaleY;
+                
+                let realX, realY;
+                if (previewMode) {
+                    // En mode aperçu, transformation inverse avec limites
+                    // Canvas affiche de 0-540×0-280, on transforme vers 0-900×0-700
+                    realX = clickX / 0.6;
+                    realY = clickY / 0.4;
+                    // Pas de clamping ici - on laisse updateSlotPosition gérer
+                } else {
+                    // Mode édition : coordonnées directes
+                    realX = clickX;
+                    realY = clickY;
+                }
+
+                updateSlotPosition(selectedSlot, realX, realY);
+            });
+
+            // Mouvement de la souris pour afficher les coordonnées
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const clickX = (e.clientX - rect.left) * scaleX;
+                const clickY = (e.clientY - rect.top) * scaleY;
+                
+                // Afficher les coordonnées réelles (avec transformation inverse si mode aperçu)
+                let realX, realY;
+                if (previewMode) {
+                    // Transformation inverse pour afficher les vraies coordonnées
+                    realX = Math.round(clickX / 0.6);
+                    realY = Math.round(clickY / 0.4);
+                } else {
+                    // Mode édition : coordonnées directes
+                    realX = Math.round(clickX);
+                    realY = Math.round(clickY);
+                }
+                
+                document.getElementById('coordX').value = realX;
+                document.getElementById('coordY').value = realY;
+            });
+
+            // Raccourcis clavier
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S : Sauvegarder
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveData();
+                }
+                
+                // Ctrl+Z : Annuler
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                }
+                
+                // Flèches : Déplacer le slot sélectionné
+                if (selectedSlot && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                    e.preventDefault();
+                    const step = e.shiftKey ? 10 : 1; // Shift = déplacement plus rapide (10px)
+                    let newX = selectedSlot.x;
+                    let newY = selectedSlot.y;
+                    
+                    if (e.key === 'ArrowLeft') newX -= step;
+                    if (e.key === 'ArrowRight') newX += step;
+                    if (e.key === 'ArrowUp') newY -= step;
+                    if (e.key === 'ArrowDown') newY += step;
+                    
+                    updateSlotPosition(selectedSlot, newX, newY);
+                }
+            });
+        }
+        
+        function updateZoom(value) {
+            zoomLevel = value / 100;
+            document.getElementById('zoomValue').textContent = value + '%';
+            
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
+            canvas.style.transform = `scale(${zoomLevel})`;
+            console.log('🔍 Zoom:', value + '%');
+        }
+        
+        function fitToScreen() {
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            // Calculer le ratio pour adapter le canvas
+            const scaleX = (wrapperRect.width - 40) / canvas.width;
+            const scaleY = (wrapperRect.height - 40) / canvas.height;
+            const scale = Math.min(scaleX, scaleY);
+            
+            const zoomPercent = Math.round(scale * 100);
+            document.getElementById('zoomSlider').value = zoomPercent;
+            updateZoom(zoomPercent);
+            
+            console.log('📐 Auto-zoom ajusté à', zoomPercent + '%');
+        }
+        
+        function togglePreviewMode(enabled) {
+            previewMode = enabled;
+            document.getElementById('previewWarning').style.display = enabled ? 'block' : 'none';
+            drawCanvas();
+            console.log(`🎮 Mode aperçu: ${enabled ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
+        }
+        
+        function saveData() {
+            if (!universeData) {
+                alert('❌ Aucune donnée à sauvegarder');
+                return;
+            }
+            
+            // Créer un fichier JSON à télécharger
+            const dataStr = JSON.stringify(universeData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'universe_edited.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log('💾 Fichier universe_edited.json téléchargé');
+            
+            // Message de succès
+            const controlsPanel = document.querySelector('.controls-panel');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success-msg';
+            successMsg.textContent = '✅ Fichier sauvegardé !';
+            controlsPanel.insertBefore(successMsg, controlsPanel.firstChild);
+            
+            setTimeout(() => {
+                successMsg.remove();
+            }, 3000);
+        }
+        
+        function undo() {
+            if (history.length === 0) {
+                alert('❌ Aucune action à annuler');
+                return;
+            }
+            
+            universeData = JSON.parse(history.pop());
+            currentLayout = universeData.city_layouts[currentLayoutId];
+            drawCanvas();
+            populateSlotsList();
+            console.log('↩️ Action annulée');
+        }
+        
+        function resetPositions() {
+            if (!confirm('⚠️ Voulez-vous vraiment réinitialiser toutes les positions des slots de ce layout ?')) {
+                return;
+            }
+            
+            // Sauvegarder dans l'historique
+            history.push(JSON.stringify(universeData));
+            
+            // Réinitialiser les positions en grille
+            const slotsPerRow = 5;
+            const spacingX = 900 / slotsPerRow;
+            const rows = Math.ceil(currentLayout.slots.length / slotsPerRow);
+            const spacingY = 700 / rows;
+            currentLayout.slots.forEach((slot, index) => {
+                const row = Math.floor(index / slotsPerRow);
+                const col = index % slotsPerRow;
+                slot.x = Math.round((col + 0.5) * spacingX);
+                slot.y = Math.round((row + 0.5) * spacingY);
+            });
+            
+            drawCanvas();
+            populateSlotsList();
+            console.log('🔄 Positions réinitialisées');
+        }
+        
+        // Redimensionnement de la fenêtre
+        window.addEventListener('resize', function() {
+            fitToScreen();
+        });
+    </script>
+</body>
+</html>

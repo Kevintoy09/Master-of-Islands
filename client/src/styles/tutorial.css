@@ -1,0 +1,690 @@
+/* ========================================
+   TUTORIAL.CSS - Styles du Système de Tutoriel
+   
+   RÔLE:
+     Définit tous les styles visuels du tutoriel interactif.
+     Crée l'effet de spotlight, la tooltip et les animations.
+   
+   RESPONSABILITÉS:
+     1. Overlay sombre avec découpe pour le spotlight
+     2. Tooltip positionnée intelligemment (responsive)
+     3. Animations fluides (fade in/out, pulse)
+     4. Z-index à 2147483647 (max CSS) pour toujours être visible
+     5. Styles pour le mode minimisé (petit badge)
+     6. Boutons avec gradients dorés
+   
+   ARCHITECTURE DES Z-INDEX:
+     - .tutorial-overlay : 2147483647 !important (base)
+     - .tutorial-tooltip : 2147483648 !important (tooltip)
+     - .tutorial-minimize-btn : 2147483649 !important (bouton)
+     - Garantit que le tutoriel apparaît au-dessus de TOUT
+       (même BuildingPopup qui était à 2147483647 avant correction)
+   
+   SYSTÈME DE SPOTLIGHT:
+     - Overlay sombre (rgba(0,0,0,0.7))
+     - Découpe transparente via clip-path (dynamique)
+     - Position calculée par TutorialOverlay.tsx
+     - Recalcul automatique lors du scroll/resize
+   
+   TOOLTIP:
+     - Position : top, bottom, left, right, center
+     - Padding et marges intelligents (évite les bords)
+     - Dégradé doré (goldenrod → darkgoldenrod)
+     - Max-width responsive (90vw sur mobile)
+     - Ombre portée pour la profondeur
+   
+   ANIMATIONS:
+     - fadeIn : Apparition douce (0.3s)
+     - pulse : Effet pulsant sur les boutons
+     - glow : Lueur dorée sur les boutons actifs
+   
+   MODE MINIMISÉ:
+     - Petit badge doré en bas à droite
+     - Icône "💡" + nombre d'étapes restantes
+     - Bouton "Reprendre le tutoriel"
+   
+   RESPONSIVE:
+     - Mobile : Tooltip en plein écran si nécessaire
+     - Tablette : Tailles et marges ajustées
+     - Desktop : Tailles standard
+   
+   POINTS CLÉS:
+     - !important sur z-index : Garantit priorité absolue
+     - pointer-events: auto : Permet interaction avec l'overlay
+     - cursor: pointer : Indique qu'on peut cliquer
+     - will-change: transform : Optimise les animations
+   
+   HISTORIQUE:
+     - Z-index augmenté à 2147483647 (max CSS)
+     - Ajout du !important pour garantir la priorité
+     - Suppression des ::before avec flèches (simplification)
+     - Nettoyage de 40 lignes de CSS obsolètes
+   ======================================== */
+
+/* Overlay sombre qui couvre tout l'écran */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2147483647 !important;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Indicateur de clic sur overlay */
+.tutorial-overlay-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.95) 0%, rgba(184, 134, 11, 0.95) 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: 600;
+  z-index: 2147483647 !important;
+  box-shadow: 0 4px 20px rgba(218, 165, 32, 0.5);
+  animation: bounce-hint 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes bounce-hint {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-8px);
+  }
+}
+
+/* Spotlight - zone claire autour de l'élément cible */
+.tutorial-spotlight {
+  position: absolute;
+  border: 3px solid var(--roman-gold);
+  border-radius: 8px;
+  box-shadow: 
+    0 0 0 9999px rgba(0, 0, 0, 0.7),
+    0 0 20px var(--roman-gold),
+    inset 0 0 20px rgba(218, 165, 32, 0.3);
+  pointer-events: none;
+  z-index: 2147483646 !important;
+  transition: all 0.4s ease-in-out;
+  animation: pulse-spotlight 2s ease-in-out infinite;
+}
+
+@keyframes pulse-spotlight {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 9999px rgba(0, 0, 0, 0.7),
+      0 0 20px var(--roman-gold),
+      inset 0 0 20px rgba(218, 165, 32, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 9999px rgba(0, 0, 0, 0.7),
+      0 0 35px var(--roman-gold),
+      inset 0 0 30px rgba(218, 165, 32, 0.5);
+  }
+}
+
+/* Tooltip du tutoriel */
+.tutorial-tooltip {
+  position: fixed;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-light) 100%);
+  border: 3px solid var(--roman-gold);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 400px;
+  z-index: 2147483647 !important;
+  pointer-events: all;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Flèche du tooltip - Désactivées car tous les tooltips utilisent position center */
+
+/* En-tête du tooltip */
+.tutorial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--accent-primary);
+}
+
+.tutorial-title {
+  font-family: var(--font-bold);
+  font-size: 1.3em;
+  color: var(--roman-red);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tutorial-step-counter {
+  background: var(--accent-primary);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.8em;
+  font-weight: bold;
+  border: 1px solid var(--bronze);
+}
+
+/* Description */
+.tutorial-description {
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: 15px;
+  font-size: 1em;
+}
+
+/* Alerte changement de page */
+.tutorial-page-warning {
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.2) 0%, rgba(255, 69, 0, 0.1) 100%);
+  border: 2px solid #ff8c00;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 15px;
+  color: #ff8c00;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.95em;
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.2) 0%, rgba(255, 69, 0, 0.1) 100%);
+  }
+  50% {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.3) 0%, rgba(255, 69, 0, 0.2) 100%);
+  }
+}
+
+/* Indicateur de statut d'action */
+.tutorial-action-status {
+  background: linear-gradient(135deg, rgba(100, 100, 100, 0.2) 0%, rgba(80, 80, 80, 0.1) 100%);
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95em;
+  transition: all 0.3s ease;
+}
+
+.tutorial-action-status.completed {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border-color: #22c55e;
+  animation: flash-success 0.5s ease-in-out;
+}
+
+.tutorial-action-status.pending {
+  animation: pulse-pending 2s ease-in-out infinite;
+}
+
+@keyframes flash-success {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pulse-pending {
+  0%, 100% {
+    border-color: #888;
+  }
+  50% {
+    border-color: #aaa;
+  }
+}
+
+.tutorial-action-status .status-icon {
+  font-size: 1.3em;
+  flex-shrink: 0;
+}
+
+.tutorial-action-status.completed .status-icon {
+  animation: bounce-icon 0.6s ease-in-out;
+}
+
+@keyframes bounce-icon {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+.tutorial-action-status .status-text {
+  flex: 1;
+  font-weight: 500;
+}
+
+.tutorial-action-status.completed .status-text {
+  color: #22c55e;
+}
+
+.tutorial-action-status.pending .status-text {
+  color: #888;
+}
+
+/* Mode minimisé */
+.tutorial-minimized {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-light) 100%);
+  border: 3px solid var(--roman-gold);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 2147483647 !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 280px;
+  animation: slideInRight 0.4s ease-out;
+}
+
+.tutorial-minimized:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(218, 165, 32, 0.4);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.tutorial-minimized-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tutorial-minimized-icon {
+  font-size: 2em;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.tutorial-minimized-text {
+  flex: 1;
+}
+
+.tutorial-minimized-title {
+  font-weight: bold;
+  font-size: 1em;
+  color: var(--roman-gold);
+  margin-bottom: 2px;
+}
+
+.tutorial-minimized-step {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.minimized-check {
+  animation: bounce-check 0.6s ease-in-out;
+}
+
+@keyframes bounce-check {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+}
+
+.tutorial-minimized-expand {
+  font-size: 1.2em;
+  opacity: 0.6;
+  animation: bounce-arrow 2s ease-in-out infinite;
+}
+
+@keyframes bounce-arrow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.tutorial-minimized-pulse {
+  margin-top: 8px;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border: 2px solid #22c55e;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #22c55e;
+  animation: pulse-success 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-success {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* Bouton de minimisation dans le header */
+.tutorial-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tutorial-minimize-btn {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.3) 0%, rgba(218, 165, 32, 0.2) 100%);
+  border: 2px solid var(--roman-gold);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-minimize-btn 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+}
+
+@keyframes pulse-minimize-btn {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.6);
+    transform: scale(1.05);
+  }
+}
+
+.tutorial-minimize-btn:hover {
+  background: linear-gradient(135deg, var(--roman-gold) 0%, rgba(218, 165, 32, 0.8) 100%);
+  transform: scale(1.15);
+  box-shadow: 0 0 25px rgba(218, 165, 32, 0.8);
+  animation: none;
+}
+
+.tutorial-minimize-btn:active {
+  transform: scale(0.95);
+}
+
+/* Récompense */
+.tutorial-reward {
+  background: linear-gradient(135deg, rgba(218, 165, 32, 0.15) 0%, rgba(218, 165, 32, 0.05) 100%);
+  border: 2px solid var(--roman-gold);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tutorial-reward-title {
+  font-weight: bold;
+  color: var(--roman-gold);
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tutorial-reward-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tutorial-reward-item {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.95em;
+  font-weight: bold;
+  color: var(--text-primary);
+  border: 1px solid rgba(218, 165, 32, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Boutons d'action */
+.tutorial-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.tutorial-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-bold);
+  font-weight: bold;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tutorial-button-primary {
+  background: linear-gradient(135deg, var(--roman-green) 0%, #1b5e20 100%);
+  color: var(--text-light);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 10px rgba(34, 139, 34, 0.4);
+}
+
+.tutorial-button-primary:hover {
+  background: linear-gradient(135deg, #2e7d32 0%, var(--roman-green) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(34, 139, 34, 0.6);
+}
+
+.tutorial-button-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--bronze);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tutorial-button-secondary:hover {
+  background: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.tutorial-button-skip {
+  background: linear-gradient(135deg, var(--marble-grey) 0%, #757575 100%);
+  color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.85em;
+  padding: 8px 16px;
+}
+
+.tutorial-button-skip:hover {
+  background: linear-gradient(135deg, #757575 0%, var(--marble-grey) 100%);
+}
+
+/* Barre de progression */
+.tutorial-progress {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid rgba(139, 69, 19, 0.2);
+}
+
+.tutorial-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--marble-grey);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.tutorial-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--roman-gold));
+  transition: width 0.5s ease-in-out;
+  box-shadow: 0 0 10px rgba(218, 165, 32, 0.5);
+}
+
+.tutorial-progress-text {
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+/* Animation de fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Pulsation pour attirer l'attention */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 9999px rgba(0, 0, 0, 0.7),
+      0 0 20px var(--roman-gold);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 9999px rgba(0, 0, 0, 0.7),
+      0 0 40px var(--roman-gold);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .tutorial-tooltip {
+    max-width: 90vw;
+    padding: 15px;
+    left: 5vw !important;
+    right: 5vw !important;
+    width: auto !important;
+  }
+
+  .tutorial-tooltip.position-center {
+    transform: translate(0, -50%);
+    left: 5vw;
+  }
+
+  .tutorial-title {
+    font-size: 1.1em;
+  }
+
+  .tutorial-description {
+    font-size: 0.9em;
+  }
+
+  .tutorial-actions {
+    flex-direction: column;
+  }
+
+  .tutorial-button {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .tutorial-reward-items {
+    justify-content: center;
+  }
+
+  .tutorial-minimized {
+    bottom: 70px;
+    right: 10px;
+    min-width: 240px;
+    padding: 10px 12px;
+  }
+
+  .tutorial-minimized-icon {
+    font-size: 1.5em;
+  }
+
+  .tutorial-minimized-title {
+    font-size: 0.9em;
+  }
+
+  .tutorial-minimized-step {
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutorial-tooltip {
+    padding: 12px;
+  }
+
+  .tutorial-title {
+    font-size: 1em;
+  }
+
+  .tutorial-description {
+    font-size: 0.85em;
+    line-height: 1.4;
+  }
+
+  .tutorial-button {
+    font-size: 0.85em;
+    padding: 10px;
+  }
+}

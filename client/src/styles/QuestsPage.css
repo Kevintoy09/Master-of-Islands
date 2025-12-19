@@ -1,0 +1,334 @@
+/* Overlay modal */
+.quests-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  padding: 20px;
+  overflow-y: auto;
+  backdrop-filter: blur(2px);
+}
+
+/* Popup container */
+.quests-popup {
+  background: linear-gradient(to bottom, #f7f3e9, #e8dcc3);
+  border: 3px solid #8b7355;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Header */
+.quests-popup-header {
+  background: linear-gradient(to bottom, #d4a574, #b8935f);
+  border-bottom: 2px solid #8b7355;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 9px 9px 0 0;
+}
+
+.quests-popup-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: bold;
+  color: #2d1810;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+  font-family: 'Georgia', serif;
+}
+
+.close-button {
+  background: rgba(139, 69, 19, 0.2);
+  border: 2px solid #8b7355;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 28px;
+  line-height: 1;
+  color: #2d1810;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.close-button:hover {
+  background: rgba(139, 69, 19, 0.4);
+  transform: rotate(90deg);
+}
+
+/* Content */
+.quests-popup-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Quest sections */
+.quest-section {
+  margin-bottom: 32px;
+}
+
+.quest-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #2d1810;
+  font-weight: bold;
+  font-family: 'Georgia', serif;
+}
+
+.section-badge {
+  background: linear-gradient(to bottom, #ffd700, #daa520);
+  color: #2d1810;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #b8860b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.section-description {
+  color: #5d4e37;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Quest list */
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Quest card */
+.quest-card {
+  background: linear-gradient(to bottom, #fff9e6, #f5ecd7);
+  border: 2px solid #c4a878;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.quest-card:hover {
+  border-color: #8b7355;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.quest-card-weekly {
+  background: linear-gradient(to bottom, #fff4e6, #ffe4c4);
+  border-color: #daa520;
+}
+
+.quest-card-weekly:hover {
+  border-color: #b8860b;
+}
+
+.quest-completed {
+  opacity: 0.8;
+  background: linear-gradient(to bottom, #e8f5e9, #c8e6c9);
+  border-color: #4caf50;
+}
+
+.quest-completed .progress-fill {
+  background: linear-gradient(to right, #66bb6a, #4caf50);
+}
+
+.quest-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.quest-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.quest-details h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: #2d1810;
+  font-weight: bold;
+}
+
+.quest-objective {
+  margin: 0 0 8px 0;
+  color: #5d4e37;
+  font-size: 13px;
+}
+
+.quest-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 16px;
+  background: rgba(139, 69, 19, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #8b7355;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #4caf50, #45a049);
+  transition: width 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.progress-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: #5d4e37;
+  white-space: nowrap;
+}
+
+.quest-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid #daa520;
+}
+
+.reward-icon {
+  font-size: 24px;
+}
+
+.reward-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: #b8860b;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .quests-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .quests-popup {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .quests-popup-header {
+    border-radius: 0;
+    padding: 16px;
+  }
+
+  .quests-popup-header h2 {
+    font-size: 22px;
+  }
+
+  .quests-popup-content {
+    padding: 16px;
+  }
+
+  .section-header h3 {
+    font-size: 18px;
+  }
+
+  .quest-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .quest-icon {
+    font-size: 32px;
+  }
+
+  .quest-reward {
+    align-self: stretch;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .reward-icon {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quests-popup-header h2 {
+    font-size: 18px;
+  }
+
+  .close-button {
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .quest-details h4 {
+    font-size: 14px;
+  }
+
+  .quest-objective {
+    font-size: 12px;
+  }
+}
+
+/* Animation pour la barre de progression */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

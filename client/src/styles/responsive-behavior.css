@@ -1,0 +1,44 @@
+/* 
+COMPORTEMENT RESPONSIVE DE L'ARBRE DE RECHERCHE
+=============================================
+
+🖥️ ÉCRAN LARGE (1200px+):
+┌─────────────────────────────────────────────────────────┐
+│  [Agriculture]    [Écriture]      [Maîtrise Épées]     │
+│  [Extraction]     [Maths]         [Défense Base]       │
+│  [Architecte]     [Ingénierie]    [Stratèges]          │
+└─────────────────────────────────────────────────────────┘
+- 3 colonnes max, cartes limitées à 400px de largeur
+- Centré avec max-width: 1200px
+
+💻 TABLETTE (768px - 1024px):
+┌─────────────────────────────────┐
+│  [Agriculture]    [Écriture]    │
+│  [Extraction]     [Maths]       │
+│  [Architecte]     [Ingénierie]  │
+└─────────────────────────────────┘
+- 2 colonnes, cartes s'adaptent
+- Max-width: 800px
+
+📱 SMARTPHONE PORTRAIT (moins de 768px):
+┌─────────────────┐
+│  [Agriculture]  │
+│  [Extraction]   │
+│  [Architecte]   │
+│  [Écriture]     │
+│  [Maths]        │
+│  [Ingénierie]   │
+└─────────────────┘
+- 1 seule colonne
+- Cartes empilées verticalement
+- Scroll vertical fluide
+- Padding réduit pour maximiser l'espace
+
+AVANTAGES SUR SMARTPHONE PORTRAIT:
+✅ Lecture facile, une carte à la fois
+✅ Pas de texte tronqué ou trop petit
+✅ Navigation intuitive avec le pouce
+✅ Scroll fluide sans débordement horizontal
+✅ Boutons assez grands pour les doigts (28px min-height)
+
+*/

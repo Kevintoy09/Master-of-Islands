@@ -1,0 +1,61 @@
+# ------------------------------------------------------------
+# .gitignore : Liste des fichiers/dossiers à ignorer par Git
+#
+# Ce fichier permet d'éviter de versionner des fichiers temporaires,
+# des fichiers de configuration locaux, des logs, des sauvegardes,
+# ou tout autre fichier inutile au bon fonctionnement du projet.
+#
+# Il garde le dépôt propre et facilite la collaboration.
+# ------------------------------------------------------------
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Fichiers temporaires
+*.tmp.*
+*.backup
+*.bak
+*.swp
+*.swo
+*~
+
+# Fichiers de logs
+*.log
+logs/
+
+# Fichiers de développement
+.vscode/
+.idea/
+*.sublime-*
+
+# Données sensibles
+.env
+.env.local
+.env.production
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db

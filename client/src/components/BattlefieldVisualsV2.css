@@ -1,0 +1,223 @@
+/* Effet de grossissement sur le survol d'une unité */
+.unit-group.hovered {
+  filter: drop-shadow(0 0 16px #ffd700cc) drop-shadow(0 0 32px #fff20088);
+  z-index: 2;
+  /* Animation de glow pulsé */
+  animation: battlefield-glow 0.8s infinite alternate cubic-bezier(.4,2,.6,1);
+}
+
+/* Style pour les unités désactivées (pas le tour du joueur) */
+.unit-group.disabled {
+  opacity: 0.6 !important;
+  filter: grayscale(50%);
+  pointer-events: auto !important;
+}
+
+.unit-group.disabled:hover {
+  filter: grayscale(50%) drop-shadow(0 0 8px #ff4444aa);
+}
+
+@keyframes battlefield-glow {
+  0% {
+    filter: drop-shadow(0 0 10px #ffd700cc) drop-shadow(0 0 20px #fff20044);
+  }
+  100% {
+    filter: drop-shadow(0 0 24px #ffd700ff) drop-shadow(0 0 48px #fff200cc);
+  }
+}
+
+/* Animation pour l'indicateur d'aura héros */
+.hero-aura-indicator {
+  animation: hero-aura-pulse 2s infinite ease-in-out;
+}
+
+@keyframes hero-aura-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    stroke-width: 1;
+  }
+  50% {
+    opacity: 0.8;
+    stroke-width: 3;
+  }
+}
+
+.hero-aura-selection {
+  animation: hero-aura-oscillate 1.5s infinite ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes hero-aura-oscillate {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  25%, 75% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+}
+/* BattlefieldVisualsV2.css - Styles pour la visualisation V2 */
+
+.battlefield-visuals-v2 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.battlefield-svg {
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #FFD700;
+  padding: 20px;
+}
+
+/* ========== STYLES DES UNITÉS ========== */
+
+.unit-group {
+  cursor: pointer; /* Juste le cursor pointer */
+}
+
+/* Supprimer TOUS les effets hover */
+.unit-group:hover,
+.unit-group:hover *,
+.unit-base:hover,
+.unit-icon:hover,
+.unit-count:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+.unit-base {
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.unit-icon {
+  font-family: 'Segoe UI Emoji', sans-serif;
+  dominant-baseline: central;
+  text-anchor: middle;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.7));
+  pointer-events: none;
+  font-weight: bold;
+  font-size: 30px !important;
+}
+
+
+/* ========== ANIMATIONS SPÉCIALES HÉROS ========== */
+
+/* ========== SÉLECTION ========== */
+
+
+.selection-ring {
+  animation: selection-pulse-oscillate 3s infinite ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes selection-pulse-oscillate {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  25%, 75% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+@keyframes selection-pulse-opacity {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========== ÉQUIPES ET JOUEURS ========== */
+
+/* Couleurs dinamiques pour les joueurs - Spécificité renforcée */
+.unit-group.player-color-0 .unit-base {
+  fill: #DC143C !important;  /* Rouge (1er attaquant) */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-1 .unit-base {
+  fill: #4169E1 !important;  /* Bleu (1er défenseur) */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-2 .unit-base {
+  fill: #32CD32 !important;  /* Vert lime */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-3 .unit-base {
+  fill: #32CD32 !important;  /* Vert */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-4 .unit-base {
+  fill: #9370DB !important;  /* Violet */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-5 .unit-base {
+  fill: #FF1493 !important;  /* Rose */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-6 .unit-base {
+  fill: #00CED1 !important;  /* Cyan */
+  stroke: #FFD700 !important;
+}
+
+.unit-group.player-color-7 .unit-base {
+  fill: #FFD700 !important;  /* Or */
+  stroke: #2F4F4F !important;
+}
+
+/* Fallback pour les équipes génériques (utilisé quand les couleurs dynamiques ne sont pas disponibles) */
+.team-attacker .unit-base {
+  fill: #DC143C;
+  stroke: #FFD700;
+}
+
+.team-defender .unit-base {
+  fill: #4169E1;
+  stroke: #FFD700;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+  .battlefield-svg {
+    width: 100%;
+    height: auto;
+  }
+  
+  .unit-icon {
+    font-size: 8px;
+  }
+  
+  .unit-count {
+    font-size: 6px;
+  }
+}

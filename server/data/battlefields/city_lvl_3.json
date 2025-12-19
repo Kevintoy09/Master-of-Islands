@@ -1,0 +1,102 @@
+{
+  "template": {
+    "id": "city_lvl_3_v2",
+    "name": "Ville Niveau 3 - Muraille Avancée",
+    "description": "Carte de défense de ville avec muraille niveau 3 - fortifications avancées avec bastions",
+    "size": {
+      "width": 24,
+      "height": 20
+    },
+    "difficulty": "hard",
+    "deploymentZones": {
+      "attacker": {
+        "infantry": [[2,9],[2,10],[3,8],[3,11],[4,7],[4,12],[5,7],[5,12]],
+        "ranged": [[1,9],[1,10],[2,8],[2,11],[3,7],[3,12]],
+        "cavalry": [[0,9],[0,10],[1,8],[1,11]],
+        "artillery": [[0,8],[0,11],[1,7],[1,12]],
+        "support": [[0,7],[0,12]],
+        "hero": [[2,7],[2,12],[3,9],[3,10]]
+      },
+      "defender": {
+        "infantry": [[20,9],[20,10],[21,8],[21,11],[22,8],[22,11],[23,9],[23,10]],
+        "ranged": [[19,9],[19,10],[20,8],[20,11],[21,7],[21,12]],
+        "cavalry": [[18,9],[18,10],[19,8],[19,11]],
+        "artillery": [[17,9],[17,10],[18,8],[18,11]],
+        "support": [[16,9],[16,10]],
+        "hero": [[19,7],[19,12],[20,7],[20,12]]
+      }
+    }
+  },
+  "terrainDefinitions": {
+    "P": {
+      "name": "plains",
+      "defenseBonus": 0,
+      "attackPenalty": 0,
+      "movementBonus": 0
+    },
+    "F": {
+      "name": "forest",
+      "defenseBonus": 10,
+      "attackPenalty": -5,
+      "movementBonus": -1
+    },
+    "H": {
+      "name": "hill",
+      "defenseBonus": 15,
+      "attackPenalty": 5,
+      "movementBonus": -1
+    },
+    "V": {
+      "name": "village",
+      "defenseBonus": 20,
+      "attackPenalty": 0,
+      "movementBonus": 0
+    },
+    "O": {
+      "name": "road",
+      "defenseBonus": 0,
+      "attackPenalty": 0,
+      "movementBonus": 1
+    },
+    "W": {
+      "name": "wall",
+      "defenseBonus": 30,
+      "attackPenalty": -20,
+      "movementBonus": -5
+    },
+    "A": {
+      "name": "base-attack",
+      "defenseBonus": 0,
+      "attackPenalty": 15,
+      "movementBonus": 0
+    },
+    "D": {
+      "name": "base-defense",
+      "defenseBonus": 20,
+      "attackPenalty": 0,
+      "movementBonus": 0
+    }
+  },
+  "hexMap": [
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","W","W","W","W","W","W","W","W","W","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","W","W","W","W","W","W","W","W","W","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","W","V","V","V","V","V","V","V","W","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","V","V","H","V","V","V","H","V","V","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","V","V","H","V","V","V","H","V","V","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","V","V","H","V","V","V","H","V","V","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","V","V","H","V","V","V","H","V","V","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","W","V","V","V","V","V","V","V","W","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","W","W","W","W","W","W","W","W","W","W","W","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","W","W","W","W","W","W","W","W","W","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"],
+    ["P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P","P"]
+  ]
+}

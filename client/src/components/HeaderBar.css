@@ -1,0 +1,29 @@
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(255, 107, 53, 0.6), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.9), 0 0 8px rgba(255, 150, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes flicker-glow {
+  0%, 100% { 
+    transform: scale(1) translateY(0); 
+    box-shadow: 0 0 15px rgba(255, 140, 66, 0.8), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  25% { 
+    transform: scale(1.08) translateY(-1px); 
+    box-shadow: 0 0 20px rgba(255, 140, 66, 1), 0 0 10px rgba(255, 107, 53, 0.7), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  50% { 
+    transform: scale(1.02) translateY(0); 
+    box-shadow: 0 0 12px rgba(255, 140, 66, 0.7), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  75% { 
+    transform: scale(1.06) translateY(-1px); 
+    box-shadow: 0 0 18px rgba(255, 140, 66, 0.9), 0 0 8px rgba(255, 107, 53, 0.6), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}

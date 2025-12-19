@@ -1,0 +1,201 @@
+/* ========================================
+   THÈME ROME ANTIQUE - Variables CSS
+   ======================================== */
+
+:root {
+  /* === COULEURS PRINCIPALES === */
+  --roman-red: #8B0000;           /* Rouge pourpre impérial */
+  --roman-gold: #DAA520;          /* Or antique */
+  --ivory: #F5F5DC;               /* Ivoire */
+  --ivory-light: #FFFEF7;         /* Ivoire clair */
+  --marble-white: #F5F5DC;        /* Blanc cassé marbre */
+  --marble-grey: #D3D3D3;         /* Gris marbre */
+  
+  /* === COULEURS SECONDAIRES === */
+  --bronze: #CD7F32;              /* Bronze patiné */
+  --terra-cotta: #E2725B;         /* Terre cuite */
+  --olive: #808000;               /* Vert olive */
+  --parchment: #F0E68C;           /* Parchemin */
+  
+  /* === INTERFACE === */
+  --bg-primary: #2F1B14;          /* Brun foncé (bois/cuir) */
+  --bg-secondary: #8B7355;        /* Brun moyen */
+  --bg-tertiary: #5A4631;         /* Brun sombre */
+  --bg-light: #F5F1E8;            /* Beige clair */
+  
+  /* === ACCENTS ET BORDURES === */
+  --accent-primary: var(--ivory);
+  --accent-secondary: var(--bronze);
+  --border-primary: var(--bg-secondary);
+  --border-accent: var(--ivory);
+  
+  /* === TEXTE === */
+  --text-primary: #2C1810;        /* Brun très foncé */
+  --text-secondary: #5A4631;      /* Brun moyen */
+  --text-light: var(--marble-white);
+  --text-accent: var(--roman-gold);
+  
+  /* === ÉTATS INTERACTIFS === */
+  --hover-gold: var(--ivory-light); /* Ivoire clair au survol */
+  --hover-red: #A50000;              /* Rouge plus intense */
+  --hover-green: #1e7e34;            /* Vert plus intense */
+  --active-bronze: #B8860B;          /* Bronze actif */
+  
+  /* === COULEURS SPÉCIALES === */
+  --roman-green: #228b22;            /* Vert antique */
+  
+  /* === RESSOURCES === */
+  --wood-color: #8B4513;          /* Bois */
+  --stone-color: #708090;         /* Pierre */
+  --iron-color: #556B2F;          /* Fer */
+  --gold-color: var(--roman-gold); /* Or */
+  --food-color: #CD853F;          /* Nourriture */
+  --research-color: #9370DB;      /* Recherche */
+  
+  /* === TYPOGRAPHIE === */
+  --font-primary: 'TrajanPro-Regular', 'Times New Roman', serif;
+  --font-bold: 'TrajanPro-Bold', 'Times New Roman', serif;
+  --font-italic: 'antique roman italick', 'Times New Roman', serif;
+  
+  /* === OMBRES === */
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.25);
+  --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* === BORDURES ET RAYONS === */
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
+  --border-width: 2px;
+  --border-width-thick: 3px;
+  
+  /* === ESPACEMENTS === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* === TRANSITIONS === */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-medium: 0.25s ease-in-out;
+  --transition-slow: 0.35s ease-in-out;
+}
+
+/* === EFFETS VISUELS ROMAINS === */
+.roman-marble {
+  background: linear-gradient(135deg, var(--marble-white) 0%, var(--marble-grey) 100%);
+  box-shadow: var(--shadow-medium);
+}
+
+.roman-gold-gradient {
+  background: linear-gradient(135deg, var(--roman-gold) 0%, var(--bronze) 100%);
+}
+
+.roman-red-gradient {
+  background: linear-gradient(135deg, var(--roman-red) 0%, #A50000 100%);
+}
+
+.roman-parchment {
+  background: linear-gradient(135deg, var(--parchment) 0%, #E6D8A3 100%);
+  color: var(--text-primary);
+}
+
+.roman-border {
+  border: var(--border-width) solid var(--border-primary);
+  border-radius: var(--border-radius-medium);
+}
+
+.roman-border-gold {
+  border: var(--border-width) solid var(--border-accent);
+  border-radius: var(--border-radius-medium);
+}
+
+/* === BOUTONS STYLE ROMAIN === */
+.roman-button {
+  background: var(--roman-gold-gradient);
+  border: var(--border-width) solid var(--bronze);
+  color: var(--text-primary);
+  font-family: var(--font-bold);
+  font-weight: bold;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-medium);
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-medium);
+}
+
+.roman-button:hover {
+  background: linear-gradient(135deg, var(--hover-gold) 0%, var(--bronze) 100%);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.roman-button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-light);
+}
+
+/* === PANNEAUX STYLE ROMAIN === */
+.roman-panel {
+  background: var(--roman-parchment);
+  border: var(--border-width-thick) solid var(--bg-secondary);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-heavy);
+  position: relative;
+}
+
+.roman-panel::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--roman-gold-gradient);
+  border-radius: var(--border-radius-large);
+  z-index: -1;
+}
+
+/* === TEXTE STYLE ROMAIN === */
+.roman-title {
+  font-family: var(--font-bold);
+  color: var(--roman-red);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.05em;
+}
+
+.roman-subtitle {
+  font-family: var(--font-primary);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.roman-text {
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* === ANIMATIONS ROMAINES === */
+@keyframes roman-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--roman-gold); }
+  50% { box-shadow: 0 0 20px var(--roman-gold), 0 0 30px var(--roman-gold); }
+}
+
+.roman-glow {
+  animation: roman-glow 2s ease-in-out infinite;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  :root {
+    --spacing-xs: 3px;
+    --spacing-sm: 6px;
+    --spacing-md: 12px;
+    --spacing-lg: 18px;
+    --spacing-xl: 24px;
+  }
+}

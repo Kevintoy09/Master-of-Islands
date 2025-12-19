@@ -1,0 +1,299 @@
+/* GoldProductionPopup.css */
+
+.gold-production-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.gold-production-popup {
+  background-color: #2c2c2c;
+  border: 2px solid #8b7355;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: #e8d7c3;
+  font-family: 'Trajan Pro', serif;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gold-production-popup-header {
+  background: linear-gradient(135deg, #d4af37, #f4e157);
+  color: #2c2416;
+  padding: 15px;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gold-production-popup-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.gold-production-popup-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2c2416;
+}
+
+.gold-production-popup-header .close-button {
+  background: none;
+  border: none;
+  color: #2c2416;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 25px;
+  height: 25px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: static !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+.gold-production-popup-header .close-button:hover {
+  background-color: rgba(44, 36, 22, 0.2);
+  border-radius: 3px;
+  transform: none !important;
+}
+
+.gold-production-popup-content {
+  padding: 20px;
+}
+
+/* Section production totale */
+.gold-total-section {
+  margin-bottom: 20px;
+}
+
+.gold-total-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.1em;
+  color: #e8d7c3;
+  font-weight: bold;
+}
+
+.total-gold-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(139, 115, 85, 0.3);
+}
+
+.total-label {
+  font-weight: bold;
+  color: #d4c4a8;
+}
+
+.total-value {
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Section détail par ville */
+.cities-gold-section {
+  margin-bottom: 20px;
+}
+
+.cities-gold-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.1em;
+  color: #e8d7c3;
+  font-weight: bold;
+}
+
+.cities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.city-gold-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+}
+
+.city-info {
+  flex: 1;
+}
+
+.city-name {
+  font-weight: bold;
+  font-size: 0.95em;
+  color: #e8d7c3;
+  margin-bottom: 4px;
+}
+
+.city-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9em;
+  color: #c4b49c;
+}
+
+.detail-item {
+  color: #c4b49c;
+}
+
+.detail-item strong {
+  color: #e8d7c3;
+}
+
+.city-production {
+  text-align: right;
+}
+
+.production-value {
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.no-cities {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Section explication */
+.gold-explanation-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(139, 115, 85, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #8b7355;
+}
+
+.gold-explanation-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #e8d7c3;
+  font-weight: bold;
+}
+
+.explanation-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c4b49c;
+}
+
+.explanation-text p {
+  margin: 0 0 8px 0;
+}
+
+.explanation-text strong {
+  color: #e8d7c3;
+}
+
+/* États de chargement et d'erreur */
+.loading, .error {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: #ccc;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gold-production-popup-overlay {
+    padding: 5px;
+  }
+  
+  .gold-production-popup {
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 8px;
+  }
+  
+  .gold-production-popup-header {
+    padding: 10px 12px;
+    border-radius: 6px 6px 0 0;
+  }
+  
+  .gold-production-popup-header h2 {
+    font-size: 14px;
+  }
+  
+  .gold-production-popup-content {
+    padding: 12px;
+  }
+  
+  .gold-total-section, .cities-gold-section, .gold-explanation-section {
+    margin-bottom: 15px;
+  }
+  
+  .city-gold-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px;
+  }
+  
+  .city-production {
+    align-self: flex-end;
+  }
+  
+  .total-gold-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  
+  .city-name {
+    font-size: 12px;
+  }
+  
+  .city-details {
+    font-size: 10px;
+  }
+  
+  .production-value {
+    font-size: 12px;
+  }
+  
+  .explanation-text {
+    font-size: 10px;
+  }
+}

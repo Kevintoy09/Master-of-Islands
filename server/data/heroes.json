@@ -1,0 +1,205 @@
+{
+  "achille": {
+    "id": "achille",
+    "name": "Achille",
+    "description": "Le plus grand guerrier grec, invincible au combat rapproché",
+    "specialty": "offensive",
+    "rarity": "legendary",
+    "unlock_requirements": {
+      "player_level": 5,
+      "victories": 2
+    },
+    "base_stats": {
+      "hp": 600,
+      "attack_melee": 35,
+      "defense_melee": 22,
+      "defense_ranged": 18,
+      "movement": 4,
+      "range": 1
+    },
+    "base_bonuses": {
+      "offensive_bonus": 30,
+      "defensive_bonus": 10,
+      "movement_bonus": 2,
+      "moral_bonus": 30,
+      "aura_radius": 3
+    },
+    "progression": {
+      "offensive_bonus_per_level": 6,
+      "defensive_bonus_per_level": 2,
+      "movement_bonus_per_level": 0.3,
+      "moral_bonus_per_level": 7,
+      "hp_per_level": 18,
+      "attack_per_level": 5,
+      "defense_melee_per_level": 3,
+      "defense_ranged_per_level": 2,
+      "range_per_level": 0,
+      "movement_per_level": 0.3
+    },
+    "experience_table": [
+      { "level": 1, "xp_required": 0 },
+      { "level": 2, "xp_required": 1000 },
+      { "level": 3, "xp_required": 2500 },
+      { "level": 4, "xp_required": 4500 },
+      { "level": 5, "xp_required": 7000 },
+      { "level": 6, "xp_required": 10000 },
+      { "level": 7, "xp_required": 13500 },
+      { "level": 8, "xp_required": 17500 },
+      { "level": 9, "xp_required": 22000 },
+      { "level": 10, "xp_required": 27000 }
+    ]
+  },
+  
+  "maximus": {
+    "id": "maximus",
+    "name": "Maximus",
+    "description": "Général devenu gladiateur, combattant équilibré et redoutable",
+    "specialty": "balanced",
+    "rarity": "legendary",
+    "unlock_requirements": {
+      "player_level": 6,
+      "victories": 3
+    },
+    "base_stats": {
+      "hp": 700,
+      "attack_melee": 28,
+      "defense_melee": 25,
+      "defense_ranged": 20,
+      "movement": 3,
+      "range": 1
+    },
+    "base_bonuses": {
+      "offensive_bonus": 20,
+      "defensive_bonus": 20,
+      "movement_bonus": 2,
+      "moral_bonus": 35,
+      "aura_radius": 3
+    },
+    "progression": {
+      "offensive_bonus_per_level": 4,
+      "defensive_bonus_per_level": 4,
+      "movement_bonus_per_level": 0.3,
+      "moral_bonus_per_level": 7,
+      "hp_per_level": 16,
+      "attack_per_level": 4,
+      "defense_melee_per_level": 3,
+      "defense_ranged_per_level": 3,
+      "range_per_level": 0.1,
+      "movement_per_level": 0.2
+    },
+    "experience_table": [
+      { "level": 1, "xp_required": 0 },
+      { "level": 2, "xp_required": 1000 },
+      { "level": 3, "xp_required": 2500 },
+      { "level": 4, "xp_required": 4500 },
+      { "level": 5, "xp_required": 7000 },
+      { "level": 6, "xp_required": 10000 },
+      { "level": 7, "xp_required": 13500 },
+      { "level": 8, "xp_required": 17500 },
+      { "level": 9, "xp_required": 22000 },
+      { "level": 10, "xp_required": 27000 }
+    ]
+  },
+
+  "alexander": {
+    "id": "alexander",
+    "name": "Alexandre le Grand",
+    "description": "Conquérant macédonien, maître de la stratégie et de la mobilité",
+    "specialty": "movement",
+    "rarity": "legendary",
+    "unlock_requirements": {
+      "player_level": 8,
+      "victories": 4
+    },
+    "base_stats": {
+      "hp": 650,
+      "attack_melee": 30,
+      "defense_melee": 23,
+      "defense_ranged": 20,
+      "movement": 5,
+      "range": 1
+    },
+    "base_bonuses": {
+      "offensive_bonus": 25,
+      "defensive_bonus": 15,
+      "movement_bonus": 3,
+      "moral_bonus": 40,
+      "aura_radius": 4
+    },
+    "progression": {
+      "offensive_bonus_per_level": 5,
+      "defensive_bonus_per_level": 3,
+      "movement_bonus_per_level": 0.5,
+      "moral_bonus_per_level": 8,
+      "hp_per_level": 15,
+      "attack_per_level": 4,
+      "defense_melee_per_level": 3,
+      "defense_ranged_per_level": 2,
+      "range_per_level": 0.2,
+      "movement_per_level": 0.4
+    },
+    "experience_table": [
+      { "level": 1, "xp_required": 0 },
+      { "level": 2, "xp_required": 1000 },
+      { "level": 3, "xp_required": 2500 },
+      { "level": 4, "xp_required": 4500 },
+      { "level": 5, "xp_required": 7000 },
+      { "level": 6, "xp_required": 10000 },
+      { "level": 7, "xp_required": 13500 },
+      { "level": 8, "xp_required": 17500 },
+      { "level": 9, "xp_required": 22000 },
+      { "level": 10, "xp_required": 27000 }
+    ]
+  },
+
+  "leonidas": {
+    "id": "leonidas",
+    "name": "Leonidas",
+    "description": "Roi de Sparte, défenseur héroïque et inspirant pour ses troupes",
+    "specialty": "defensive",
+    "rarity": "epic",
+    "unlock_requirements": {
+      "player_level": 7,
+      "victories": 3
+    },
+    "base_stats": {
+      "hp": 800,
+      "attack_melee": 25,
+      "defense_melee": 35,
+      "defense_ranged": 28,
+      "movement": 3,
+      "range": 1
+    },
+    "base_bonuses": {
+      "offensive_bonus": 15,
+      "defensive_bonus": 35,
+      "movement_bonus": 1,
+      "moral_bonus": 45,
+      "aura_radius": 4
+    },
+    "progression": {
+      "offensive_bonus_per_level": 3,
+      "defensive_bonus_per_level": 7,
+      "movement_bonus_per_level": 0.2,
+      "moral_bonus_per_level": 9,
+      "hp_per_level": 20,
+      "attack_per_level": 3,
+      "defense_melee_per_level": 5,
+      "defense_ranged_per_level": 4,
+      "range_per_level": 0,
+      "movement_per_level": 0.2
+    },
+    "experience_table": [
+      { "level": 1, "xp_required": 0 },
+      { "level": 2, "xp_required": 1000 },
+      { "level": 3, "xp_required": 2500 },
+      { "level": 4, "xp_required": 4500 },
+      { "level": 5, "xp_required": 7000 },
+      { "level": 6, "xp_required": 10000 },
+      { "level": 7, "xp_required": 13500 },
+      { "level": 8, "xp_required": 17500 },
+      { "level": 9, "xp_required": 22000 },
+      { "level": 10, "xp_required": 27000 }
+    ]
+  }
+}

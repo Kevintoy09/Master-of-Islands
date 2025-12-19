@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+# Volume persistant pour gamedata/ (sauvegardes)
+# data/ reste dans git (configurations)
+[[deploy.volumes]]
+mountPath = "/app/server/gamedata"
+name = "game-saves"

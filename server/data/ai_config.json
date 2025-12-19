@@ -1,0 +1,14 @@
+{
+  "decision_weights": {
+    "priority_hero": 100,
+    "priority_low_hp": 80,
+    "priority_ranged": 60,
+    "priority_closest": 40,
+    "priority_threat_level": 70
+  },
+  "behavior": {
+    "prefer_ranged_attacks": true,
+    "avoid_high_defense": true,
+    "focus_wounded": true
+  }
+}
