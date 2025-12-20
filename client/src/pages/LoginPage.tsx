@@ -79,7 +79,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleAdminAccess = () => {
-    if (adminPassword === "admin") {
+    if (adminPassword === "admin8") {
       window.open(`${getApiUrl()}/admin`, '_blank');
       setShowAdminPrompt(false);
       setAdminPassword("");

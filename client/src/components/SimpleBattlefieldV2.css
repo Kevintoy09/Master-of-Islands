@@ -379,10 +379,11 @@
   font-size: 0.95rem;
 }
 
-/* Fix pour mobile : éviter que la navigation du smartphone masque le bottombar */
+/* Fix pour mobile : relever le bottombar pour éviter qu'il soit masqué par la navigation smartphone */
 @media (max-width: 768px) {
   .battlefield-bottombar {
-    padding-bottom: max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 20px));
+    bottom: 80px !important; /* Relève le bandeau de 80px sur mobile */
+    padding-bottom: 0.5rem;
   }
 }
 .bottombar-hint {

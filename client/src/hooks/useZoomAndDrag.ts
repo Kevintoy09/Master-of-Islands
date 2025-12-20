@@ -121,6 +121,8 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
 
   const handleMouseUp = useCallback(() => {
     setDrag(null);
+    // Réinitialiser hasDragged après mouseUp (avec un léger délai pour que les onClick puissent lire l'état)
+    setTimeout(() => setHasDragged(false), 0);
   }, []);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -258,6 +260,8 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
   const handleTouchEnd = useCallback(() => {
     setDrag(null);
     setLastTouchDistance(null);
+    // Réinitialiser hasDragged après touchEnd (avec un léger délai pour que les onClick puissent lire l'état)
+    setTimeout(() => setHasDragged(false), 0);
   }, []);
 
   return {

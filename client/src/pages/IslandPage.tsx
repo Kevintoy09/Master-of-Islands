@@ -273,11 +273,16 @@ const IslandPage: React.FC = () => {
 
   // Fonction pour ouvrir directement un battlefield via l'icône
   const handleBattlefieldIconClick = async (cityId: string) => {
+    console.log('[Battlefield] Icône cliquée, cityId:', cityId);
+    
     try {
       // Charger la bataille pour cette ville
       const battle = await UnifiedBattleLoaderService.loadBattleFromCity(cityId);
       
+      console.log('[Battlefield] Bataille chargée:', battle);
+      
       if (!battle) {
+        console.log('[Battlefield] Aucune bataille trouvée pour cityId:', cityId);
         alert('❌ Aucune bataille active trouvée pour cette ville.');
         return;
       }
@@ -839,13 +844,17 @@ const IslandPage: React.FC = () => {
                 title="Camp des Sauvages - Cliquez pour attaquer !"
                 onClick={async () => {
                   // Ignorer les clics si c'était un drag
-                  if (hasDragged) return;
+                  if (hasDragged) {
+                    return;
+                  }
+                  
+                  if (!gameShell.currentActiveCity || !gameShell.currentActiveCity.id) {
+                    console.log('[WildCamp] Pas de ville active');
+                    alert('Vous devez d\'abord sélectionner une ville dans le header pour attaquer');
+                    return;
+                  }
                   
                   if (gameShell.currentActiveCity) {
-                    if (!gameShell.currentActiveCity || !gameShell.currentActiveCity.id) {
-                      alert('Vous devez d\'abord sélectionner une ville dans le header pour attaquer');
-                      return;
-                    }
                     
                     const currentPlayer = user?.id || 'player_1';
                     
