@@ -5,7 +5,7 @@
       "level": 0,
       "name": "Maison du Chef de Village",
       "age": "Pierre",
-      "description": "Débloque la construction de la Maison du Chef de Village, qui donne accès aux quêtes quotidiennes et hebdomadaires.",
+      "description": "Débloque la construction de la Maison du Chef de Village, qui donne accès aux quêtes quotidiennes et principales.",
       "cost": { "research_points": 5 },
       "prerequisites": [],
       "effect": { "unlock_building": "Maison du Chef de Village" },

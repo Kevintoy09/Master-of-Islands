@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Routes API pour le système de quêtes
 """
@@ -6,6 +6,7 @@ Routes API pour le système de quêtes
 from flask import Blueprint, jsonify, request
 from app.services.quest_service import quest_service
 from functools import wraps
+from datetime import datetime
 import os
 
 quest_bp = Blueprint('quest', __name__, url_prefix='/api')
@@ -131,63 +132,63 @@ def get_daily_quests(username):
         return jsonify({"error": str(e)}), 500
 
 
-@quest_bp.route('/quests/weekly', methods=['GET'])
+@quest_bp.route('/quests/main', methods=['GET'])
 @require_auth
-def get_weekly_quests(username):
+def get_main_quests(username):
     """Retourne les quêtes hebdomadaires du joueur avec progression chronologique"""
     try:
         all_player_data = quest_service.load_all_player_quests()
         username_data = all_player_data.get(username, {})
-        weekly_quests_data = username_data.get('weekly_quests', {})
+        main_quests_data = username_data.get('main_quests', {})
         
         # Si pas de quêtes générées, les générer maintenant
-        if not weekly_quests_data.get('quests'):
-            generated = quest_service.generate_weekly_quests(username)
-            weekly_quests_data = {
+        if not main_quests_data.get('quests'):
+            generated = quest_service.generate_main_quests(username)
+            main_quests_data = {
                 'generated_date': datetime.now().strftime('%Y-%m-%d'),
                 'quests': generated
             }
-            username_data['weekly_quests'] = weekly_quests_data
+            username_data['main_quests'] = main_quests_data
             all_player_data[username] = username_data
             quest_service.save_all_player_quests(all_player_data)
         
         # Vérifier et compléter automatiquement les quêtes (met à jour progression + is_completed)
-        quest_service.check_and_complete_weekly_quests(username)
+        quest_service.check_and_complete_main_quests(username)
         
         # Recharger après complétion pour avoir les données à jour (avec progression sauvegardée)
         all_player_data = quest_service.load_all_player_quests()
         username_data = all_player_data.get(username, {})
-        weekly_quests_data = username_data.get('weekly_quests', {})
+        main_quests_data = username_data.get('main_quests', {})
         
         # Vérifier combien de quêtes sont disponibles (actives = pas encore complétées OU complétées mais récompenses non réclamées)
-        all_quests = weekly_quests_data.get('quests', [])
+        all_quests = main_quests_data.get('quests', [])
         # Une quête est "active" si elle n'est pas complétée, OU si elle est complétée mais pas encore réclamée
         active_quests = [q for q in all_quests if not (q.get('is_completed') and q.get('rewards_claimed'))]
         
         # Si moins de 3 quêtes actives, régénérer pour en avoir 3
         if len(active_quests) < 3:
             # Régénérer toutes les quêtes (garde celles actives + ajoute les suivantes)
-            new_quests = quest_service.generate_weekly_quests(username)
+            new_quests = quest_service.generate_main_quests(username)
             if new_quests:
                 # Recharger pour être sûr d'avoir les dernières données
                 all_player_data = quest_service.load_all_player_quests()
                 username_data = all_player_data.get(username, {})
-                weekly_quests_data['quests'] = new_quests
-                username_data['weekly_quests'] = weekly_quests_data
+                main_quests_data['quests'] = new_quests
+                username_data['main_quests'] = main_quests_data
                 all_player_data[username] = username_data
                 quest_service.save_all_player_quests(all_player_data)
         
         # Enrichir les quêtes avec les données de config ET progression en temps réel
         enriched_quests = []
-        for quest in weekly_quests_data.get('quests', []):
-            enriched = quest_service.enrich_weekly_quest_data(quest, username)
+        for quest in main_quests_data.get('quests', []):
+            enriched = quest_service.enrich_main_quest_data(quest, username)
             if enriched:
                 enriched_quests.append(enriched)
         
         return jsonify({
             "username": username,
             "quests": enriched_quests,
-            "generated_date": weekly_quests_data.get('generated_date')
+            "generated_date": main_quests_data.get('generated_date')
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -207,32 +208,32 @@ def get_quest_progress(username):
 @quest_bp.route('/quests/unclaimed', methods=['GET'])
 @require_auth
 def get_unclaimed_rewards(username):
-    """Retourne la liste des récompenses non réclamées (daily + weekly)"""
+    """Retourne la liste des récompenses non réclamées (daily + main)"""
     try:
         quest_data = quest_service.load_player_quests(username)
         unclaimed_daily = quest_data.get('unclaimed_rewards', [])
         
         # Ajouter les récompenses hebdomadaires non réclamées
-        weekly_quests_data = quest_data.get('weekly_quests', {})
-        weekly_quests = weekly_quests_data.get('quests', [])
+        main_quests_data = quest_data.get('main_quests', {})
+        main_quests = main_quests_data.get('quests', [])
         
-        unclaimed_weekly = []
-        weekly_config = quest_service.quests_config.get('weekly_quests', {})
-        weekly_progression = weekly_config.get('quests', [])
+        unclaimed_main = []
+        main_config = quest_service.quests_config.get('main_quests', {})
+        main_progression = main_config.get('quests', [])
         
-        for quest in weekly_quests:
+        for quest in main_quests:
             if quest.get('is_completed') and not quest.get('rewards_claimed'):
                 # Trouver la config pour récupérer les rewards
-                quest_def = next((q for q in weekly_progression if q.get('id') == quest.get('id')), None)
+                quest_def = next((q for q in main_progression if q.get('id') == quest.get('id')), None)
                 if quest_def:
-                    unclaimed_weekly.append({
+                    unclaimed_main.append({
                         "quest_id": quest.get('id'),
-                        "quest_type": "weekly",
+                        "quest_type": "main",
                         "rewards": quest_def.get('rewards', {})
                     })
         
         # Combiner les deux listes
-        all_unclaimed = unclaimed_daily + unclaimed_weekly
+        all_unclaimed = unclaimed_daily + unclaimed_main
         
         return jsonify({
             "username": username,
@@ -299,8 +300,8 @@ def update_progress(username):
         return jsonify({"error": str(e)}), 500
 
 
-@quest_bp.route('/quests/claim-weekly-reward', methods=['POST'])
-def claim_weekly_reward():
+@quest_bp.route('/quests/claim-main-reward', methods=['POST'])
+def claim_main_reward():
     """Réclamer une récompense de quête hebdomadaire"""
     try:
         data = request.get_json()
@@ -313,8 +314,8 @@ def claim_weekly_reward():
         # Charger les données
         all_player_data = quest_service.load_all_player_quests()
         username_data = all_player_data.get(username, {})
-        weekly_quests_data = username_data.get('weekly_quests', {})
-        quests = weekly_quests_data.get('quests', [])
+        main_quests_data = username_data.get('main_quests', {})
+        quests = main_quests_data.get('quests', [])
         
         # Trouver la quête
         quest_to_claim = None
@@ -327,9 +328,9 @@ def claim_weekly_reward():
             return jsonify({"error": "Récompense non trouvée ou déjà réclamée"}), 404
         
         # Récupérer les rewards depuis la config
-        weekly_config = quest_service.quests_config.get('weekly_quests', {})
-        weekly_progression = weekly_config.get('quests', [])
-        quest_def = next((q for q in weekly_progression if q.get('id') == quest_id), None)
+        main_config = quest_service.quests_config.get('main_quests', {})
+        main_progression = main_config.get('quests', [])
+        quest_def = next((q for q in main_progression if q.get('id') == quest_id), None)
         
         if not quest_def:
             return jsonify({"error": "Configuration de quête non trouvée"}), 404
@@ -358,11 +359,11 @@ def claim_weekly_reward():
         # Marquer comme réclamée
         quest_to_claim['rewards_claimed'] = True
         
-        # Ajouter à la liste quest_week_done maintenant que la récompense est réclamée
-        quest_week_done = username_data.get('quest_week_done', [])
-        if quest_id not in quest_week_done:
-            quest_week_done.append(quest_id)
-            username_data['quest_week_done'] = quest_week_done
+        # Ajouter à la liste completed_main_quests maintenant que la récompense est réclamée
+        completed_main_quests = username_data.get('completed_main_quests', [])
+        if quest_id not in completed_main_quests:
+            completed_main_quests.append(quest_id)
+            username_data['completed_main_quests'] = completed_main_quests
         
         all_player_data[username] = username_data
         quest_service.save_all_player_quests(all_player_data)

@@ -5,13 +5,18 @@ SITE_TO_RESOURCE = {
     "forest": "wood",
     "quarry": "stone", 
     "grain_field": "cereal",
+    "cereal_field": "cereal",  # Alias pour grain_field
     "iron_mine": "iron",
+    "mine": "iron",  # Alias pour iron_mine
     "papyrus_pond": "papyrus",
+    "papyrus_field": "papyrus",  # Alias pour papyrus_pond
     
     # === ÈRE CLASSIQUE (milieu de jeu) ===
     "horse_ranch": "horse",
     "marble_mine": "marble",
+    "marble_quarry": "marble",  # Alias pour marble_mine
     "glassworks": "glass",
+    "glass_workshop": "glass",  # Alias pour glassworks
     "vineyard": "wine",
     
     # === ÈRE AVANCÉE (fin de jeu) ===

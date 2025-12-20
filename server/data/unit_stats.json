@@ -39,8 +39,8 @@
       "max_stack_size": 10,
       "production_cost": {"wood": 30, "stone": 10, "population": 1},
       "production_time": 30,
-      "required_barracks_level": 1,
-      "required_research": null,
+      "required_barracks_level": 2,
+      "required_research": "travail_fer",
       "xp_value": 25,
       "era": "classical",
       "special_abilities": [
@@ -65,7 +65,7 @@
       "production_cost": {"wood": 50, "stone": 30, "iron": 20, "population": 1},
       "production_time": 60,
       "required_barracks_level": 3,
-      "required_research": "iron_working",
+      "required_research": "travail_fer",
       "xp_value": 45,
       "era": "classical",
       "special_abilities": [
@@ -90,8 +90,8 @@
       "max_stack_size": 12,
       "production_cost": {"wood": 40, "stone": 5, "population": 1},
       "production_time": 45,
-      "required_barracks_level": 2,
-      "required_research": "archery",
+      "required_barracks_level": 3,
+      "required_research": "archers",
       "xp_value": 35,
       "era": "classical",
       "special_abilities": [
@@ -141,7 +141,7 @@
       "production_cost": {"wood": 80, "iron": 30, "population": 1},
       "production_time": 90,
       "required_barracks_level": 4,
-      "required_research": "horsemanship",
+      "required_research": "equitation",
       "xp_value": 60,
       "era": "classical",
       "special_abilities": [
@@ -167,7 +167,7 @@
       "production_cost": {"wood": 120, "iron": 60, "population": 1},
       "production_time": 150,
       "required_barracks_level": 6,
-      "required_research": "heavy_cavalry",
+      "required_research": "cavalerie_lourde",
       "xp_value": 90,
       "era": "classical",
       "special_abilities": [
@@ -193,7 +193,7 @@
       "production_cost": {"wood": 150, "iron": 80, "population": 2},
       "production_time": 180,
       "required_barracks_level": 5,
-      "required_research": "siege_engines",
+      "required_research": "engins_siege",
       "xp_value": 80,
       "era": "classical",
       "special_abilities": [
@@ -219,7 +219,7 @@
       "production_cost": {"wood": 45, "stone": 20, "iron": 25, "population": 1},
       "production_time": 75,
       "required_barracks_level": 3,
-      "required_research": "polearm_tactics",
+      "required_research": "tactiques_armes_hampe",
       "xp_value": 40,
       "era": "classical",
       "special_abilities": [
@@ -245,7 +245,7 @@
       "production_cost": {"wood": 100, "stone": 50, "iron": 40,  "population": 1},
       "production_time": 120,
       "required_barracks_level": 4,
-      "required_research": "engineering",
+      "required_research": "ingenierie_militaire",
       "xp_value": 50,
       "era": "classical",
       "special_abilities": [
@@ -270,7 +270,7 @@
       "production_cost": {"wood": 200, "stone": 50, "iron": 100,  "population": 2},
       "production_time": 180,
       "required_barracks_level": 5,
-      "required_research": "siege_warfare",
+      "required_research": "guerre_siege",
       "xp_value": 75,
       "era": "classical",
       "special_abilities": [
@@ -295,7 +295,7 @@
       "production_cost": {"wood": 300, "stone": 100, "iron": 80, "population": 3},
       "production_time": 240,
       "required_barracks_level": 6,
-      "required_research": "siege_engines",
+      "required_research": "engins_siege",
       "xp_value": 100,
       "era": "classical",
       "special_abilities": [
@@ -321,7 +321,7 @@
       "production_cost": {"wood": 60, "iron": 40, "gunpowder": 20,  "population": 1},
       "production_time": 90,
       "required_barracks_level": 8,
-      "required_research": "gunpowder",
+      "required_research": "poudre_canon",
       "xp_value": 120,
       "era": "napoleonic",
       "special_abilities": [
@@ -346,7 +346,7 @@
       "production_cost": {"wood": 80, "iron": 60, "gunpowder": 40, "gold": 120, "population": 1},
       "production_time": 120,
       "required_barracks_level": 9,
-      "required_research": "explosives",
+      "required_research": "explosifs",
       "xp_value": 160,
       "era": "napoleonic",
       "special_abilities": [
@@ -372,7 +372,7 @@
       "production_cost": {"wood": 70, "iron": 50, "gunpowder": 30, "gold": 90, "population": 1},
       "production_time": 100,
       "required_barracks_level": 8,
-      "required_research": "rifling",
+      "required_research": "fusils_rayes",
       "xp_value": 140,
       "era": "napoleonic",
       "special_abilities": [
@@ -397,7 +397,7 @@
       "production_cost": {"wood": 100, "iron": 60, "gold": 140, "population": 1},
       "production_time": 150,
       "required_barracks_level": 9,
-      "required_research": "military_tactics",
+      "required_research": "tactiques_militaires",
       "xp_value": 180,
       "era": "napoleonic",
       "special_abilities": [
@@ -423,7 +423,7 @@
       "production_cost": {"wood": 150, "iron": 100, "gold": 200, "population": 1},
       "production_time": 200,
       "required_barracks_level": 10,
-      "required_research": "heavy_cavalry_tactics",
+      "required_research": "tactiques_cavalerie_lourde",
       "xp_value": 250,
       "era": "napoleonic",
       "special_abilities": [
@@ -449,7 +449,7 @@
       "production_cost": {"wood": 200, "iron": 150, "gunpowder": 50, "gold": 300, "population": 3},
       "production_time": 300,
       "required_barracks_level": 10,
-      "required_research": "artillery",
+      "required_research": "artillerie",
       "xp_value": 300,
       "era": "napoleonic",
       "special_abilities": [
@@ -475,7 +475,7 @@
       "production_cost": {"wood": 250, "iron": 200, "gunpowder": 80, "gold": 400, "population": 4},
       "production_time": 360,
       "required_barracks_level": 11,
-      "required_research": "siege_artillery",
+      "required_research": "artillerie_siege",
       "xp_value": 400,
       "era": "napoleonic",
       "special_abilities": [

@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
-Service de gestion des quêtes quotidiennes et hebdomadaires
+Service de gestion des quêtes quotidiennes et principales
 Gère la progression, les récompenses et le niveau des joueurs
 """
 
@@ -179,7 +179,7 @@ class QuestService:
                 "player_level_snapshot": 1,
                 "quests": []
             },
-            "weekly_quests": {
+            "main_quests": {
                 "week_start": None,
                 "quests": []
             },
@@ -273,30 +273,31 @@ class QuestService:
         
         return (targets, rewards)
     
-    def generate_weekly_quests(self, username: str) -> List[Dict]:
+    def generate_main_quests(self, username: str) -> List[Dict]:
         """
-        Génère 3 quêtes hebdomadaires basées sur la progression chronologique
-        Exclut les quêtes présentes dans quest_week_done
+        Génère 3 quêtes principales basées sur la progression chronologique
+        Exclut les quêtes complétées
         """
         # Charger les données du joueur
         all_player_data = self.load_all_player_quests()
         username_data = all_player_data.get(username, {})
         
-        # Récupérer la liste des quêtes terminées
-        completed_quest_ids = username_data.get('quest_week_done', [])
+        # Récupérer la liste des quêtes terminées (ancien nom: quest_week_done)
+        completed_quest_ids = username_data.get('completed_main_quests', 
+                                                username_data.get('quest_week_done', []))
         
         # Récupérer la config de progression
-        weekly_quests_config = self.quests_config.get('weekly_quests', {})
-        weekly_progression = weekly_quests_config.get('quests', [])
-        if not weekly_progression:
+        main_quests_config = self.quests_config.get('main_quests', {})
+        main_progression = main_quests_config.get('quests', [])
+        if not main_progression:
             return []
         
         # Trier par ordre chronologique
-        weekly_progression_sorted = sorted(weekly_progression, key=lambda q: q.get('order', 999))
+        main_progression_sorted = sorted(main_progression, key=lambda q: q.get('order', 999))
         
         # Sélectionner les 3 premières quêtes non terminées
         selected_quests = []
-        for quest_def in weekly_progression_sorted:
+        for quest_def in main_progression_sorted:
             quest_id = quest_def.get('id')
             
             if quest_id not in completed_quest_ids:
@@ -313,9 +314,9 @@ class QuestService:
         
         return selected_quests
     
-    def calculate_weekly_quest_progress(self, username: str, quest_id: str, quest_type: str, quest_config: Dict) -> int:
+    def calculate_main_quest_progress(self, username: str, quest_id: str, quest_type: str, quest_config: Dict) -> int:
         """
-        Calcule la progression actuelle d'une quête hebdomadaire en lisant savegame.json
+        Calcule la progression actuelle d'une quête principale en lisant savegame.json
         
         Types supportés:
         - own_cities: Nombre de villes possédées
@@ -403,9 +404,9 @@ class QuestService:
             traceback.print_exc()
             return 0
     
-    def increment_weekly_quest_progress(self, username: str, quest_id: str, increment: int = 1) -> bool:
+    def increment_main_quest_progress(self, username: str, quest_id: str, increment: int = 1) -> bool:
         """
-        Incrémente manuellement la progression d'une quête hebdomadaire
+        Incrémente manuellement la progression d'une quête principale
         Utilisé pour les quêtes basées sur des événements (ex: attaques de camps de sauvages)
         
         Args:
@@ -425,22 +426,22 @@ class QuestService:
                 print(f"Aucune donnée de quête pour {username}")
                 return False
             
-            weekly_quests_data = username_data.get('weekly_quests_data', {})
-            weekly_quests = weekly_quests_data.get('quests', [])
+            main_quests_data = username_data.get('main_quests_data', {})
+            main_quests = main_quests_data.get('quests', [])
             
             # Trouver la quête
             quest_found = False
-            for quest in weekly_quests:
+            for quest in main_quests:
                 if quest.get('id') == quest_id:
                     # Incrémenter la progression
                     old_progress = quest.get('progress', 0)
                     quest['progress'] = old_progress + increment
                     
                     # Récupérer la config de la quête pour vérifier si complétée
-                    weekly_quests_config = self.quests_config.get('weekly_quests', {})
-                    weekly_progression = weekly_quests_config.get('quests', [])
+                    main_quests_config = self.quests_config.get('main_quests', {})
+                    main_progression = main_quests_config.get('quests', [])
                     quest_def = None
-                    for q in weekly_progression:
+                    for q in main_progression:
                         if q.get('id') == quest_id:
                             quest_def = q
                             break
@@ -451,7 +452,7 @@ class QuestService:
                         if quest['progress'] >= target and not quest.get('is_completed'):
                             quest['is_completed'] = True
                             quest['rewards_claimed'] = False
-                            print(f"🎉 Quête hebdomadaire '{quest_id}' complétée pour {username}!")
+                            print(f"🎉 Quête principale '{quest_id}' complétée pour {username}!")
                         else:
                             print(f"📊 Progression de '{quest_id}' pour {username}: {quest['progress']}/{target}")
                     
@@ -459,7 +460,7 @@ class QuestService:
                     break
             
             if not quest_found:
-                print(f"Quête '{quest_id}' non trouvée dans les quêtes hebdomadaires de {username}")
+                print(f"Quête '{quest_id}' non trouvée dans les quêtes principales de {username}")
                 return False
             
             # Sauvegarder les données mises à jour
@@ -474,16 +475,16 @@ class QuestService:
             traceback.print_exc()
             return False
     
-    def check_and_complete_weekly_quests(self, username: str) -> List[str]:
+    def check_and_complete_main_quests(self, username: str) -> List[str]:
         """
-        Vérifie les quêtes hebdomadaires et met à jour leur statut (is_completed + rewards_claimed)
+        Vérifie les quêtes principales et met à jour leur statut (is_completed + rewards_claimed)
         Retourne la liste des IDs de quêtes nouvellement complétées
         """
         try:
             all_player_data = self.load_all_player_quests()
             username_data = all_player_data.get(username, {})
-            weekly_quests_data = username_data.get('weekly_quests', {})
-            quests = weekly_quests_data.get('quests', [])
+            main_quests_data = username_data.get('main_quests', {})
+            quests = main_quests_data.get('quests', [])
             
             if not quests:
                 return []
@@ -499,10 +500,10 @@ class QuestService:
                     continue
                 
                 # Obtenir la config de la quête
-                weekly_quests_config = self.quests_config.get('weekly_quests', {})
-                weekly_progression = weekly_quests_config.get('quests', [])
+                main_quests_config = self.quests_config.get('main_quests', {})
+                main_progression = main_quests_config.get('quests', [])
                 quest_def = None
-                for q in weekly_progression:
+                for q in main_progression:
                     if q.get('id') == quest_id:
                         quest_def = q
                         break
@@ -513,7 +514,7 @@ class QuestService:
                 # Calculer la progression réelle
                 quest_type = quest_def.get('type', '')
                 target = quest_def.get('target', 100)
-                current_progress = self.calculate_weekly_quest_progress(username, quest_id, quest_type, quest_def)
+                current_progress = self.calculate_main_quest_progress(username, quest_id, quest_type, quest_def)
                 
                 # Mettre à jour la progression (toujours, même si pas complétée)
                 old_progress = quest.get('progress', 0)
@@ -529,7 +530,7 @@ class QuestService:
                     quest['rewards_claimed'] = False  # Initialement non réclamée
                     newly_completed.append(quest_id)
                     has_changes = True
-                    # Note: quest_week_done sera mis à jour quand la récompense sera réclamée
+                    # Note: completed_main_quests sera mis à jour quand la récompense sera réclamée
             
             # Sauvegarder si des changements
             if has_changes:
@@ -539,7 +540,7 @@ class QuestService:
             return newly_completed
             
         except Exception as e:
-            print(f"Erreur check_and_complete_weekly_quests pour {username}: {e}")
+            print(f"Erreur check_and_complete_main_quests pour {username}: {e}")
             return []
     
     def generate_daily_quests(self, username: str) -> List[Dict]:
@@ -607,6 +608,41 @@ class QuestService:
         
         return daily_quests
     
+    def regenerate_daily_quests(self, username: str) -> bool:
+        """
+        Régénère les quêtes quotidiennes pour un joueur
+        Utilisé par le scheduler pour la régénération automatique
+        
+        Returns:
+            bool: True si la régénération a réussi
+        """
+        try:
+            # Charger toutes les quêtes des joueurs
+            all_player_data = self.load_all_player_quests()
+            
+            # Obtenir ou créer l'entrée du joueur
+            username_data = all_player_data.get(username, {})
+            
+            # Générer de nouvelles quêtes quotidiennes
+            new_daily_quests = self.generate_daily_quests(username)
+            
+            # Mettre à jour la structure
+            username_data['daily_quests'] = {
+                'generated_date': datetime.now().strftime('%Y-%m-%d'),
+                'quests': new_daily_quests
+            }
+            
+            # Sauvegarder
+            all_player_data[username] = username_data
+            self.save_all_player_quests(all_player_data)
+            
+            print(f"✅ Quêtes quotidiennes régénérées pour {username}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Erreur régénération quêtes pour {username}: {e}")
+            return False
+    
     def _get_player_stat(self, username: str, stat_name: str) -> int:
         """Récupère une statistique du joueur depuis players.json"""
         try:
@@ -642,8 +678,23 @@ class QuestService:
             if quest_def:
                 break
         
+        # 🛡️ ROBUSTESSE: Si la quête n'est pas trouvée, retourner une version basique
+        # pour éviter l'affichage vide (peut arriver temporairement lors du chargement)
         if not quest_def:
-            return None
+            print(f"⚠️ Définition de quête non trouvée pour {quest_id}, affichage basique")
+            return {
+                "id": quest_id,
+                "title": quest_id.replace('_', ' ').title(),
+                "description": "Quête en cours de chargement...",
+                "type": "economic",
+                "icon": "🎯",
+                "target": 100,
+                "targets": [100, 200, 300],
+                "rewards": [{"gold": 100}, {"gold": 120}, {"gold": 150}],
+                "current_progress": quest_progress.get('progress', 0),
+                "is_completed": False,
+                "is_claimed": False
+            }
         
         # Déterminer le format (prioriser 'progress' sur 'current_progress')
         if 'progress' in quest_progress:
@@ -683,6 +734,8 @@ class QuestService:
             rewards_full = level_data.get('rewards', [{}, {}, {}])
         else:
             targets_full = [100, 200, 300]
+            rewards_full = [{"gold": 100}, {"gold": 120}, {"gold": 150}]
+        
         # Construire la quête enrichie pour le frontend
         enriched = {
             "id": quest_id,
@@ -700,20 +753,20 @@ class QuestService:
         
         return enriched
     
-    def enrich_weekly_quest_data(self, quest_progress: Dict, username: str = None) -> Dict:
+    def enrich_main_quest_data(self, quest_progress: Dict, username: str = None) -> Dict:
         """
-        Enrichit les données d'une quête hebdomadaire depuis quests_config.json
+        Enrichit les données d'une quête principale depuis quests_config.json
         ET calcule la progression en temps réel depuis savegame.json
         Format entrée: {id, progress, is_completed}
         Format sortie: {id, title, description, icon, type, target, current_progress, rewards, is_completed}
         """
         quest_id = quest_progress['id']
         
-        # Trouver la définition dans weekly_quests.quests
-        weekly_quests_config = self.quests_config.get('weekly_quests', {})
-        weekly_progression = weekly_quests_config.get('quests', [])
+        # Trouver la définition dans main_quests.quests
+        main_quests_config = self.quests_config.get('main_quests', {})
+        main_progression = main_quests_config.get('quests', [])
         quest_def = None
-        for q in weekly_progression:
+        for q in main_progression:
             if q.get('id') == quest_id:
                 quest_def = q
                 break
@@ -725,12 +778,12 @@ class QuestService:
         quest_type = quest_def.get('type', 'weekly')
         real_progress = 0
         if username:
-            real_progress = self.calculate_weekly_quest_progress(username, quest_id, quest_type, quest_def)
+            real_progress = self.calculate_main_quest_progress(username, quest_id, quest_type, quest_def)
         
         # Construire la quête enrichie
         enriched = {
             "id": quest_id,
-            "title": quest_def.get('title', 'Quête Hebdomadaire'),
+            "title": quest_def.get('title', 'Quête principale'),
             "description": quest_def.get('description', ''),
             "type": quest_type,
             "icon": quest_def.get('icon', '⭐'),
@@ -903,6 +956,11 @@ class QuestService:
                     "awarded_at": datetime.now().isoformat(),
                     "expires_at": (datetime.now() + timedelta(days=3)).isoformat()
                 }
+                
+                # S'assurer que unclaimed_rewards existe
+                if 'unclaimed_rewards' not in quest_data:
+                    quest_data['unclaimed_rewards'] = []
+                    
                 quest_data['unclaimed_rewards'].append(unclaimed)
         
         quest['stars_earned'] = stars_earned

@@ -349,12 +349,12 @@
   min-height: 44px;
   font-size: 0.95rem;
   font-family: 'TrajanPro-Regular', serif;
-  z-index: 1001;
+  z-index: 10001;
   position: fixed;
-  bottom: env(safe-area-inset-bottom, 60px);
+  bottom: 0;
   left: 0;
   right: 0;
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 .bottombar-section {
   display: flex;
@@ -377,6 +377,13 @@
   color: #f39c12;
   font-weight: bold;
   font-size: 0.95rem;
+}
+
+/* Fix pour mobile : éviter que la navigation du smartphone masque le bottombar */
+@media (max-width: 768px) {
+  .battlefield-bottombar {
+    padding-bottom: max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 20px));
+  }
 }
 .bottombar-hint {
   color: #bdc3c7;

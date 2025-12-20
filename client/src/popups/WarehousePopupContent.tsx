@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getResourceEmoji } from '../constants/resourceIcons';
 import './WarehousePopupContent.css';
 
 interface WarehousePopupContentProps {

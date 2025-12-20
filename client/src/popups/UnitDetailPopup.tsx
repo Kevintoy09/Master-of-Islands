@@ -1,4 +1,5 @@
 import React from 'react';
+import { RESOURCE_EMOJIS } from '../constants/resourceIcons';
 import '../styles/UnitDetailPopup.css';
 
 interface UnitStats {
@@ -106,13 +107,13 @@ const UnitDetailPopup: React.FC<UnitDetailPopupProps> = ({ isOpen, onClose, unit
                 )}
                 {unit.production_cost.wood && (
                   <div className="detail-cost-item">
-                    <span className="cost-icon">🪵</span>
+                    <span className="cost-icon">{RESOURCE_EMOJIS.wood}</span>
                     <span className="cost-value">{unit.production_cost.wood}</span>
                   </div>
                 )}
                 {unit.production_cost.stone && (
                   <div className="detail-cost-item">
-                    <span className="cost-icon">🪨</span>
+                    <span className="cost-icon">{RESOURCE_EMOJIS.stone}</span>
                     <span className="cost-value">{unit.production_cost.stone}</span>
                   </div>
                 )}
@@ -136,7 +137,7 @@ const UnitDetailPopup: React.FC<UnitDetailPopupProps> = ({ isOpen, onClose, unit
                 )}
                 {unit.production_cost.gold && (
                   <div className="detail-cost-item">
-                    <span className="cost-icon">💰</span>
+                    <span className="cost-icon">{RESOURCE_EMOJIS.gold}</span>
                     <span className="cost-value">{unit.production_cost.gold}</span>
                   </div>
                 )}

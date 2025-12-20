@@ -4,6 +4,7 @@
  */
 
 import { getApiUrl } from '../utils/api';
+import { getResourceEmoji } from '../constants/resourceIcons';
 
 export interface VictoryData {
   winner_team: string;
@@ -436,21 +437,6 @@ export class PillageService {
    * Récupère l'emoji d'une ressource
    */
   static getResourceEmoji(resource: string): string {
-    const emojis: { [key: string]: string } = {
-      wood: '🪵',
-      stone: '🪨',
-      iron: '⚙️',
-      cereal: '🌾',
-      papyrus: '📜',
-      wine: '�',
-      marble: '🏛️',
-      horse: '🐎',
-      glass: '🪟',
-      gunpowder: '💥',
-      coal: '⚫',
-      cotton: '🌸',
-      spices: '🌶️'
-    };
-    return emojis[resource] || '📦';
+    return getResourceEmoji(resource);
   }
 }

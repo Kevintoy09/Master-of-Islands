@@ -4,60 +4,60 @@
     "difficulty": "Facile",
     "units": {"barbarian_warrior": 3, "barbarian_archer": 2},
     "rewards": {"wood": 150, "stone": 100, "cereal": 80},
-    "battlefield": "battlefield_map_1.json"
+    "battlefield": "battlefield_map_2.json"
   },
   "level_2": {
     "description": "Camp de sauvages renforcé avec des pillards",
     "difficulty": "Facile",
     "units": {"barbarian_warrior": 5, "barbarian_archer": 3, "barbarian_raider": 1},
     "rewards": {"wood": 250, "stone": 180, "cereal": 140, "iron": 50},
-    "battlefield": "battlefield_map_2.json"
+    "battlefield": "battlefield_map_1.json"
   },
   "level_3": {
     "description": "Tribu sauvage avec un chaman pour soutien magique",
     "difficulty": "Moyen",
     "units": {"barbarian_warrior": 7, "barbarian_archer": 5, "barbarian_raider": 2, "tribal_shaman": 1},
     "rewards": {"wood": 400, "stone": 300, "cereal": 220, "iron": 100, "papyrus": 30},
-    "battlefield": "Austerlitz.json"
+    "battlefield": "battlefield_map_1.json"
   },
   "level_4": {
     "description": "Forteresse sauvage commandée par un chef bandit",
     "difficulty": "Moyen",
     "units": {"barbarian_warrior": 10, "barbarian_archer": 7, "barbarian_raider": 3, "tribal_shaman": 2, "bandit_leader": 1},
     "rewards": {"wood": 600, "stone": 450, "cereal": 350, "iron": 180, "papyrus": 60, "horse": 10},
-    "battlefield": "grande_carte_v2.json"
+    "battlefield": "battlefield_map_2.json"
   },
   "level_5": {
     "description": "Repaire de pirates et sauvages alliés",
     "difficulty": "Difficile",
     "units": {"barbarian_warrior": 12, "barbarian_archer": 8, "barbarian_raider": 4, "tribal_shaman": 2, "bandit_leader": 1, "pirate_crew": 3},
     "rewards": {"wood": 1000, "stone": 750, "cereal": 600, "iron": 300, "papyrus": 120, "horse": 20, "marble": 15, "glass": 10},
-    "battlefield": "Overload_beach.json"
+    "battlefield": "battlefield_map_2.json"
   },
   "level_6": {
     "units": {"barbarian_warrior": 15, "barbarian_archer": 10, "barbarian_raider": 5, "tribal_shaman": 3, "bandit_leader": 1, "pirate_crew": 4},
     "rewards": {"wood": 1400, "stone": 1000, "cereal": 800, "iron": 400, "papyrus": 160, "horse": 30, "marble": 25, "glass": 15},
-    "battlefield": "default_working_v2.json"
+    "battlefield": "battlefield_map_2.json"
   },
   "level_7": {
     "units": {"barbarian_warrior": 18, "barbarian_archer": 12, "barbarian_raider": 6, "tribal_shaman": 4, "bandit_leader": 2, "pirate_crew": 5, "pirate_captain": 1},
     "rewards": {"wood": 1800, "stone": 1300, "cereal": 1000, "iron": 500, "papyrus": 200, "horse": 40, "marble": 35, "glass": 20},
-    "battlefield": "custom_battlefield_1_v2.json"
+    "battlefield": "battlefield_map_1.json"
   },
   "level_8": {
     "units": {"barbarian_warrior": 20, "barbarian_archer": 15, "barbarian_raider": 8, "tribal_shaman": 5, "bandit_leader": 2, "pirate_crew": 6, "pirate_captain": 1, "mercenary_veteran": 2},
     "rewards": {"wood": 2200, "stone": 1600, "cereal": 1200, "iron": 600, "papyrus": 240, "horse": 50, "marble": 45, "glass": 25, "wool": 20},
-    "battlefield": "Austerlitz.json"
+    "battlefield": "battlefield_map_2.json"
   },
   "level_9": {
     "units": {"barbarian_warrior": 22, "barbarian_archer": 18, "barbarian_raider": 10, "tribal_shaman": 6, "bandit_leader": 3, "pirate_crew": 7, "pirate_captain": 1, "mercenary_veteran": 3},
     "rewards": {"wood": 2600, "stone": 1900, "cereal": 1400, "iron": 700, "papyrus": 280, "horse": 60, "marble": 55, "glass": 30, "wool": 25},
-    "battlefield": "grande_carte_v2.json"
+    "battlefield": "battlefield_map_1.json"
   },
   "level_10": {
     "units": {"barbarian_warrior": 25, "barbarian_archer": 20, "barbarian_raider": 12, "tribal_shaman": 7, "bandit_leader": 3, "pirate_crew": 8, "pirate_captain": 2, "mercenary_veteran": 4, "rogue_mage": 1},
     "rewards": {"wood": 3000, "stone": 2200, "cereal": 1600, "iron": 800, "papyrus": 320, "horse": 70, "marble": 65, "glass": 35, "wool": 30, "spice": 15},
-    "battlefield": "Overload_beach.json"
+    "battlefield": "battlefield_map_2.json"
   },
   "level_11": {
     "units": {"barbarian_warrior": 28, "barbarian_archer": 22, "barbarian_raider": 14, "tribal_shaman": 8, "bandit_leader": 4, "pirate_crew": 10, "pirate_captain": 2, "mercenary_veteran": 5, "rogue_mage": 1},

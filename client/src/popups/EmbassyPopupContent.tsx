@@ -33,7 +33,9 @@ const EmbassyPopupContent: React.FC<EmbassyPopupContentProps> = ({
         const response = await fetch(`/api/auth/player/${user.id}/cities`);
         if (response.ok) {
           const data = await response.json();
-          setPlayerColonies(data.cities.length);
+          // Nombre de colonies = nombre total de villes - 1 (la capitale)
+          const coloniesCount = Math.max(0, data.cities.length - 1);
+          setPlayerColonies(coloniesCount);
         }
       } catch (err) {
         console.error('Erreur chargement colonies:', err);

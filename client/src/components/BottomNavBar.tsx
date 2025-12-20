@@ -8,6 +8,7 @@ import MessagesPopup from './MessagesPopup';
 import { useUser } from '../hooks/useUser';
 import { useMusicPlayer } from '../hooks/useMusicPlayer';
 import { getApiUrl } from '../utils/api';
+import { RESOURCE_EMOJIS } from '../constants/resourceIcons';
 import './BottomNavBar.css';
 
 
@@ -259,7 +260,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
         {/* LIGNE 1: Ressources du joueur */}
         <div className="nav-line nav-resources-line">
           <button onClick={handleProfileClick} className="nav-resource-btn" title="Profil">
-            👤
+            {RESOURCE_EMOJIS.player}
           </button>
           
           {playerResources?.gold !== undefined && (
@@ -268,7 +269,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
               title="Or"
               onClick={() => handleResourceClick('gold')}
             >
-              💰{formatNumber(playerResources.gold)}
+              {RESOURCE_EMOJIS.gold}{formatNumber(playerResources.gold)}
             </button>
           )}
           
@@ -278,7 +279,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
               title="Points de recherche"
               onClick={() => handleResourceClick('research_points')}
             >
-              🔬{formatNumber(playerResources.research_points)}
+              {RESOURCE_EMOJIS.research_points}{formatNumber(playerResources.research_points)}
             </button>
           )}
           
@@ -288,7 +289,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
               title="Bateaux de transport"
               onClick={() => handleResourceClick('transport_ships')}
             >
-              🚢{playerInfo ? 
+              {RESOURCE_EMOJIS.transport_ships}{playerInfo ? 
                 `${Math.floor(playerInfo.transport_ships_available || 0)}/${Math.floor(playerInfo.transport_ships_total || 0)}` :
                 formatNumber(playerResources.transport_ships)
               }
@@ -301,7 +302,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
               title="Diamants"
               onClick={() => handleResourceClick('diamonds')}
             >
-              💎{formatNumber(playerResources.diamonds)}
+              {RESOURCE_EMOJIS.diamonds}{formatNumber(playerResources.diamonds)}
             </button>
           )}
         </div>

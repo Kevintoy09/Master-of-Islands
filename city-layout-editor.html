@@ -399,6 +399,9 @@
             <h1>🏛️ Éditeur de City Layouts</h1>
             
             <div class="layout-selector">
+                <button class="btn btn-primary" onclick="loadUniverseData()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 15px;">
+                    📂 Charger universe.json
+                </button>
                 <label>Sélectionner un layout :</label>
                 <select id="layoutSelect" onchange="switchLayout()">
                     <option value="">-- Choisir un layout --</option>
@@ -496,28 +499,44 @@
         window.onload = function() {
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
-            loadUniverseData();
             setupEventListeners();
+            
+            // Message d'accueil
+            ctx.fillStyle = '#667eea';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('👆 Chargez universe.json pour commencer', canvas.width / 2, canvas.height / 2);
         };
         
         function loadUniverseData() {
-            console.log('📂 Chargement de universe.json...');
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
             
-            fetch('server/data/universe.json')
-                .then(response => {
-                    if (!response.ok) throw new Error('Fichier introuvable');
-                    return response.json();
-                })
-                .then(data => {
-                    universeData = data;
-                    console.log('✅ Universe.json chargé avec succès');
-                    console.log('📊 City layouts trouvés:', Object.keys(data.city_layouts).length);
-                    populateLayoutSelector();
-                })
-                .catch(error => {
-                    console.error('❌ Erreur de chargement:', error);
-                    alert('⚠️ Erreur de chargement de universe.json\n\nAssurez-vous que le fichier city-layout-editor.html est dans le dossier game57/');
-                });
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        console.log('📂 Parsing JSON...');
+                        universeData = JSON.parse(event.target.result);
+                        console.log('✅ Universe.json chargé avec succès');
+                        console.log('📊 City layouts trouvés:', Object.keys(universeData.city_layouts).length);
+                        
+                        populateLayoutSelector();
+                        
+                        alert(`✅ ${Object.keys(universeData.city_layouts).length} city layouts chargés`);
+                    } catch (error) {
+                        console.error('❌ Erreur complète:', error);
+                        alert('❌ Erreur : ' + error.message + '\n\nOuvrez la console (F12) pour plus de détails');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            fileInput.click();
         }
         
         function populateLayoutSelector() {

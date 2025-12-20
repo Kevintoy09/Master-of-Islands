@@ -73,6 +73,7 @@ const IslandPage: React.FC = () => {
   const {
     zoom,
     offset,
+    hasDragged,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -722,6 +723,9 @@ const IslandPage: React.FC = () => {
                     zIndex: 10
                   }}
                   onClick={() => {
+                    // Ignorer les clics si c'était un drag
+                    if (hasDragged) return;
+                    
                     // Utiliser les données de la ville depuis citiesData si disponibles
                     let fullCity = cityData || el;
                     setSelectedCity(fullCity);
@@ -834,6 +838,9 @@ const IslandPage: React.FC = () => {
                 }}
                 title="Camp des Sauvages - Cliquez pour attaquer !"
                 onClick={async () => {
+                  // Ignorer les clics si c'était un drag
+                  if (hasDragged) return;
+                  
                   if (gameShell.currentActiveCity) {
                     if (!gameShell.currentActiveCity || !gameShell.currentActiveCity.id) {
                       alert('Vous devez d\'abord sélectionner une ville dans le header pour attaquer');
@@ -933,11 +940,17 @@ const IslandPage: React.FC = () => {
                     ` - VERROUILLÉ (Recherchez les technologies appropriées pour débloquer)`
                   ) : ''}`}
                 onClick={() => {
+                  // Ignorer les clics si c'était un drag
+                  if (hasDragged) return;
+                  
                   if (isResourceSite) {
                     handleSiteClick(el.type);
                   }
                 }}
                 onTouchStart={(e) => {
+                  // Ignorer les touch si c'était un drag
+                  if (hasDragged) return;
+                  
                   e.preventDefault();
                   e.stopPropagation();
                   if (isResourceSite) {

@@ -176,7 +176,7 @@ const ResourceProductionPopup: React.FC<ResourceProductionPopupProps> = ({
             <div className="resource-popup-section">
               <div className="resource-popup-current">
                 <div className="resource-popup-amount">
-                  {formatNumber(currentAmount)}
+                  {Math.floor(currentAmount).toLocaleString('fr-FR')}
                 </div>
                 <div className="resource-popup-capacity">
                   Capacité de stockage : {formatNumber(productionDetails.storageCapacity)}

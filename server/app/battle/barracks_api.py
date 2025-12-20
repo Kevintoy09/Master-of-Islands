@@ -210,6 +210,16 @@ def start_production():
                 'message': f'Niveau de caserne insuffisant (requis: {unit_stats.get("required_barracks_level")})'
             }), 400
         
+        # Vérifier la recherche requise
+        required_research = unit_stats.get('required_research')
+        if required_research and required_research != 'null':
+            player_researches = city.get('researches', [])
+            if required_research not in player_researches:
+                return jsonify({
+                    'success': False,
+                    'message': f'Recherche requise manquante : {required_research}'
+                }), 400
+        
         # Calculer les coûts ajustés selon le niveau de la caserne
         cost_reduction = min(0.45, (barracks_level - 1) * 0.05)
         production_cost = unit_stats.get('production_cost', {})
@@ -363,6 +373,16 @@ def start_batch_production():
                     'success': False,
                     'message': f'Niveau de caserne insuffisant pour {unit_stats.get("name")}'
                 }), 400
+            
+            # Vérifier la recherche requise
+            required_research = unit_stats.get('required_research')
+            if required_research and required_research != 'null':
+                player_researches = city.get('researches', [])
+                if required_research not in player_researches:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Recherche requise manquante pour {unit_stats.get("name")} : {required_research}'
+                    }), 400
             
             # Calculer les coûts
             production_cost = unit_stats.get('production_cost', {})

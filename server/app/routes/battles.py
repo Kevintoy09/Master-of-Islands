@@ -82,10 +82,48 @@ def get_player_battles(player_id):
                                     origin_city = city.get('name', from_city_id)
                                     break
                 
-                # Destination
-                destination = battlefield.get('location', 'Inconnue')
-                if destination.startswith('wild_camp_'):
-                    destination = f"Village Barbare {destination.split('_')[-1]}"
+                # Destination - récupérer le nom et les coordonnées de l'île
+                location = battlefield.get('location', '')
+                destination = location  # Valeur par défaut
+                
+                # Charger les données de l'univers pour obtenir les informations de l'île
+                try:
+                    universe_path = os.path.join(os.path.dirname(__file__), '..', '..', 'gamedata', 'universe.json')
+                    if os.path.exists(universe_path):
+                        with open(universe_path, 'r', encoding='utf-8') as f:
+                            universe_data = json.load(f)
+                        
+                        found = False
+                        # Chercher l'île correspondante
+                        for island in universe_data.get('islands', []):
+                            if found:
+                                break
+                                
+                            # Vérifier si la destination est un camp de sauvages
+                            if location.startswith('wild_camp_'):
+                                # Extraire le numéro du village
+                                camp_number = location.split('_')[-1]
+                                if str(island.get('id')) == camp_number:
+                                    island_name = island.get('name', f"Île {camp_number}")
+                                    coords = f"[{island.get('x', 0)}, {island.get('y', 0)}]"
+                                    destination = f"Village Barbare - {island_name} {coords}"
+                                    found = True
+                                    break
+                                    
+                            # Vérifier si la destination est une ville
+                            elif location.startswith('city_id_'):
+                                for element in island.get('elements', []):
+                                    if element.get('id') == location:
+                                        island_name = island.get('name', 'Île')
+                                        coords = f"[{island.get('x', 0)}, {island.get('y', 0)}]"
+                                        city_name = element.get('name', 'Ville')
+                                        destination = f"{city_name} - {island_name} {coords}"
+                                        found = True
+                                        break
+                except Exception as e:
+                    print(f"⚠️ Erreur lors de la récupération des infos d'île pour {location}: {e}")
+                    import traceback
+                    traceback.print_exc()
                 
                 battle_info = {
                     'battleId': battlefield_id,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BattleReplayViewer from '../components/BattleReplayViewer';
 import { useUser } from '../hooks/useUser';
 import { getApiUrl } from '../utils/api';
+import { RESOURCE_EMOJIS } from '../constants/resourceIcons';
 import '../styles/theme.css';
 import '../pages/ArmyPage.css';
 
@@ -61,9 +62,9 @@ const ArmyPopup: React.FC<ArmyPopupProps> = ({ onClose }) => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'battle_ready': return 'Prêt';
+      case 'battle_ready': return 'En attente';
       case 'in_progress': return 'En cours';
-      case 'completed': return 'Terminé';
+      case 'completed': return 'Terminée';
       default: return status;
     }
   };
@@ -75,6 +76,17 @@ const ArmyPopup: React.FC<ArmyPopupProps> = ({ onClose }) => {
       case 'completed': return '#757575';
       default: return '#000';
     }
+  };
+
+  const formatBattleDate = (timestamp: number) => {
+    if (!timestamp) return 'Date inconnue';
+    const date = new Date(timestamp * 1000); // Convertir timestamp Unix en millisecondes
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const handleOpenBattlefield = async (battleId: string, status: string) => {
@@ -151,7 +163,7 @@ const ArmyPopup: React.FC<ArmyPopupProps> = ({ onClose }) => {
           style={{
             backgroundColor: '#2a1810',
             borderRadius: '12px',
-            maxWidth: '1200px',
+            maxWidth: '900px',
             width: '100%',
             maxHeight: '90vh',
             overflow: 'auto',
@@ -206,25 +218,17 @@ const ArmyPopup: React.FC<ArmyPopupProps> = ({ onClose }) => {
                   </div>
                 ) : (
                   <div className="battles-table">
-                    <div className="table-header">
-                      <div className="col-mission">Mission</div>
-                      <div className="col-ships">Bateaux</div>
-                      <div className="col-units">Unités</div>
-                      <div className="col-origin">Origine</div>
-                      <div className="col-destination">Destination</div>
-                      <div className="col-status">Status</div>
-                      <div className="col-actions">Actions</div>
-                    </div>
+                    {/* Suppression des titres de colonnes */}
 
                     {battles.map((battle) => (
                       <div key={battle.battleId} className="battle-row">
                         <div className="col-mission">
                           <span className="mission-type">{battle.missionType}</span>
-                          <small className="battle-id">{battle.battleId}</small>
+                          <small className="battle-id">{formatBattleDate(battle.created_at)}</small>
                         </div>
                         
                         <div className="col-ships">
-                          🚢 {battle.transportShips}
+                          {RESOURCE_EMOJIS.transport_ships} {battle.transportShips}
                         </div>
                         
                         <div className="col-units">
@@ -237,15 +241,6 @@ const ArmyPopup: React.FC<ArmyPopupProps> = ({ onClose }) => {
                         
                         <div className="col-destination">
                           🎯 {battle.destination}
-                        </div>
-                        
-                        <div className="col-status">
-                          <span 
-                            className="status-badge"
-                            style={{ color: getStatusColor(battle.status), backgroundColor: 'transparent', border: `1px solid ${getStatusColor(battle.status)}` }}
-                          >
-                            {getStatusText(battle.status)}
-                          </span>
                         </div>
                         
                         <div className="col-actions">
@@ -263,7 +258,7 @@ const ArmyPopup: React.FC<ArmyPopupProps> = ({ onClose }) => {
                             onClick={() => handleShowSummary(battle.battleId)}
                             title="Voir le résumé détaillé"
                           >
-                            📊 Résumé
+                            � Résumé
                           </button>
                         </div>
                       </div>

@@ -12,6 +12,7 @@ interface HeaderBarProps {
   cityName: string;
   cityId?: string;
   resources: { [key: string]: number | string };
+  storageLimits?: { [key: string]: number };  // Nouvelle propriété
   populationInfo?: {
     current_population: number;
     max_capacity: number;
@@ -38,7 +39,8 @@ interface HeaderBarProps {
 const HeaderBar: React.FC<HeaderBarProps> = ({ 
   cityName, 
   cityId, 
-  resources, 
+  resources,
+  storageLimits = {},
   populationInfo, 
   userCities, 
   activeCityId, 
@@ -216,11 +218,11 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
       background: "#8B4513",
       border: "1px solid #DAA520",
       borderRadius: "9px",
-      padding: "2px 4px",             // Padding latéral réduit pour mobile
-      margin: "0 1px",                // Marge réduite
+      padding: "3px 5px",             // Padding légèrement augmenté
+      margin: "0 2px",                // Marge légèrement augmentée
       boxShadow: "0 1px 3px rgba(0, 0, 0, 0.3)",
-      fontSize: "1.0em",              // Police légèrement réduite
-      minHeight: "15px",              // Hauteur réduite (-30%)
+      fontSize: "1.1em",              // Police légèrement augmentée
+      minHeight: "18px",              // Hauteur légèrement augmentée
       lineHeight: "1.2",
       cursor: "pointer",
       color: "white",
@@ -248,26 +250,38 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
     if (value < 10000) {
       return Math.floor(value).toString();
     } else if (value < 1000000) {
-      // Formatage en K
-      const kValue = value / 1000;
-      if (kValue < 10) {
-        return kValue.toFixed(2) + 'K'; // 1.23K
-      } else if (kValue < 100) {
-        return kValue.toFixed(1) + 'K'; // 12.3K
-      } else {
-        return Math.floor(kValue).toString() + 'K'; // 123K
-      }
+      return (value / 1000).toFixed(1) + 'K';
     } else {
-      // Formatage en M
-      const mValue = value / 1000000;
-      if (mValue < 10) {
-        return mValue.toFixed(2) + 'M'; // 1.23M
-      } else if (mValue < 100) {
-        return mValue.toFixed(1) + 'M'; // 12.3M
-      } else {
-        return Math.floor(mValue).toString() + 'M'; // 123M
-      }
+      return (value / 1000000).toFixed(1) + 'M';
     }
+  };
+
+  // Fonction pour obtenir le style de couleur selon la capacité de stockage
+  const getResourceStyle = (resourceKey: string, bubbleStyle: React.CSSProperties): React.CSSProperties => {
+    const amount = asNumber(resources[resourceKey]);
+    const limit = storageLimits[resourceKey];
+    
+    if (!limit || limit === 0) return bubbleStyle;
+    
+    const percentage = (amount / limit) * 100;
+    
+    if (percentage >= 100) {
+      // Rouge gras quand max atteint
+      return {
+        ...bubbleStyle,
+        color: '#ff0000',
+        fontWeight: 'bold',
+        textShadow: '0 0 3px rgba(255, 0, 0, 0.5)'
+      };
+    } else if (percentage >= 75) {
+      // Orange quand >=75%
+      return {
+        ...bubbleStyle,
+        color: '#ff8c00'
+      };
+    }
+    
+    return bubbleStyle;
   };
 
   // Ressources qui ont une production (excluent les ressources statiques)
@@ -329,17 +343,17 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
-        padding: "4px 4px 2px 4px", // Padding réduit pour la nouvelle hauteur
+        padding: "6px 6px 3px 6px", // Padding légèrement augmenté
         boxSizing: "border-box",
         overflowX: "auto",
         boxShadow: "var(--shadow-heavy)",
-        borderBottom: "3px solid var(--accent-primary)"
+        borderBottom: "3px solid #ecf0f1"
       }}
     >
       {/* LIGNE 1: PLAYER INFO - Différente visuellement */}
       <div className="header-bar__line header-bar__player-line" style={{
-        marginBottom: 3, // Espacement réduit entre les lignes
-        minHeight: "22px" // Hauteur augmentée de +20%
+        marginBottom: 4, // Espacement légèrement augmenté
+        minHeight: "26px" // Hauteur augmentée pour équilibrer avec bottombar
       }}>
         {/* Spinner de sélection de ville - déplacé en première position */}
         {userCities && userCities.length > 0 && (
@@ -472,7 +486,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
               key={key}
               className="header-bar__res-item"
               onClick={() => handleResourceClick(key)}
-              style={bubbleStyles.bronze}
+              style={getResourceStyle(key, bubbleStyles.bronze)}
             >
               <span className="header-bar__res-value-badge">
                 <span style={{ fontSize: '16px', marginRight: '2px' }}>{RESOURCE_EMOJIS[key]}</span>
@@ -500,7 +514,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 key={key}
                 className="header-bar__res-item"
                 onClick={() => handleResourceClick(key)}
-                style={bubbleStyles.bronze}
+                style={getResourceStyle(key, bubbleStyles.bronze)}
               >
                 <span className="header-bar__res-value-badge">
                   <span style={{ fontSize: '11px', marginRight: '1px' }}>{RESOURCE_EMOJIS[key]}</span>
@@ -523,7 +537,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 key={key}
                 className="header-bar__res-item"
                 onClick={() => handleResourceClick(key)}
-                style={bubbleStyles.bronze}
+                style={getResourceStyle(key, bubbleStyles.bronze)}
               >
                 <span className="header-bar__res-value-badge">
                   <span style={{ fontSize: '15px', marginRight: '2px' }}>{RESOURCE_EMOJIS[key]}</span>

@@ -154,9 +154,10 @@
 /* Responsive */
 @media (max-width: 600px) {
   .battle-toast-container {
-    top: 10px;
+    top: calc(10px + env(safe-area-inset-top));
     right: 10px;
     left: 10px;
+    z-index: 10000; /* Au-dessus du header qui est à 1000 */
   }
 
   .battle-toast {

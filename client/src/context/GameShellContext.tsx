@@ -10,6 +10,8 @@ interface GameShellContextType {
   // Ressources de la ville
   cityResources: { [key: string]: number };
   setCityResources: (resources: { [key: string]: number }) => void;
+  storageLimits: { [key: string]: number };
+  setStorageLimits: (limits: { [key: string]: number }) => void;
   
   // Informations de la ville
   cityName: string;
@@ -51,6 +53,7 @@ export const GameShellProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [activeCityId, setActiveCityId] = useState<string>("");
   const [currentActiveCity, setCurrentActiveCity] = useState<any>(null);
   const [cityResources, setCityResources] = useState<{ [key: string]: number }>({});
+  const [storageLimits, setStorageLimits] = useState<{ [key: string]: number }>({});
   const [cityName, setCityName] = useState<string>("");
   const [activeIslandId, setActiveIslandId] = useState<string>("");
   const [globalResources, setGlobalResources] = useState<{ [key: string]: number }>({});
@@ -69,6 +72,8 @@ export const GameShellProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setCurrentActiveCity,
     cityResources,
     setCityResources,
+    storageLimits,
+    setStorageLimits,
     cityName,
     setCityName,
     activeIslandId,

@@ -227,7 +227,11 @@ def get_city_state(city_id: str):
     
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
     if city:
-        return jsonify(city)
+        # Ajouter les limites de stockage
+        storage_limits = game_logic.get_city_storage_limits(city)
+        city_response = city.copy()
+        city_response['storage_limits'] = storage_limits
+        return jsonify(city_response)
     else:
         return jsonify({'error': 'City not found'}), 404
     
@@ -682,6 +686,9 @@ def destroy_or_downgrade_building(city_id):
     current_level = building.get('level', 1)
     new_level = None  # Initialiser à None par défaut
     
+    # Mémoriser si c'est un entrepôt pour vérifier les limites de stockage après
+    is_warehouse = building_name == 'Entrepôt'
+    
     if current_level > 1:
         # RÉTROGRADATION : Réduire le niveau de 1
         new_level = current_level - 1
@@ -717,6 +724,23 @@ def destroy_or_downgrade_building(city_id):
             action_message += f' ({freed_workers} ouvriers libérés)'
         action_type = 'destroy'
         result_building = None
+    
+    # Si c'est un entrepôt, vérifier et perdre les ressources excédentaires
+    if is_warehouse:
+        storage_limits = game_logic.get_city_storage_limits(city)
+        resources_lost = {}
+        
+        for resource, limit in storage_limits.items():
+            current = city.get('resources', {}).get(resource, 0)
+            if current > limit:
+                overflow = current - limit
+                city['resources'][resource] = limit
+                resources_lost[resource] = overflow
+                print(f"⚠️ Entrepôt {'détruit' if action_type == 'destroy' else 'rétrogradé'}: {overflow} {resource} perdu")
+        
+        if resources_lost:
+            total_lost = sum(resources_lost.values())
+            action_message += f" - {len(resources_lost)} ressources excédentaires perdues (total: {int(total_lost)})"
         
     # Sauvegarder avec le SaveService (force car c'est une action critique)
     success = save_savegame_transition(savegame, force=True)
@@ -1070,7 +1094,11 @@ def get_city_state_legacy(city_id):
     
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
     if city:
-        return jsonify(city)
+        # Ajouter les limites de stockage
+        storage_limits = game_logic.get_city_storage_limits(city)
+        city_response = city.copy()
+        city_response['storage_limits'] = storage_limits
+        return jsonify(city_response)
     
     raise CityNotFoundError(f'City {city_id} not found')
 
@@ -1095,7 +1123,7 @@ def get_resource_production_details(city_id, resource):
             raise CityNotFoundError(city_id)
         
         # Calculer la production passive de base à partir des sites de ressources avec ouvriers
-        from data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
+        from app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
         workers_assigned = city.get('workers_assigned', {})
         base_production = 0.0  # Production de base calculée à partir des ouvriers
         

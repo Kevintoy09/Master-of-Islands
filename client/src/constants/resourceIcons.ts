@@ -5,8 +5,8 @@
 
 export const RESOURCE_EMOJIS: { [key: string]: string } = {
   // Ressources de base
-  wood: "🪵",
-  stone: "🗿", // Pierre de l'île de Pâques - plus représentatif que 🪨
+  wood: "🪵", // 🪵 🌲 🪓 🌳 - Arbre plus visible que bûche
+  stone: "🪨", // 🗿 🪨 ⛰️ 🧱 - Pierre ronde plus reconnaissable
   iron: "⛏️", // Pioche - plus représentatif que ⚙️ pour le minerai
   cereal: "🌾",
   papyrus: "📜",
@@ -20,9 +20,9 @@ export const RESOURCE_EMOJIS: { [key: string]: string } = {
   cotton: "☁️",
   
   // Ressources spéciales
-  gold: "🪙",
+  gold: "🪙", // 🪙 💰 💵 🏆 - Sac d'argent plus visible
   diamonds: "💎",
-  transport_ships: "⛵", // Voilier antique - plus rustique que 🚢
+  transport_ships: "⛵", // ⛵ 🚢 ⛴️ 🛳️ - Navire moderne plus visible
   
   // Population
   population_total: "👥",
@@ -30,7 +30,7 @@ export const RESOURCE_EMOJIS: { [key: string]: string } = {
   population: "👥",
   
   // Recherche
-  research_points: "🔬", // Microscope au lieu de ⭐
+  research_points: "🔬", // 🔬 📚 📖 🎓 - Livres plus adapté
   research: "🔬",
   
   // Quêtes

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../hooks/useUser';
 import { useTransportConstants } from '../hooks/useTransportConstants';
+import { getResourceEmoji } from '../constants/resourceIcons';
 
 interface TransportPopupProps {
   sourceCity: {
@@ -42,11 +43,11 @@ const TransportPopup: React.FC<TransportPopupProps> = ({
 
   // Configuration des ressources
   const RESOURCES = [
-    { name: "wood", label: "Bois", icon: "🪵" },
-    { name: "stone", label: "Pierre", icon: "🪨" },
-    { name: "cereal", label: "Céréales", icon: "🌾" },
-    { name: "iron", label: "Fer", icon: "⚙️" },
-    { name: "papyrus", label: "Papyrus", icon: "📜" },
+    { name: "wood", label: "Bois", icon: getResourceEmoji("wood") },
+    { name: "stone", label: "Pierre", icon: getResourceEmoji("stone") },
+    { name: "cereal", label: "Céréales", icon: getResourceEmoji("cereal") },
+    { name: "iron", label: "Fer", icon: getResourceEmoji("iron") },
+    { name: "papyrus", label: "Papyrus", icon: getResourceEmoji("papyrus") },
   ];
 
   // Fonction pour obtenir la vitesse de chargement du port de la ville source

@@ -151,12 +151,12 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.quest-card-weekly {
+.quest-card-main {
   background: linear-gradient(to bottom, #fff4e6, #ffe4c4);
   border-color: #daa520;
 }
 
-.quest-card-weekly:hover {
+.quest-card-main:hover {
   border-color: #b8860b;
 }
 

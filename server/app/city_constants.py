@@ -29,7 +29,7 @@ HISTORIQUE:
 # CONSTANTES DE TRANSPORT
 # ===================================
 TRANSPORT_CONSTANTS = {
-    "STANDARD_SPEED": 505.6,  # unités par seconde (vitesse de base uniforme 15.6)
+    "STANDARD_SPEED": 40,  # unités par seconde (vitesse de base uniforme 15.6)
     "SHIP_CAPACITY": 500,     # ressources par bateau
     "DISTANCE_SCALE_FACTOR": 15.0,  # Coefficient multiplicateur pour les distances (ajuste l'échelle du monde)
     # Note: loading_speed est déterminée par le niveau du port (voir buildings.json)
@@ -50,11 +50,11 @@ POPULATION_CONSTANTS = {
 }
 
 DEFAULT_CITY_RESOURCES = {
-    "wood": 1500,
-    "stone": 1000,
-    "iron": 1000,
-    "cereal": 1500,
-    "papyrus": 1000,
+    "wood": 1000,
+    "stone": 200,
+    "iron": 200,
+    "cereal": 500,
+    "papyrus": 200,
     "horse": 0,
     "marble": 0,
     "glass": 0,

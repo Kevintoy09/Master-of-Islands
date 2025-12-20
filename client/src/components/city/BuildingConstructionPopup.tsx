@@ -86,8 +86,11 @@ const BuildingConstructionPopup: React.FC<BuildingConstructionPopupProps> = ({
             const displayCost = hasRealArchitectBonus ? bonusCost.actual_cost : baseCost;
             
             // Construire le chemin de l'image
+            // Si l'image commence déjà par "assets/", l'utiliser telle quelle
             const imagePath = building.image 
-              ? `/assets/city/buildings/${building.image}`
+              ? (building.image.startsWith('assets/') || building.image.startsWith('/assets/') 
+                  ? `/${building.image.replace(/^\//, '')}` 
+                  : `/assets/city/buildings/${building.image}`)
               : '/assets/city/buildings/standard.png';
             
             const isLocked = !building.has_research;  // 🔒 Verrouillé uniquement si recherche manquante

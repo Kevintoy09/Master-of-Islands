@@ -255,6 +255,16 @@ class TickService:
                     # Arrondir à 4 décimales pour éviter l'accumulation d'erreurs de virgule flottante
                     resources[resource] = round(current_amount + actual_production, 4)
                     city_production[resource] = actual_production
+                    
+                    # Log si production bloquée par limite
+                    if actual_production < total_production:
+                        self.logger.debug(f"⚠️ Production {resource} limitée: {actual_production}/{total_production} (stockage plein)")
+                    elif actual_production > 0:
+                        self.logger.debug(f"✅ Production {resource}: +{actual_production} (total: {resources[resource]})")
+                else:
+                    # Stockage plein
+                    city_production[resource] = 0
+                    self.logger.debug(f"⚠️ Production {resource} bloquée: stockage plein ({current_amount}/{storage_limit})")
         
         # === 2. GESTION POPULATION (avec PopulationManager) ===
         # Le PopulationManager s'occupe de toute la gestion population:

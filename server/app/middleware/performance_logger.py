@@ -14,21 +14,14 @@ def init_performance_monitoring(app):
     @app.after_request
     def after_request(response):
         """Log les requêtes qui prennent plus de 500ms"""
-        if hasattr(g, 'start_time'):
-            elapsed = (time.time() - g.start_time) * 1000  # en millisecondes
-            
-            # Logger seulement les requêtes vraiment lentes (> 500ms)
-            if elapsed > 500:
-                method = request.method
-                path = request.path
-                status = response.status_code
-                
-                # Colorer selon la gravité
-                if elapsed > 1000:
-                    color = '🔴'  # > 1 seconde = très lent
-                else:
-                    color = '🟠'  # > 500ms = lent
-                
-                print(f"{color} [{elapsed:.0f}ms] {method} {path} → {status}")
+        # Logs désactivés pour production
+        # if hasattr(g, 'start_time'):
+        #     elapsed = (time.time() - g.start_time) * 1000
+        #     if elapsed > 500:
+        #         method = request.method
+        #         path = request.path
+        #         status = response.status_code
+        #         color = '🔴' if elapsed > 1000 else '🟠'
+        #         print(f"{color} [{elapsed:.0f}ms] {method} {path} → {status}")
         
         return response

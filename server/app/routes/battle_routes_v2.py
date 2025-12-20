@@ -1492,3 +1492,60 @@ def mark_notification_read():
     except Exception as e:
         print(f"[ERROR] Erreur marquage notifications: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@battle_v2_bp.route('/api/battles/notifications/clear/<player_id>', methods=['DELETE'])
+def clear_player_notifications(player_id):
+    """Supprime toutes les notifications d'un joueur"""
+    try:
+        notifications = load_json_data(BATTLE_NOTIFICATIONS_FILE, {})
+        
+        if player_id in notifications:
+            del notifications[player_id]
+            save_json_data(BATTLE_NOTIFICATIONS_FILE, notifications)
+            return jsonify({
+                "success": True,
+                "message": f"Toutes les notifications de {player_id} ont été supprimées"
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "message": "Aucune notification trouvée pour ce joueur"
+            }), 404
+        
+    except Exception as e:
+        print(f"[ERROR] Erreur suppression notifications: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@battle_v2_bp.route('/api/battles/notifications/clear-old', methods=['POST'])
+def clear_old_notifications():
+    """Supprime les notifications de plus de 7 jours pour tous les joueurs"""
+    try:
+        import time
+        notifications = load_json_data(BATTLE_NOTIFICATIONS_FILE, {})
+        
+        seven_days_ago = int(time.time() * 1000) - (7 * 24 * 60 * 60 * 1000)
+        total_deleted = 0
+        
+        for player_id in list(notifications.keys()):
+            original_count = len(notifications[player_id])
+            notifications[player_id] = [
+                n for n in notifications[player_id]
+                if n.get('timestamp', 0) > seven_days_ago
+            ]
+            deleted = original_count - len(notifications[player_id])
+            total_deleted += deleted
+            
+            # Supprimer la clé si plus de notifications
+            if not notifications[player_id]:
+                del notifications[player_id]
+        
+        save_json_data(BATTLE_NOTIFICATIONS_FILE, notifications)
+        
+        return jsonify({
+            "success": True,
+            "message": f"{total_deleted} notifications supprimées (>7 jours)"
+        })
+        
+    except Exception as e:
+        print(f"[ERROR] Erreur nettoyage notifications: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500

@@ -21,6 +21,7 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [drag, setDrag] = useState<{ startX: number, startY: number, origX: number, origY: number } | null>(null);
   const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
+  const [hasDragged, setHasDragged] = useState(false); // Pour détecter si c'est un drag ou un click
 
   // Fonction pour contraindre les offsets pendant le drag (permet d'aller aux bords)
   const constrainOffsetForDrag = useCallback((offsetX: number, offsetY: number, currentZoom: number) => {
@@ -29,11 +30,15 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
     const scaledMapWidth = mapWidth * currentZoom;
     const scaledMapHeight = mapHeight * currentZoom;
     
-    // Pour le drag : on peut aller jusqu'aux bords mais pas au-delà
+    // Ajouter des marges pour compenser les zones masquées par header et bottombar
+    const headerMargin = 80; // Environ la hauteur du header
+    const bottombarMargin = 80; // Environ la hauteur du bottombar
+    
+    // Pour le drag : on peut aller jusqu'aux bords PLUS les marges pour voir les zones masquées
     let minX = viewportWidth - scaledMapWidth; // Bord gauche visible
     let maxX = 0; // Bord droit visible
-    let minY = viewportHeight - scaledMapHeight; // Bord haut visible
-    let maxY = 0; // Bord bas visible
+    let minY = viewportHeight - scaledMapHeight - bottombarMargin; // Bord haut visible + marge bottombar
+    let maxY = headerMargin; // Bord bas visible + marge header
     
     // Si la carte est plus petite que la viewport, la centrer
     if (scaledMapWidth <= viewportWidth) {
@@ -87,6 +92,7 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
       return;
     }
     
+    setHasDragged(false);
     setDrag({
       startX: e.clientX,
       startY: e.clientY,
@@ -97,8 +103,17 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (drag) {
-      const newOffsetX = drag.origX + (e.clientX - drag.startX);
-      const newOffsetY = drag.origY + (e.clientY - drag.startY);
+      const deltaX = e.clientX - drag.startX;
+      const deltaY = e.clientY - drag.startY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      // Si le mouvement dépasse 5px, c'est un drag
+      if (distance > 5) {
+        setHasDragged(true);
+      }
+      
+      const newOffsetX = drag.origX + deltaX;
+      const newOffsetY = drag.origY + deltaY;
       const constrainedOffset = constrainOffsetForDrag(newOffsetX, newOffsetY, zoom);
       setOffset(constrainedOffset);
     }
@@ -181,6 +196,7 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
     } else if (e.touches.length === 1) {
       // Drag avec un doigt
       const touch = e.touches[0];
+      setHasDragged(false);
       setDrag({
         startX: touch.clientX,
         startY: touch.clientY,
@@ -222,8 +238,17 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
       // Drag avec un doigt
       e.preventDefault();
       const touch = e.touches[0];
-      const newOffsetX = drag.origX + (touch.clientX - drag.startX);
-      const newOffsetY = drag.origY + (touch.clientY - drag.startY);
+      const deltaX = touch.clientX - drag.startX;
+      const deltaY = touch.clientY - drag.startY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      // Si le mouvement dépasse 10px sur mobile, c'est un drag (seuil plus élevé que desktop)
+      if (distance > 10) {
+        setHasDragged(true);
+      }
+      
+      const newOffsetX = drag.origX + deltaX;
+      const newOffsetY = drag.origY + deltaY;
       const constrainedOffset = constrainOffsetForDrag(newOffsetX, newOffsetY, zoom);
       setOffset(constrainedOffset);
     }
@@ -239,6 +264,7 @@ export const useZoomAndDrag = (options: UseZoomAndDragOptions = {}) => {
     zoom,
     offset,
     drag,
+    hasDragged,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,

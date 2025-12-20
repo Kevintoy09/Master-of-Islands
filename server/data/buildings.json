@@ -1,13 +1,13 @@
 {
   "Maison du Chef de Village": {
-    "description": "Centre de commandement qui donne accès aux quêtes quotidiennes et hebdomadaires. Améliore les récompenses de quêtes.",
+    "description": "Centre de commandement qui donne accès aux quêtes quotidiennes et principales. Améliore les récompenses de quêtes.",
     "image": "assets/city/buildings/chief_house.png",
     "category": "special",
     "required_research": "maison_chef",
     "max_instances": 1,
     "slot_restriction": 17,
     "levels": [
-      {"level": 1, "cost": {"wood": 100, "stone": 50}, "construction_time": 300, "effect": {"quest_reward_bonus": 0}},
+      {"level": 1, "cost": {"wood": 100, "stone": 50}, "construction_time": 60, "effect": {"quest_reward_bonus": 0}},
       {"level": 2, "cost": {"wood": 200, "stone": 100, "marble": 20}, "construction_time": 600, "effect": {"quest_reward_bonus": 5}},
       {"level": 3, "cost": {"wood": 350, "stone": 200, "marble": 50}, "construction_time": 900, "effect": {"quest_reward_bonus": 10}},
       {"level": 4, "cost": {"wood": 550, "stone": 350, "marble": 100}, "construction_time": 1200, "effect": {"quest_reward_bonus": 15}},

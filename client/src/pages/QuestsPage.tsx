@@ -30,7 +30,7 @@ interface Quest {
 interface UnclaimedReward {
   quest_id: string;
   quest_title?: string;
-  quest_type?: string;  // 'daily' ou 'weekly'
+  quest_type?: string;  // 'daily' ou 'main'
   star_level?: number;  // Pour daily quests
   rewards: {
     gold?: number;
@@ -58,7 +58,7 @@ const QuestsPage: React.FC = () => {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<'quests' | 'rewards'>('quests');
   const [dailyQuests, setDailyQuests] = useState<Quest[]>([]);
-  const [weeklyQuests, setWeeklyQuests] = useState<Quest[]>([]);
+  const [mainQuests, setMainQuests] = useState<Quest[]>([]);
   const [unclaimedRewards, setUnclaimedRewards] = useState<UnclaimedReward[]>([]);
   const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,11 +87,11 @@ const QuestsPage: React.FC = () => {
           setDailyQuests(dailyData.quests || []);
         }
 
-        // Charger les quêtes hebdomadaires
-        const weeklyResponse = await fetch(`/api/quests/weekly?username=${user.username}`);
-        if (weeklyResponse.ok) {
-          const weeklyData = await weeklyResponse.json();
-          setWeeklyQuests(weeklyData.quests || []);
+        // Charger les quêtes principales
+        const mainResponse = await fetch(`/api/quests/main?username=${user.username}`);
+        if (mainResponse.ok) {
+          const mainData = await mainResponse.json();
+          setMainQuests(mainData.quests || []);
         }
 
         // Charger les récompenses non réclamées
@@ -153,9 +153,9 @@ const QuestsPage: React.FC = () => {
     return Math.max(0, diffDays);
   };
 
-  // Grouper les récompenses quotidiennes par quest_id (ignorer les weekly)
+  // Grouper les récompenses quotidiennes par quest_id (ignorer les main)
   const groupedRewards = unclaimedRewards
-    .filter(r => r.quest_type !== 'weekly')  // Seulement les daily
+    .filter(r => r.quest_type !== 'main')  // Seulement les daily
     .reduce((acc, reward) => {
       if (!acc[reward.quest_id]) {
         acc[reward.quest_id] = {
@@ -172,11 +172,11 @@ const QuestsPage: React.FC = () => {
       return acc;
     }, {} as Record<string, { quest_id: string; quest_title: string; expires_at: string; stars: Array<{ star_level: number; rewards: any }> }>);
 
-  const handleClaimWeeklyReward = async (questId: string) => {
+  const handleClaimMainReward = async (questId: string) => {
     if (!user?.username) return;
 
     try {
-      const response = await fetch('/api/quests/claim-weekly-reward', {
+      const response = await fetch('/api/quests/claim-main-reward', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
@@ -188,11 +188,11 @@ const QuestsPage: React.FC = () => {
       });
 
       if (response.ok) {
-        // Recharger les quêtes hebdomadaires pour afficher la suivante
-        const weeklyResponse = await fetch(`/api/quests/weekly?username=${user.username}`);
-        if (weeklyResponse.ok) {
-          const weeklyData = await weeklyResponse.json();
-          setWeeklyQuests(weeklyData.quests || []);
+        // Recharger les quêtes principales pour afficher la suivante
+        const mainResponse = await fetch(`/api/quests/main?username=${user.username}`);
+        if (mainResponse.ok) {
+          const mainData = await mainResponse.json();
+          setMainQuests(mainData.quests || []);
         }
 
         // Recharger les récompenses et stats
@@ -421,10 +421,10 @@ const QuestsPage: React.FC = () => {
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* Récompenses hebdomadaires */}
-                  {unclaimedRewards.filter(r => r.quest_type === 'weekly').map((reward, idx) => (
+                  {/* Récompenses principales */}
+                  {unclaimedRewards.filter(r => r.quest_type === 'main').map((reward, idx) => (
                     <div
-                      key={reward.quest_id || `weekly-${idx}`}
+                      key={reward.quest_id || `main-${idx}`}
                       style={{
                         background: 'linear-gradient(135deg, #e6d5f5 0%, #d5b7e8 100%)',
                         border: '2px solid #8b47a1',
@@ -437,7 +437,7 @@ const QuestsPage: React.FC = () => {
                     >
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '14px', color: '#6a3d7f', marginBottom: '4px' }}>
-                          ⭐ Quête Hebdomadaire
+                          ⭐ Quête Principale
                         </div>
                         <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#3d1755', marginBottom: '8px' }}>
                           {reward.quest_id.replace(/_/g, ' ').replace(/week \d+ /, '')}
@@ -450,7 +450,7 @@ const QuestsPage: React.FC = () => {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleClaimWeeklyReward(reward.quest_id || '')}
+                        onClick={() => handleClaimMainReward(reward.quest_id || '')}
                         style={{
                           padding: '8px 16px',
                           background: '#a855f7',
@@ -613,25 +613,25 @@ const QuestsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Quêtes Hebdomadaires */}
+              {/* Quêtes Principales */}
               <div className="quest-section">
                 <div className="section-header">
-                  <h3>⭐ Quêtes Hebdomadaires</h3>
-                  <span className="section-badge">Renouvellement : 7j</span>
+                  <h3>⭐ Quêtes Principales</h3>
+                  <span className="section-badge">Progressives</span>
                 </div>
                 <p className="section-description">
-                  Défis majeurs avec des récompenses exceptionnelles
+                  Défis majeurs qui s'enchaînent avec des récompenses exceptionnelles
                 </p>
                 
                 <div className="quest-list">
-                  {weeklyQuests.length > 0 ? (
-                    weeklyQuests.map((quest) => (
+                  {mainQuests.length > 0 ? (
+                    mainQuests.map((quest) => (
                       <div 
                         key={quest.id} 
-                        className={`quest-card quest-card-weekly ${quest.is_completed ? 'quest-completed' : ''}`}
+                        className={`quest-card quest-card-main ${quest.is_completed ? 'quest-completed' : ''}`}
                         onClick={() => {
                           if (quest.is_completed && !quest.is_claimed) {
-                            handleClaimWeeklyReward(quest.id);
+                            handleClaimMainReward(quest.id);
                           }
                         }}
                         style={{

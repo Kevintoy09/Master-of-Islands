@@ -336,7 +336,7 @@ class GameLogic:
         
         # Vérifier la capacité du site
         try:
-            from data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
+            from app.app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
             resource_type = SITE_TO_RESOURCE.get(site_type, site_type)
             site_data = RESOURCE_SITE_LEVELS.get(resource_type, {})
             
@@ -395,7 +395,7 @@ class GameLogic:
             if not savegame_data:
                 return False
             
-            from data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
+            from app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
             # TimeManager supprimé - utilise système de tick manuel maintenant
             
             for city in savegame_data.get('cities', []):
@@ -484,7 +484,7 @@ class GameLogic:
     def calculate_total_production_rate(self, city: Dict, resource: str) -> float:
         """Calcule le taux de production total pour une ressource donnée"""
         # Calculer la production passive de base à partir des sites de ressources avec ouvriers
-        from data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
+        from app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
         workers_assigned = city.get('workers_assigned', {})
         base_production = 0.0  # Production de base calculée à partir des ouvriers
         
@@ -728,7 +728,7 @@ class GameLogic:
             if not savegame_data:
                 return False
             
-            from data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
+            from app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
             # TimeManager supprimé - utilise système de tick manuel maintenant
             
             current_tick = 0  # Valeur par défaut pour compatibilité

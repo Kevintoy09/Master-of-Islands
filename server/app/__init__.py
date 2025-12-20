@@ -250,9 +250,15 @@ def create_app():
     app.register_blueprint(tutorial_bp)  # 📚 SYSTÈME DE TUTORIEL - PROGRESSION ET RÉCOMPENSES
     app.register_blueprint(progression_bp)  # 📊 SYSTÈME DE PROGRESSION - SCORES CONSTRUCTION/RECHERCHE
     app.register_blueprint(leaderboard_bp)  # 🏆 SYSTÈME DE CLASSEMENT - LEADERBOARD DES JOUEURS
-    app.register_blueprint(quest_bp)  # 🎯 SYSTÈME DE QUÊTES - QUOTIDIENNES ET HEBDOMADAIRES
+    app.register_blueprint(quest_bp)  # 🎯 SYSTÈME DE QUÊTES - QUOTIDIENNES ET PRINCIPALES
     app.register_blueprint(messages_bp)  # 💬 SYSTÈME DE MESSAGERIE - COMMUNICATION JOUEURS & ADMIN
     # app.register_blueprint(military_unified_bp)  # SUPPRIMÉ - gestion militaire V1 supprimée pour éviter conflits
+    
+    # === INITIALISATION DU SCHEDULER DE QUÊTES ===
+    # Régénération automatique des quêtes quotidiennes à minuit + rattrapage si serveur éteint
+    from .services.quest_service import quest_service
+    from .services.quest_scheduler import init_quest_scheduler
+    init_quest_scheduler(quest_service)
     
     # Initialiser et enregistrer les routes de paramètres utilisateur
     from .routes.settings_routes import settings_bp, init_settings_routes

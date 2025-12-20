@@ -400,9 +400,13 @@ class TransportService:
                             }
                         print(f"✅ Ajouté {amount} {unit_type} à {city_id}")
                     else:
-                        # Gérer les ressources normales
-                        current_amount = city_resources.get(resource_type, 0)
-                        city_resources[resource_type] = current_amount + amount
+                        # Gérer les ressources normales avec respect des limites de stockage
+                        from app.game_logic import GameLogic
+                        game_logic = GameLogic(self.data_manager)
+                        result = game_logic.add_resource_with_limit(city, resource_type, amount)
+                        
+                        if result['overflow'] > 0:
+                            print(f"⚠️ Stockage plein pour {resource_type} à {city_id}: {result['overflow']} perdu")
             
             # Sauvegarder
             return self.data_manager.save_savegame(savegame)

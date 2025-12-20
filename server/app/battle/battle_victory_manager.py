@@ -911,28 +911,13 @@ class BattleVictoryManager:
                 print(f"❌ [PILLAGE-AUTO] Ville {city_id} non trouvée")
                 return False
             
-            # 7. Distribuer proportionnellement aux attaquants selon leurs bateaux
+            # Les ressources seront créditées quand les transports arriveront
+            # via transport_timer_service._credit_battle_return()
             for attacker_id, player_ships in pillage_per_player.items():
                 proportion = player_ships / total_ships
-                
-                # Trouver la première ville de l'attaquant
-                for city in savegame_data.get('cities', []):
-                    if city.get('owner') == attacker_id:
-                        if 'resources' not in city:
-                            city['resources'] = {}
-                        
-                        # Créditer la part proportionnelle
-                        for resource_type, total_amount in pillaged_resources.items():
-                            player_amount = int(total_amount * proportion)
-                            if player_amount > 0:
-                                if resource_type not in city['resources']:
-                                    city['resources'][resource_type] = 0
-                                city['resources'][resource_type] += player_amount
-                        
-                        print(f"✅ [PILLAGE-AUTO] {attacker_id} reçoit {int(proportion * 100)}% du butin")
-                        break
+                print(f"📊 [PILLAGE-AUTO] {attacker_id} recevra {int(proportion * 100)}% du butin au retour du transport")
             
-            # Sauvegarder savegame
+            # Sauvegarder savegame (retrait des ressources de la ville pillée)
             if self._save_json('savegame.json', savegame_data):
                 # Enregistrer dans les contributions
                 import os
@@ -1051,15 +1036,7 @@ class BattleVictoryManager:
                 # Trouver la première ville de l'attaquant
                 for city in savegame_data.get('cities', []):
                     if city.get('owner') == main_attacker:
-                        if 'resources' not in city:
-                            city['resources'] = {}
-                        
-                        # Ajouter les récompenses
-                        for resource_type, amount in rewards.items():
-                            if resource_type not in city['resources']:
-                                city['resources'][resource_type] = 0
-                            city['resources'][resource_type] += amount
-                        
+                        # Les ressources seront créditées au retour du transport via transport_timer_service
                         break
                 
                 # Enregistrer dans les contributions

@@ -56,6 +56,38 @@ const GameShell: React.FC<GameShellProps> = ({ children }) => {
     fetchUserCities();
   }, [user?.id]);
 
+  // Écouter l'événement de renommage de ville pour rafraîchir la liste
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const handleCityRenamed = async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { cityId, newName } = customEvent.detail;
+      
+      // Rafraîchir la liste complète des villes
+      try {
+        const response = await fetch(`/api/auth/player/${user.id}/cities`);
+        if (response.ok) {
+          const data = await response.json();
+          gameShell.setUserCities(data.cities || []);
+          
+          // Mettre à jour aussi le nom de la ville active si c'est celle-ci
+          if (cityId === gameShell.activeCityId) {
+            gameShell.setCityName(newName);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur lors du rafraîchissement des villes:', err);
+      }
+    };
+
+    window.addEventListener('cityRenamed', handleCityRenamed);
+    
+    return () => {
+      window.removeEventListener('cityRenamed', handleCityRenamed);
+    };
+  }, [user?.id, gameShell.activeCityId]);
+
   // Détermine la ville active selon l'URL - stable entre les pages
   useEffect(() => {
     // Pages qui n'ont pas besoin de ville active (ne pas gérer la ville)
@@ -116,6 +148,7 @@ const GameShell: React.FC<GameShellProps> = ({ children }) => {
         const data = await response.json();
         gameShell.setCityName(data.name || "Ville inconnue");
         gameShell.setCityResources(data.resources || {});
+        gameShell.setStorageLimits(data.storage_limits || {});
         gameShell.setActiveIslandId(data.island_id || "");
         
         // Mettre à jour currentActiveCity avec les données complètes
@@ -254,6 +287,7 @@ const GameShell: React.FC<GameShellProps> = ({ children }) => {
         cityName={gameShell.cityName}
         cityId={gameShell.activeCityId}
         resources={allResources}
+        storageLimits={gameShell.storageLimits}
         populationInfo={populationInfo}
         userCities={gameShell.userCities}
         activeCityId={gameShell.activeCityId}
