@@ -49,7 +49,7 @@
 /* Header du popup */
 .notification-journal-popup .popup-header {
   background: var(--roman-gold-gradient);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border-bottom: var(--border-width) solid var(--bg-secondary);
   display: flex;
   justify-content: space-between;
@@ -92,7 +92,7 @@
 .notification-journal-popup .popup-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   background: var(--ivory-light);
 }
 
@@ -136,7 +136,7 @@
   font-family: var(--font-bold);
   font-size: 0.8rem;
   display: grid;
-  grid-template-columns: 30% 20% 50%; /* Date 30%, Type 20%, Détail 50% */
+  grid-template-columns: 35% 20% 45%; /* Date 35%, Type 20%, Détail 45% */
   gap: var(--spacing-xs);
   padding: var(--spacing-sm);
   font-weight: bold;
@@ -150,7 +150,7 @@
 
 .table-row {
   display: grid;
-  grid-template-columns: 30% 20% 50%; /* Même structure que le header */
+  grid-template-columns: 35% 20% 45%; /* Même structure que le header */
   gap: var(--spacing-xs);
   padding: var(--spacing-sm);
   border-bottom: 1px solid var(--border-primary);
@@ -169,10 +169,24 @@
 /* Colonnes */
 .col-date {
   font-family: var(--font-primary);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   line-height: 1.2;
-  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.col-date .date-line {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+.col-date .time-line {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .col-type {
@@ -247,7 +261,7 @@
 /* Footer du popup */
 .notification-journal-popup .popup-footer {
   background: var(--bg-light);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border-top: var(--border-width) solid var(--border-primary);
   display: flex;
   gap: var(--spacing-sm);

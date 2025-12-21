@@ -3,6 +3,7 @@ import '../styles/BarracksPopupContent.css';
 import { formatTime } from '../utils/timeUtils';
 import HeroDetailPopup from './HeroDetailPopup';
 import UnitDetailPopup from './UnitDetailPopup';
+import { useUser } from '../hooks/useUser';
 
 interface UnitStats {
   name: string;
@@ -77,6 +78,7 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
   onCityDataChange,
   defaultTab = 'production'
 }) => {
+  const { user, syncFromServer } = useUser();
   const [unitStats, setUnitStats] = useState<Record<string, UnitStats>>({});
   const [productionQueue, setProductionQueue] = useState<ProductionQueueItem[]>([]);
   const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
@@ -89,6 +91,13 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
   const [selectedUnit, setSelectedUnit] = useState<{type: string, stats: UnitStats} | null>(null);
   const [showUnitDetail, setShowUnitDetail] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+
+  // Synchroniser les données du joueur (recherches) au montage
+  useEffect(() => {
+    if (user?.id) {
+      syncFromServer();
+    }
+  }, []);
 
   useEffect(() => {
     fetchUnitStats();
@@ -214,7 +223,7 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
     }
     // Vérifier la recherche requise (si elle existe)
     if (unit.required_research && unit.required_research !== null) {
-      const playerResearches = city.researches || [];
+      const playerResearches = user?.unlocked_research || [];
       if (!playerResearches.includes(unit.required_research)) {
         return false;
       }
@@ -228,7 +237,7 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
       messages.push(`niveau de construction ${unit.required_barracks_level}`);
     }
     if (unit.required_research && unit.required_research !== null) {
-      const playerResearches = city.researches || [];
+      const playerResearches = user?.unlocked_research || [];
       if (!playerResearches.includes(unit.required_research)) {
         const researchName = unit.required_research.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         messages.push(`la recherche ${researchName}`);

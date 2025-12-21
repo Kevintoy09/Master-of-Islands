@@ -135,10 +135,17 @@ const NotificationJournalPopup: React.FC<NotificationJournalPopupProps> = ({ isO
                   </div>
                   
                   <div className="table-body">
-                    {notifications.map((notification, index) => (
+                    {notifications.map((notification, index) => {
+                      // Séparer la date et l'heure
+                      const dateParts = notification.date.split(' à ');
+                      const dateOnly = dateParts[0]; // Ex: "21/12/2025"
+                      const timeOnly = dateParts[1] || ''; // Ex: "10h00"
+                      
+                      return (
                       <div key={index} className="table-row">
                         <div className="col-date">
-                          {notification.date}
+                          <div className="date-line">{dateOnly}</div>
+                          <div className="time-line">{timeOnly}</div>
                         </div>
                         <div className="col-type">
                           <span className="type-badge">
@@ -154,7 +161,8 @@ const NotificationJournalPopup: React.FC<NotificationJournalPopupProps> = ({ isO
                           {notification.detail}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

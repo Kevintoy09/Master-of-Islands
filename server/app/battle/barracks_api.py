@@ -213,11 +213,17 @@ def start_production():
         # Vérifier la recherche requise
         required_research = unit_stats.get('required_research')
         if required_research and required_research != 'null':
-            player_researches = city.get('researches', [])
+            # Récupérer les recherches du joueur propriétaire depuis players.json
+            owner_id = city.get('owner')
+            players_data = data_manager.load_players()
+            player = next((p for p in players_data.get('players', []) if p.get('id') == owner_id), None)
+            player_researches = player.get('unlocked_research', []) if player else []
+            
             if required_research not in player_researches:
+                unit_name = unit_stats.get('name', unit_type)
                 return jsonify({
                     'success': False,
-                    'message': f'Recherche requise manquante : {required_research}'
+                    'message': f'Recherche requise manquante pour {unit_name} : {required_research}'
                 }), 400
         
         # Calculer les coûts ajustés selon le niveau de la caserne
@@ -377,11 +383,17 @@ def start_batch_production():
             # Vérifier la recherche requise
             required_research = unit_stats.get('required_research')
             if required_research and required_research != 'null':
-                player_researches = city.get('researches', [])
+                # Récupérer les recherches du joueur propriétaire depuis players.json
+                owner_id = city.get('owner')
+                players_data = data_manager.load_players()
+                player = next((p for p in players_data.get('players', []) if p.get('id') == owner_id), None)
+                player_researches = player.get('unlocked_research', []) if player else []
+                
                 if required_research not in player_researches:
+                    unit_name = unit_stats.get('name', unit_type)
                     return jsonify({
                         'success': False,
-                        'message': f'Recherche requise manquante pour {unit_stats.get("name")} : {required_research}'
+                        'message': f'Recherche requise manquante pour {unit_name} : {required_research}'
                     }), 400
             
             # Calculer les coûts

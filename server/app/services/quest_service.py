@@ -678,23 +678,11 @@ class QuestService:
             if quest_def:
                 break
         
-        # 🛡️ ROBUSTESSE: Si la quête n'est pas trouvée, retourner une version basique
-        # pour éviter l'affichage vide (peut arriver temporairement lors du chargement)
+        # 🛡️ ROBUSTESSE: Si la quête n'est pas trouvée, retourner None
+        # Elle sera filtrée côté serveur pour éviter l'affichage "🎯 / "
         if not quest_def:
-            print(f"⚠️ Définition de quête non trouvée pour {quest_id}, affichage basique")
-            return {
-                "id": quest_id,
-                "title": quest_id.replace('_', ' ').title(),
-                "description": "Quête en cours de chargement...",
-                "type": "economic",
-                "icon": "🎯",
-                "target": 100,
-                "targets": [100, 200, 300],
-                "rewards": [{"gold": 100}, {"gold": 120}, {"gold": 150}],
-                "current_progress": quest_progress.get('progress', 0),
-                "is_completed": False,
-                "is_claimed": False
-            }
+            print(f"⚠️ Définition de quête non trouvée pour {quest_id} - quête ignorée")
+            return None
         
         # Déterminer le format (prioriser 'progress' sur 'current_progress')
         if 'progress' in quest_progress:
@@ -813,7 +801,8 @@ class QuestService:
             for quest_progress in quest_data['daily_quests']['quests']:
                 old_progress = quest_progress.get('progress', 0)
                 enriched = self.enrich_quest_data(quest_progress, username=username)  # ← Passer username
-                if enriched:
+                # ✅ Filtrer les None (quêtes non trouvées dans la config)
+                if enriched is not None:
                     enriched_quests.append(enriched)
                     # Vérifier si la progression a changé (sync auto)
                     if quest_progress.get('progress', 0) != old_progress:

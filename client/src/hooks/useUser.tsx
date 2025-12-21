@@ -7,6 +7,7 @@ export type UserState = {
   username: string | null;
   cities: Array<string>;
   research_points?: number;
+  unlocked_research?: string[];
   // Ajoute ici d'autres propriétés utiles (islands, ressources, etc.)
 };
 
@@ -100,10 +101,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const syncFromServer = async () => {
     if (!user.id) return;
     try {
-      const response = await fetch(`${getApiUrl()}/player/${user.id}`);
+      const response = await fetch(`${getApiUrl()}/api/player/${user.id}`);
       if (!response.ok) throw new Error("Erreur de synchronisation");
       const data = await response.json();
-      setUser((prev) => ({ ...prev, ...data }));
+      // L'API retourne { player_info: { ... } }
+      const playerInfo = data.player_info || data;
+      setUser((prev) => ({ ...prev, ...playerInfo }));
     } catch (e) {
       // Optionnel : gestion d'erreur globale
     }

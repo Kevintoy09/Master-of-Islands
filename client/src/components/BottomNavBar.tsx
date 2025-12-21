@@ -305,6 +305,9 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
               {RESOURCE_EMOJIS.diamonds}{formatNumber(playerResources.diamonds)}
             </button>
           )}
+          
+          {/* Conteneur pour le bouton de tutoriel minimisé (injecté par TutorialOverlay) */}
+          <div id="tutorial-minimized-container" />
         </div>
 
         {/* LIGNE 2: Boutons de navigation */}

@@ -79,6 +79,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { tutorialSteps, getTutorialStep, getNextTutorialStep, TutorialStep } from '../config/tutorialSteps';
 import '../styles/tutorial.css';
@@ -519,27 +520,40 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ playerId, onComplete,
 
   if (!currentStep) return null;
 
-  // Mode minimisé : petit indicateur en bas à droite
+  // Mode minimisé : bouton compact dans la bottombar (à droite des diamants)
   if (isMinimized) {
-    return (
-      <div className="tutorial-minimized" onClick={() => setIsMinimized(false)}>
-        <div className="tutorial-minimized-content">
-          <span className="tutorial-minimized-icon">📚</span>
-          <div className="tutorial-minimized-text">
-            <div className="tutorial-minimized-title">Tutoriel en cours</div>
-            <div className="tutorial-minimized-step">
-              Étape {currentStepIndex + 1}/{tutorialSteps.length}
-              {actionCompleted && <span className="minimized-check"> ✅</span>}
-            </div>
-          </div>
-          <span className="tutorial-minimized-expand">⬆️</span>
-        </div>
-        {actionCompleted && (
-          <div className="tutorial-minimized-pulse">
-            Action accomplie ! Clique pour continuer
-          </div>
-        )}
-      </div>
+    const container = document.getElementById('tutorial-minimized-container');
+    
+    // Si le conteneur n'existe pas encore, afficher un fallback en position fixe
+    if (!container) {
+      return (
+        <button 
+          className="tutorial-minimized-bottombar tutorial-minimized-fallback"
+          onClick={() => setIsMinimized(false)}
+          title="Tutoriel en cours - Cliquez pour reprendre"
+          style={{
+            position: 'fixed',
+            bottom: '10px',
+            right: '10px',
+            zIndex: 999999
+          }}
+        >
+          📚
+          {actionCompleted && <span className="tutorial-badge-check">✅</span>}
+        </button>
+      );
+    }
+    
+    return ReactDOM.createPortal(
+      <button 
+        className="tutorial-minimized-bottombar"
+        onClick={() => setIsMinimized(false)}
+        title="Tutoriel en cours - Cliquez pour reprendre"
+      >
+        📚
+        {actionCompleted && <span className="tutorial-badge-check">✅</span>}
+      </button>,
+      container
     );
   }
 

@@ -166,6 +166,14 @@ class TickService:
             except Exception as e:
                 results['errors'].append(f"Erreur constructions: {e}")
             
+            # === TRAITEMENT DE LA PRODUCTION MILITAIRE ===
+            # Vérifier et finaliser les productions terminées
+            try:
+                units_completed = self._process_military_production(savegame_data, player_id_to_username)
+                results['units_completed'] = units_completed
+            except Exception as e:
+                results['errors'].append(f"Erreur production militaire: {e}")
+            
             # === TRAITEMENT DES IA ===
             # Exécuter les cycles de décision des IA
             try:
@@ -402,6 +410,91 @@ class TickService:
             self.logger.warning(f"⚠️ Failed to update quests for {player.get('username', 'unknown')}: {e}")
         
         return player_production
+    
+    def _process_military_production(self, savegame_data: Dict, player_id_to_username: Dict) -> int:
+        """
+        Traite la production militaire de toutes les villes
+        Complète automatiquement les unités terminées et met à jour les quêtes
+        
+        Returns:
+            int: Nombre d'unités complétées
+        """
+        from app.battle.military_units_service import MilitaryUnitsService
+        import time
+        
+        military_service = MilitaryUnitsService(self.data_manager)
+        current_time = int(time.time())
+        total_units_completed = 0
+        
+        for city in savegame_data.get('cities', []):
+            # Initialiser la structure militaire si nécessaire
+            if 'military' not in city:
+                city['military'] = {}
+            if 'production_queue' not in city['military']:
+                city['military']['production_queue'] = []
+            
+            queue = city['military']['production_queue'][:]
+            remaining = []
+            units_completed = []  # Pour tracking des quêtes
+            
+            for item in queue:
+                if current_time >= item['completion_time']:
+                    # Production terminée - ajouter à la garnison
+                    if item.get('is_batch') and 'units' in item:
+                        # Batch : ajouter toutes les unités
+                        for unit_data in item['units']:
+                            military_service.add_units_to_garrison(
+                                city['id'], 
+                                unit_data['type'], 
+                                unit_data['quantity'], 
+                                savegame_data
+                            )
+                            units_completed.append({
+                                'type': unit_data['type'],
+                                'quantity': unit_data['quantity']
+                            })
+                            total_units_completed += unit_data['quantity']
+                    else:
+                        # Ancienne méthode : une seule unité
+                        military_service.add_units_to_garrison(
+                            city['id'], 
+                            item['unit_type'], 
+                            item['quantity'], 
+                            savegame_data
+                        )
+                        units_completed.append({
+                            'type': item['unit_type'],
+                            'quantity': item['quantity']
+                        })
+                        total_units_completed += item['quantity']
+                else:
+                    # Pas encore terminé
+                    remaining.append(item)
+            
+            # Mettre à jour la queue si des unités ont été complétées
+            if len(remaining) < len(queue):
+                city['military']['production_queue'] = remaining
+                
+                # === HOOK QUÊTE: Recrutement d'unités ===
+                if len(units_completed) > 0:
+                    try:
+                        from app.services.quest_service import quest_service
+                        owner_id = city.get('owner')
+                        if owner_id in player_id_to_username:
+                            username = player_id_to_username[owner_id]
+                            total_recruited = sum(u['quantity'] for u in units_completed)
+                            quest_service.update_quest_progress(
+                                username=username,
+                                quest_id='mil_recruit_units',
+                                increment=total_recruited
+                            )
+                    except Exception as e:
+                        self.logger.warning(f"Erreur mise à jour quête recrutement: {e}")
+        
+        if total_units_completed > 0:
+            self.logger.info(f"✅ Production militaire: {total_units_completed} unités complétées")
+        
+        return total_units_completed
     
     def _get_storage_limit(self, city: Dict, resource: str) -> float:
         """Calcule la limite de stockage pour une ressource"""

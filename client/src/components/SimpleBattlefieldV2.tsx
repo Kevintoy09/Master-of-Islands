@@ -143,7 +143,7 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
     backgroundImage,  // 🖼️ Image de fond
     updateBattleGrid,
     loadBattleUnits
-  } = useBattlefieldLogic(props);
+  } = useBattlefieldLogic({ ...props, userId: user?.id || undefined });
 
   // Fonction d'aura héros
   const [heroAuraFunction, setHeroAuraFunction] = useState<((unit: any, position: { q: number; r: number }) => any) | null>(null);
@@ -167,6 +167,7 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
   const [victoryData, setVictoryData] = useState<VictoryData | null>(null);
   const [aiDebugOpen, setAiDebugOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [showReturnButton, setShowReturnButton] = useState(false); // Masqué par défaut
   
 
   
@@ -550,6 +551,9 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
       return;
     }
 
+    // 📱 MOBILE FIX: Sauvegarder la position actuelle du viewport AVANT le rechargement
+    const savedViewOffset = { ...viewOffset };
+
     try {
       // Cas spécial : attaque d'un mur
       if (combatData.defenderStats.isWall) {
@@ -640,6 +644,10 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
         
         // Recharger les données depuis le serveur
         await loadBattleUnits();
+        
+        // 📱 MOBILE FIX: Restaurer la position du viewport APRÈS le rechargement
+        setViewOffset(savedViewOffset);
+        
         // Forcer un re-render des statistiques et de l'affichage
         setSelectedUnit(null);
       }
@@ -1207,7 +1215,7 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
             ℹ️
           </button>
 
-          {actualGamePhase === 'battle' && (() => {
+          {(actualGamePhase === 'battle' || actualGamePhase === 'deployment') && (() => {
             const isMyTurn = currentTurnPlayer === user?.id;
             return (
               <button 
@@ -1288,13 +1296,13 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
             );
           })()}
           
-          {/* Boutons Voyage Retour */}
-          {actualBattleId && (
+          {/* Boutons Voyage Retour - Masqué par défaut, activé via AI Debug */}
+          {actualBattleId && showReturnButton && (
             <>
               <button 
                 className="btn-compact" 
                 style={{ 
-                  backgroundColor: '#007bff', 
+                  backgroundColor: '#007bff',
                   color: 'white',
                   border: 'none',
                   marginRight: '5px'
@@ -1321,7 +1329,7 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
             }}
             title="Panneau de debug IA (protégé par mot de passe)"
           >
-            🤖 AI Debug
+            🤖 AI
           </button>
           <button className="btn-compact btn-secondary" onClick={() => props.onClose && props.onClose()}>Fermer</button>
         </div>
@@ -1476,6 +1484,8 @@ const SimpleBattlefieldV2: React.FC<SimpleBattlefieldV2Props> = (props) => {
           battleId={actualBattleId}
           onClose={() => setAiDebugOpen(false)}
           deployedUnits={battleUnits || []}
+          showReturnButton={showReturnButton}
+          setShowReturnButton={setShowReturnButton}
         />
       )}
 

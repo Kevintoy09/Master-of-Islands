@@ -58,6 +58,7 @@ interface UseBattlefieldLogicProps {
   onRoundChange?: (round: number, player: string) => void;
   onStatsChange?: (attackerStats: { units: number, moral: number }, defenderStats: { units: number, moral: number }) => void;
   battlefieldTemplateId?: string;
+  userId?: string; // ID du joueur connecté
 }
 
 export const useBattlefieldLogic = ({
@@ -69,7 +70,8 @@ export const useBattlefieldLogic = ({
   battleId,
   initialRound,
   initialCurrentPlayer,
-  battlefieldTemplateId = 'default_working'
+  battlefieldTemplateId = 'default_working',
+  userId
 }: UseBattlefieldLogicProps) => {
   
   // ========== CONSTANTES ==========
@@ -663,6 +665,37 @@ export const useBattlefieldLogic = ({
   const handleHexClick = (hex: HexCell) => {
     if (!isDragging) {
       setSelectedHex({ q: hex.q, r: hex.r });
+      
+      // 🎯 Détecter clic sur base camp (déploiement)
+      if (hex.terrain === 'base-attack' || hex.terrain === 'base-defense') {
+        // Déterminer l'équipe selon le terrain
+        let targetTeam: 'attacker' | 'defender' = 'attacker';
+        if (hex.terrain === 'base-attack' || hex.zone === 'attacker-base') {
+          targetTeam = 'attacker';
+        } else if (hex.terrain === 'base-defense' || hex.zone === 'defender-base') {
+          targetTeam = 'defender';
+        }
+        
+        // 🔒 VÉRIFICATION: Bloquer le déploiement sur la base adverse
+        // Vérifier l'ID du joueur CONNECTÉ (pas le currentPlayer du tour)
+        const participants = currentBattlefield?.participants;
+        if (participants && userId) {
+          const attackerId = participants.attackers?.[0];
+          const defenderId = participants.defenders?.[0];
+          
+          // Bloquer si le joueur connecté tente de déployer sur la base adverse
+          if (targetTeam === 'attacker' && userId === defenderId) {
+            return; // Bloquer l'action
+          }
+          if (targetTeam === 'defender' && userId === attackerId) {
+            return; // Bloquer l'action
+          }
+        }
+        
+        setSelectedTeam(targetTeam);
+        setDeploymentPopupOpen(true);
+        return; // Important: arrêter ici pour ne pas vérifier les murs
+      }
       
       // 🧱 Détecter clic sur mur
       if (hex.terrain === 'wall') {

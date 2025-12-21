@@ -209,6 +209,7 @@ class PlayerService:
             'city_ids': [c['id'] for c in cities],
             'city_count': len(cities),
             'research_points': player.get('research_points', 0),
+            'unlocked_research': player.get('unlocked_research', []),
             'gold': player.get('gold', 0),
             'diamonds': player.get('diamonds', 0),
             'transport_ships_total': transport_ships_total,

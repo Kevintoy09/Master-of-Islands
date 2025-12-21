@@ -1963,8 +1963,15 @@ def get_turn_timer_v2(battle_id):
         # Vérifier si le timer est en pause
         timer_paused = battle_data.get('timer', {}).get('paused', False)
         
-        # Timer de 15 secondes
-        TURN_DURATION = 15
+        # Vérifier qui joue actuellement
+        current_player = battle_data.get('current_player', '')
+        
+        # Timer de 20s si le joueur actuel est un wild_village, sinon 60s
+        is_wild_player = current_player.startswith('wild_camp') or current_player.startswith('barbarian_village')
+        
+        # Timer: 60 sec pour joueurs normaux, 20 sec pour wild villages
+        TURN_DURATION = 20 if is_wild_player else 60
+        
         remaining_seconds = max(0, TURN_DURATION - elapsed_seconds)
         is_expired = elapsed_seconds >= TURN_DURATION and not timer_paused
         

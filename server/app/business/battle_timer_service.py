@@ -30,7 +30,8 @@ from app.config.paths import BATTLES_V2_FILE, BATTLEFIELDS_V2_FILE
 class BattleTimerService:
     
     # Constantes
-    TURN_DURATION = 10  # Secondes par tour
+    TURN_DURATION = 60  # Secondes par tour (joueurs normaux)
+    TURN_DURATION_WILD = 20  # Secondes par tour (wild villages)
     
     def __init__(self, data_manager: DataManager):
         self.data_manager = data_manager
@@ -62,7 +63,7 @@ class BattleTimerService:
                 checked_count += 1
                 
                 # Vérifier si le timer est expiré
-                if self._is_timer_expired(battle_info, current_time):
+                if self._is_timer_expired(battle_id, battle_info, current_time):
                     expired_count += 1
                     
                     # Déclencher l'action automatique si nécessaire
@@ -83,7 +84,7 @@ class BattleTimerService:
             print(f"❌ [BATTLE-TIMER] Erreur update_all_battles: {e}")
             return {"checked": 0, "expired": 0, "auto_actions": 0, "error": str(e)}
     
-    def _is_timer_expired(self, battle_info: Dict[str, Any], current_time: int) -> bool:
+    def _is_timer_expired(self, battle_id: str, battle_info: Dict[str, Any], current_time: int) -> bool:
         """Vérifie si le timer du tour actuel a expiré"""
         # Vérifier si le timer est en pause
         if battle_info.get('timer', {}).get('paused', False):
@@ -96,7 +97,16 @@ class BattleTimerService:
         elapsed_ms = current_time - turn_started_at
         elapsed_seconds = elapsed_ms / 1000.0
         
-        return elapsed_seconds >= self.TURN_DURATION
+        # Vérifier qui joue actuellement
+        current_player = battle_info.get('current_player', '')
+        
+        # Timer de 20s si le joueur actuel est un wild_village, sinon 60s
+        is_wild_player = current_player.startswith('wild_camp') or current_player.startswith('barbarian_village')
+        
+        # Utiliser le bon timer
+        duration = self.TURN_DURATION_WILD if is_wild_player else self.TURN_DURATION
+        
+        return elapsed_seconds >= duration
     
     def _is_battle_completed(self, battle_id: str, battle_info: Dict[str, Any]) -> bool:
         """Vérifie si la bataille est terminée"""

@@ -211,31 +211,78 @@ def _update_unit_counts_deployed(battle_data):
         # Remettre tous les deployed à 0
         for player_id in unit_counts:
             for unit_type in unit_counts[player_id]:
-                unit_counts[player_id][unit_type]['deployed'] = 0
+                if isinstance(unit_counts[player_id][unit_type], dict):
+                    unit_counts[player_id][unit_type]['deployed'] = 0
         
         # Compter depuis les teams
         for team_id, team_units in teams.items():
+            # team_id peut être directement player_10, wild_camp, etc.
+            player_id = team_id
+            
+            if player_id not in unit_counts:
+                continue
+            
             for unit in team_units:
                 unit_id = unit.get('unitId', '')
                 unit_count = unit.get('unitCount', 0)
                 is_hero = unit.get('hp') is not None
                 
-                # Parser unit_id : "attacker_player_1_infantry_light_..."
-                parts = unit_id.split('_')
-                if len(parts) >= 4:
-                    player_id = f"{parts[1]}_{parts[2]}"  # player_1
+                if is_hero:
+                    # Compter héros
+                    if 'heroes' in unit_counts[player_id]:
+                        unit_counts[player_id]['heroes']['deployed'] += 1
+                else:
+                    # Extraire le type d'unité depuis unit_id
+                    # Formats possibles:
+                    # - attacker_player_10_militia_timestamp_hash
+                    # - auto_defender_wild_camp_barbarian_warrior_0
+                    # - defender_wild_camp_barbarian_archer_1
                     
-                    if is_hero:
-                        # Compter héros
-                        if player_id in unit_counts and 'heroes' in unit_counts[player_id]:
-                            unit_counts[player_id]['heroes']['deployed'] += 1
-                    else:
-                        # Compter unités
-                        unit_type = parts[3]
-                        if len(parts) >= 5 and parts[4] in ['light', 'heavy']:
-                            unit_type = f"{parts[3]}_{parts[4]}"
-                        
-                        if player_id in unit_counts and unit_type in unit_counts[player_id]:
+                    # Chercher le type d'unité en retirant les préfixes connus
+                    parts = unit_id.split('_')
+                    unit_type = None
+                    
+                    # Trouver le type d'unité après player_XX ou wild_camp
+                    for i, part in enumerate(parts):
+                        if part == 'player' and i + 1 < len(parts):
+                            # Sauter le numéro de joueur
+                            if i + 2 < len(parts):
+                                # Le type commence après player_XX
+                                remaining_parts = parts[i+2:]
+                                # Prendre tout jusqu'au timestamp (numérique long) ou hash
+                                unit_type_parts = []
+                                for p in remaining_parts:
+                                    if p.isdigit() and len(p) > 5:  # Timestamp
+                                        break
+                                    unit_type_parts.append(p)
+                                unit_type = '_'.join(unit_type_parts) if unit_type_parts else None
+                                break
+                        elif part == 'wild' or part == 'barbarian':
+                            # Pour wild_camp: chercher après 'camp'
+                            if 'camp' in parts:
+                                camp_idx = parts.index('camp')
+                                if camp_idx + 1 < len(parts):
+                                    # Tout après 'camp' jusqu'au numéro final
+                                    remaining_parts = parts[camp_idx+1:]
+                                    unit_type_parts = []
+                                    for p in remaining_parts:
+                                        if p.isdigit():  # Numéro final (0, 1, 2...)
+                                            break
+                                        unit_type_parts.append(p)
+                                    unit_type = '_'.join(unit_type_parts) if unit_type_parts else None
+                                    break
+                    
+                    # Fallback: si pas trouvé, essayer pattern simple
+                    if not unit_type:
+                        # Chercher militia, barbarian_warrior, etc. dans parts
+                        for known_type in ['militia', 'barbarian_warrior', 'barbarian_archer', 'barbarian_raider', 
+                                          'infantry_light', 'infantry_heavy', 'archer', 'cavalry']:
+                            if known_type in unit_id:
+                                unit_type = known_type
+                                break
+                    
+                    if unit_type and unit_type in unit_counts[player_id]:
+                        if isinstance(unit_counts[player_id][unit_type], dict):
                             unit_counts[player_id][unit_type]['deployed'] += unit_count
         
     except Exception as e:

@@ -205,15 +205,29 @@
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6), 0 0 15px rgba(52, 152, 219, 0.4);
+    transform: scale(1.05);
+  }
 }
 
 .battle-result-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
   box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+  animation: none;
 }
 
 .battle-result-btn:active {
   transform: translateY(0);
+  animation: none;
 }
 
 /* Section Pillage */

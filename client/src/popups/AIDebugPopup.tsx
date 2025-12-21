@@ -35,9 +35,11 @@ interface AIDebugPopupProps {
   battleId: string;
   onClose: () => void;
   deployedUnits: any[];
+  showReturnButton: boolean;
+  setShowReturnButton: (show: boolean) => void;
 }
 
-const AIDebugPopup: React.FC<AIDebugPopupProps> = ({ battleId, onClose, deployedUnits }) => {
+const AIDebugPopup: React.FC<AIDebugPopupProps> = ({ battleId, onClose, deployedUnits, showReturnButton, setShowReturnButton }) => {
   const [config, setConfig] = useState<AIConfig | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string>('');
   const [targetScores, setTargetScores] = useState<TargetScore[]>([]);
@@ -61,6 +63,7 @@ const AIDebugPopup: React.FC<AIDebugPopupProps> = ({ battleId, onClose, deployed
   useEffect(() => {
     loadAIConfig();
     loadAutoStatus();
+    loadTimerStatus();
   }, []);
 
   const loadTimerStatus = async () => {
@@ -410,6 +413,25 @@ const AIDebugPopup: React.FC<AIDebugPopupProps> = ({ battleId, onClose, deployed
               {turnLockEnabled 
                 ? '🔒 Seul le joueur actuel peut agir (mode normal)' 
                 : '🔓 Tous les joueurs peuvent agir (mode test)'}
+            </p>
+          </div>
+
+          {/* Toggle Bouton Voyage Retour */}
+          <div className="auto-toggle-container" style={{ marginTop: '10px' }}>
+            <button 
+              onClick={() => {
+                setShowReturnButton(!showReturnButton);
+                addLog(`🚢 Bouton Voyage Retour ${!showReturnButton ? 'AFFICHÉ' : 'MASQUÉ'}`);
+              }}
+              className={`auto-toggle-button ${showReturnButton ? 'enabled' : 'disabled'}`}
+            >
+              <span className="toggle-icon">{showReturnButton ? '✅' : '❌'}</span>
+              <span className="toggle-text">{showReturnButton ? 'Bouton Retour VISIBLE' : 'Bouton Retour MASQUÉ'}</span>
+            </button>
+            <p className="toggle-hint">
+              {showReturnButton 
+                ? '🚢 Le bouton Voyage Retour est visible sur le champ de bataille' 
+                : '🔒 Le bouton Voyage Retour est masqué (utiliser Se Rendre)'}
             </p>
           </div>
 

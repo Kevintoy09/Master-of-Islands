@@ -40,7 +40,7 @@
       "production_cost": {"wood": 30, "stone": 10, "population": 1},
       "production_time": 30,
       "required_barracks_level": 2,
-      "required_research": "travail_fer",
+      "required_research": "armee_metier",
       "xp_value": 25,
       "era": "classical",
       "special_abilities": [
@@ -65,7 +65,7 @@
       "production_cost": {"wood": 50, "stone": 30, "iron": 20, "population": 1},
       "production_time": 60,
       "required_barracks_level": 3,
-      "required_research": "travail_fer",
+      "required_research": "maitrise_epees",
       "xp_value": 45,
       "era": "classical",
       "special_abilities": [
@@ -90,7 +90,7 @@
       "max_stack_size": 12,
       "production_cost": {"wood": 40, "stone": 5, "population": 1},
       "production_time": 45,
-      "required_barracks_level": 3,
+      "required_barracks_level": 2,
       "required_research": "archers",
       "xp_value": 35,
       "era": "classical",
