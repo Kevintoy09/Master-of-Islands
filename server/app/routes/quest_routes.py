@@ -140,6 +140,7 @@ def get_main_quests(username):
         all_player_data = quest_service.load_all_player_quests()
         username_data = all_player_data.get(username, {})
         main_quests_data = username_data.get('main_quests', {})
+        completed = username_data.get('completed_main_quests', [])
         
         # Si pas de quêtes générées, les générer maintenant
         if not main_quests_data.get('quests'):
@@ -159,7 +160,6 @@ def get_main_quests(username):
         all_player_data = quest_service.load_all_player_quests()
         username_data = all_player_data.get(username, {})
         main_quests_data = username_data.get('main_quests', {})
-        
         # Vérifier combien de quêtes sont disponibles (actives = pas encore complétées OU complétées mais récompenses non réclamées)
         all_quests = main_quests_data.get('quests', [])
         # Une quête est "active" si elle n'est pas complétée, OU si elle est complétée mais pas encore réclamée
@@ -170,13 +170,34 @@ def get_main_quests(username):
             # Régénérer toutes les quêtes (garde celles actives + ajoute les suivantes)
             new_quests = quest_service.generate_main_quests(username)
             if new_quests:
-                # Recharger pour être sûr d'avoir les dernières données
-                all_player_data = quest_service.load_all_player_quests()
-                username_data = all_player_data.get(username, {})
-                main_quests_data['quests'] = new_quests
+                # FUSION : Garder l'état des quêtes existantes qui sont dans les nouvelles
+                old_quests_map = {q.get('id'): q for q in all_quests}
+                merged_quests = []
+                
+                for new_quest in new_quests:
+                    quest_id = new_quest.get('id')
+                    # Si la quête existait déjà, garder son état de complétion
+                    if quest_id in old_quests_map:
+                        old_quest = old_quests_map[quest_id]
+                        new_quest['is_completed'] = old_quest.get('is_completed', False)
+                        new_quest['progress'] = old_quest.get('progress', 0)
+                    merged_quests.append(new_quest)
+                
+                # Mettre à jour avec les quêtes fusionnées
+                main_quests_data['quests'] = merged_quests
                 username_data['main_quests'] = main_quests_data
                 all_player_data[username] = username_data
                 quest_service.save_all_player_quests(all_player_data)
+                
+                # IMPORTANT: Recharger après sauvegarde pour avoir les données fraîches
+                all_player_data = quest_service.load_all_player_quests()
+                username_data = all_player_data.get(username, {})
+                main_quests_data = username_data.get('main_quests', {})
+                
+                # IMPORTANT: Recharger après sauvegarde pour avoir les données fraîches
+                all_player_data = quest_service.load_all_player_quests()
+                username_data = all_player_data.get(username, {})
+                main_quests_data = username_data.get('main_quests', {})
         
         # Enrichir les quêtes avec les données de config ET progression en temps réel
         enriched_quests = []
@@ -307,6 +328,8 @@ def claim_main_reward():
         data = request.get_json()
         username = data.get('username')
         quest_id = data.get('quest_id')
+        
+        print(f"[QUEST-CLAIM] 🎯 Réclamation quête {quest_id} pour {username}")
         
         if not username or not quest_id:
             return jsonify({"error": "username et quest_id requis"}), 400

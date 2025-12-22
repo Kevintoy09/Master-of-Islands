@@ -793,8 +793,9 @@ class QuestService:
         quest_data = self.load_player_quests(username)
         today = datetime.now().strftime('%Y-%m-%d')
         
-        # Vérifier si les quêtes sont à jour
-        if quest_data['daily_quests']['generated_date'] == today:
+        # Vérifier si les quêtes sont à jour ET non vides
+        if (quest_data['daily_quests']['generated_date'] == today and 
+            len(quest_data['daily_quests']['quests']) > 0):
             # Enrichir chaque quête avec les données de config
             enriched_quests = []
             has_changes = False
@@ -825,7 +826,15 @@ class QuestService:
         }
         
         self.save_player_quests(username, quest_data)
-        return new_quests
+        
+        # Enrichir les quêtes nouvellement générées avant de les retourner
+        enriched_quests = []
+        for quest in new_quests:
+            enriched = self.enrich_quest_data(quest, username=username)
+            if enriched is not None:
+                enriched_quests.append(enriched)
+        
+        return enriched_quests
     
     def update_quest_progress(self, username: str, quest_id: str, increment: int = 0, set_value: int = None) -> Dict:
         """
@@ -990,13 +999,32 @@ class QuestService:
             rewards = reward_to_claim['rewards']
             self._apply_rewards_to_player(username, rewards, quest_data)
             
-            # Marquer comme réclamée dans la quête
+            # Marquer comme réclamée dans la quête (daily ou main)
+            quest_found = False
+            
+            # Chercher dans les quêtes quotidiennes
             for quest in quest_data['daily_quests']['quests']:
                 if quest['id'] == quest_id:
                     if 'rewards_claimed' not in quest:
                         quest['rewards_claimed'] = []
                     quest['rewards_claimed'].append(star_level)
+                    quest_found = True
                     break
+            
+            # Chercher dans les quêtes principales si pas trouvée
+            if not quest_found:
+                main_quests = quest_data.get('main_quests', {}).get('quests', [])
+                for quest in main_quests:
+                    if quest['id'] == quest_id:
+                        quest['rewards_claimed'] = True
+                        quest_found = True
+                        
+                        # Ajouter à la liste des quêtes principales complétées
+                        if 'completed_main_quests' not in quest_data:
+                            quest_data['completed_main_quests'] = []
+                        if quest_id not in quest_data['completed_main_quests']:
+                            quest_data['completed_main_quests'].append(quest_id)
+                        break
             
             # Supprimer de unclaimed
             unclaimed.pop(reward_index)

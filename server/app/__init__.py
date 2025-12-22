@@ -88,6 +88,7 @@ from .routes.island_assignment_routes import island_assignment_bp, init_island_a
 from .routes.market_routes import market_bp, init_market_routes
 from .routes.transport_routes import transport_bp, init_transport_routes
 from .routes.unit_transport_routes import unit_transport_routes, init_unit_transport_routes
+from .routes.faction_routes import faction_bp
 from .routes.unit_improvement_routes import unit_improvement_bp
 from .routes.city_check_routes import city_check_bp
 from .routes.battle_results import battles_bp
@@ -252,6 +253,7 @@ def create_app():
     app.register_blueprint(leaderboard_bp)  # 🏆 SYSTÈME DE CLASSEMENT - LEADERBOARD DES JOUEURS
     app.register_blueprint(quest_bp)  # 🎯 SYSTÈME DE QUÊTES - QUOTIDIENNES ET PRINCIPALES
     app.register_blueprint(messages_bp)  # 💬 SYSTÈME DE MESSAGERIE - COMMUNICATION JOUEURS & ADMIN
+    app.register_blueprint(faction_bp)  # 🏰 API FACTIONS - STATS ET RÉPARTITION
     # app.register_blueprint(military_unified_bp)  # SUPPRIMÉ - gestion militaire V1 supprimée pour éviter conflits
     
     # === INITIALISATION DU SCHEDULER DE QUÊTES ===

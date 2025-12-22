@@ -65,6 +65,7 @@ const QuestsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // Clé pour forcer le re-render
 
   useEffect(() => {
     const loadQuests = async () => {
@@ -188,21 +189,26 @@ const QuestsPage: React.FC = () => {
       });
 
       if (response.ok) {
-        // Recharger les quêtes principales pour afficher la suivante
-        const mainResponse = await fetch(`/api/quests/main?username=${user.username}`);
+        // Forcer le rechargement des quêtes principales avec cache-busting
+        const timestamp = Date.now();
+        const mainResponse = await fetch(`/api/quests/main?username=${user.username}&_=${timestamp}`);
         if (mainResponse.ok) {
           const mainData = await mainResponse.json();
-          setMainQuests(mainData.quests || []);
+          
+          // Forcer un nouveau array pour que React détecte le changement
+          const newQuests = [...(mainData.quests || [])];
+          setMainQuests(newQuests);
+          setRefreshKey(prev => prev + 1); // Forcer le re-render
         }
 
         // Recharger les récompenses et stats
-        const rewardsResponse = await fetch(`/api/quests/unclaimed?username=${user.username}`);
+        const rewardsResponse = await fetch(`/api/quests/unclaimed?username=${user.username}&_=${timestamp}`);
         if (rewardsResponse.ok) {
           const rewardsData = await rewardsResponse.json();
           setUnclaimedRewards(rewardsData.unclaimed_rewards || []);
         }
 
-        const statsResponse = await fetch(`/api/quests/player-stats?username=${user.username}`);
+        const statsResponse = await fetch(`/api/quests/player-stats?username=${user.username}&_=${timestamp}`);
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
           setPlayerStats(statsData);
@@ -624,10 +630,9 @@ const QuestsPage: React.FC = () => {
                 </p>
                 
                 <div className="quest-list">
-                  {mainQuests.length > 0 ? (
-                    mainQuests.map((quest) => (
+                  {mainQuests.length > 0 ? mainQuests.map((quest: any, index) => (
                       <div 
-                        key={quest.id} 
+                        key={`${quest.id}-${refreshKey}-${index}`}
                         className={`quest-card quest-card-main ${quest.is_completed ? 'quest-completed' : ''}`}
                         onClick={() => {
                           if (quest.is_completed && !quest.is_claimed) {
@@ -716,8 +721,7 @@ const QuestsPage: React.FC = () => {
                           )}
                         </div>
                       </div>
-                    ))
-                  ) : (
+                    )) : (
                     <p style={{ textAlign: 'center', color: '#5d4e37' }}>
                       À venir prochainement...
                     </p>

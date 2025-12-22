@@ -87,6 +87,7 @@ def colonize_city():
     """
     Colonise une ville libre et l'attribue au joueur.
     Applique automatiquement la logique d'affectation des îles (max 4 joueurs par île).
+    Enregistre également la faction du joueur basée sur la ressource de l'île.
     """
     data = request.get_json()
     player_id = data.get('player_id')
@@ -143,6 +144,13 @@ def colonize_city():
         # Coloniser la ville (originale ou redirigée)
         city = city_service.claim_city(final_city_id, player_id)
         
+        # Enregistrer la faction dans les données du joueur (seulement si c'est sa première ville)
+        players_data = data_manager.load_players()
+        player = next((p for p in players_data.get('players', []) if p.get('id') == player_id), None)
+        if player and not player.get('faction'):
+            player['faction'] = base_resource  # Stocker l'ID de la faction (ressource)
+            data_manager.save_players(players_data)
+        
         # Mettre à jour l'activité du joueur
         if session_tracker:
             session_tracker.update_activity(player_id)
@@ -151,7 +159,8 @@ def colonize_city():
         response = {
             'success': True, 
             'city': city,
-            'island_name': final_island_name
+            'island_name': final_island_name,
+            'faction': base_resource
         }
         
         if assignment_message:
@@ -362,9 +371,15 @@ def get_city_population(city_id):
     }
     
     response_data = {
-        'population': resources.get('population_total', 0),
+        'population_total': resources.get('population_total', 0),
         'population_free': resources.get('population_free', 0),
-        'info': population_info,  # Maintenant avec toutes les données
+        'max_capacity': max_capacity,
+        'workers_assigned': workers_assigned,
+        'growth_rate': satisfaction_details.get('real_growth_per_hour', 0),
+        'satisfaction': city.get('satisfaction', 50),
+        # Garder aussi l'ancien format pour compatibilité
+        'population': resources.get('population_total', 0),
+        'info': population_info,
         'last_update': city.get('last_population_update', int(time.time()))
     }
     

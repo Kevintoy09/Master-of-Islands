@@ -80,9 +80,8 @@ def get_city_heroes_v2(city_id):
             owner_id = hero_garrison_data.get('owner')
             status = hero_garrison_data.get('status', 'garrison')
             
-            # Seulement les héros en garnison sont disponibles pour l'attaque
-            if status != 'garrison':
-                continue
+            # AFFICHER TOUS LES HÉROS (même ceux qui ne sont pas en garnison)
+            # Pour permettre de les récupérer via le bouton "Forcer retour"
                 
             # OBLIGATOIRE : Trouver les vraies stats du héros dans player_heroes.json
             hero_stats = None
@@ -108,6 +107,8 @@ def get_city_heroes_v2(city_id):
                 'current_level': hero_stats['current_level'],
                 'current_experience': hero_stats['current_experience'],
                 'battles_fought': hero_stats['battles_fought'],
+                # AJOUT DU STATUT pour affichage dans la caserne
+                'status': status,
                 'victories': hero_stats['victories'],
                 'defeats': hero_stats['defeats'],
                 'units_killed': hero_stats.get('units_killed', 0),
@@ -524,4 +525,84 @@ def get_all_player_heroes():
     except Exception as e:
         return jsonify({
             'error': f'Erreur lors du chargement des héros: {str(e)}'
+        }), 500
+
+
+@hero_v2_bp.route('/api/military/hero/<hero_instance_id>/return-garrison', methods=['POST'])
+def return_hero_to_garrison(hero_instance_id):
+    """
+    Force le retour d'un héros en garnison
+    Vérifie qu'il n'est pas engagé dans une bataille active avant de le retourner
+    """
+    try:
+        print(f"[HERO-RETURN] 🔄 Tentative de retour du héros {hero_instance_id}")
+        
+        # Construire les chemins
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        base_dir = os.path.dirname(os.path.dirname(current_dir))
+        savegame_file = os.path.join(base_dir, "gamedata", "savegame.json")
+        battles_dir = os.path.join(base_dir, "gamedata", "battles")
+        
+        # Charger savegame
+        with open(savegame_file, 'r', encoding='utf-8') as f:
+            savegame_data = json.load(f)
+        
+        # 1. Vérifier si le héros est engagé dans une bataille active
+        if os.path.exists(battles_dir):
+            for battle_file in os.listdir(battles_dir):
+                if battle_file.endswith('.json'):
+                    battle_path = os.path.join(battles_dir, battle_file)
+                    with open(battle_path, 'r', encoding='utf-8') as f:
+                        battle_data = json.load(f)
+                    
+                    # Vérifier dans les participants
+                    hero_participants = battle_data.get('hero_participants', {})
+                    for player_id, hero_id in hero_participants.items():
+                        if hero_id == hero_instance_id:
+                            print(f"[HERO-RETURN] ❌ Héros {hero_instance_id} engagé dans bataille {battle_file}")
+                            return jsonify({
+                                'success': False,
+                                'message': f'Le héros est actuellement engagé dans une bataille ({battle_file}). Terminez la bataille d\'abord.'
+                            }), 400
+        
+        print(f"[HERO-RETURN] ✅ Héros {hero_instance_id} non engagé dans une bataille")
+        
+        # 2. Trouver la ville où se trouve le héros
+        hero_found = False
+        for city in savegame_data.get('cities', []):
+            military_data = city.get('military', {})
+            heroes_garrison = military_data.get('heroes', {})
+            
+            if hero_instance_id in heroes_garrison:
+                # Mettre le statut à "garrison"
+                heroes_garrison[hero_instance_id]['status'] = 'garrison'
+                hero_found = True
+                city_name = city.get('name', city.get('id'))
+                print(f"[HERO-RETURN] ✅ Héros {hero_instance_id} remis en garnison dans {city_name}")
+                break
+        
+        if not hero_found:
+            print(f"[HERO-RETURN] ❌ Héros {hero_instance_id} introuvable dans savegame")
+            return jsonify({
+                'success': False,
+                'message': f'Héros {hero_instance_id} introuvable dans les villes'
+            }), 404
+        
+        # 3. Sauvegarder
+        with open(savegame_file, 'w', encoding='utf-8') as f:
+            json.dump(savegame_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"[HERO-RETURN] 💾 Sauvegardé")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Héros remis en garnison avec succès',
+            'hero_instance_id': hero_instance_id
+        })
+        
+    except Exception as e:
+        print(f"[HERO-RETURN] ❌ Erreur : {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Erreur : {str(e)}'
         }), 500

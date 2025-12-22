@@ -123,6 +123,18 @@ const CombatPopup: React.FC<CombatPopupProps> = ({
   const [battleMoral, setBattleMoral] = useState<{attacker: number, defender: number}>({attacker: 100, defender: 100});
   const [terrainDefinitions, setTerrainDefinitions] = useState<{[key: string]: TerrainDefinition} | null>(null);
 
+  // Verrouiller le scroll du battlefield quand le popup est ouvert
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Charger les données de bataille (moral + terrainDefinitions)
   useEffect(() => {
     if (isOpen && battlefieldId) {

@@ -91,6 +91,7 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
   const [selectedUnit, setSelectedUnit] = useState<{type: string, stats: UnitStats} | null>(null);
   const [showUnitDetail, setShowUnitDetail] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [returningHero, setReturningHero] = useState<string | null>(null);
 
   // Synchroniser les données du joueur (recherches) au montage
   useEffect(() => {
@@ -754,6 +755,37 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
     return colors[rarity as keyof typeof colors] || '#95a5a6';
   };
 
+  const handleReturnHeroToGarrison = async (heroInstanceId: string) => {
+    // eslint-disable-next-line no-restricted-globals
+    if (!confirm('Voulez-vous vraiment forcer le retour de ce héros en garnison ? Cette action ne devrait être utilisée qu\'en cas de bug.')) {
+      return;
+    }
+
+    setReturningHero(heroInstanceId);
+    try {
+      const response = await fetch(`/api/military/hero/${heroInstanceId}/return-garrison`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('✅ Héros remis en garnison avec succès !');
+        fetchHeroes(); // Rafraîchir la liste
+      } else {
+        alert(`❌ ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors du retour du héros:', error);
+      alert('❌ Erreur lors du retour du héros');
+    } finally {
+      setReturningHero(null);
+    }
+  };
+
   const renderGarrison = () => (
     <div className="garrison-display">
       <h3 className="garrison-title">🏰 Garnison de {city.name}</h3>
@@ -819,7 +851,36 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
                 </div>
                 
                 <div className="hero-status">
-                  <span className="status-badge status-garrison">En garnison</span>
+                  {hero?.status === 'garrison' ? (
+                    <span className="status-badge status-garrison">En garnison</span>
+                  ) : (
+                    <>
+                      <span className="status-badge" style={{ backgroundColor: '#e67e22' }}>
+                        {hero?.status || 'Statut inconnu'}
+                      </span>
+                      <button
+                        className="hero-return-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReturnHeroToGarrison(heroInstanceId);
+                        }}
+                        disabled={returningHero === heroInstanceId}
+                        style={{
+                          marginTop: '8px',
+                          padding: '4px 8px',
+                          fontSize: '12px',
+                          backgroundColor: '#e74c3c',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: returningHero === heroInstanceId ? 'not-allowed' : 'pointer',
+                          opacity: returningHero === heroInstanceId ? 0.6 : 1
+                        }}
+                      >
+                        {returningHero === heroInstanceId ? '⏳ Retour...' : '🔄 Forcer retour'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

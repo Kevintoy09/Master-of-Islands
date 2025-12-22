@@ -5,10 +5,12 @@ import NotificationJournalPopup from './NotificationJournalPopup';
 import ProfilePopup from '../popups/ProfilePopup';
 import SettingsPopup from '../popups/SettingsPopup';
 import MessagesPopup from './MessagesPopup';
+import FactionStatsPopup from '../popups/FactionStatsPopup';
 import { useUser } from '../hooks/useUser';
 import { useMusicPlayer } from '../hooks/useMusicPlayer';
 import { getApiUrl } from '../utils/api';
 import { RESOURCE_EMOJIS } from '../constants/resourceIcons';
+import { FACTIONS } from '../data/factions';
 import './BottomNavBar.css';
 
 
@@ -39,6 +41,8 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
+  const [isFactionStatsOpen, setIsFactionStatsOpen] = useState(false);
+  const [playerFaction, setPlayerFaction] = useState<string | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [hasChiefHouse, setHasChiefHouse] = useState(false); // Maison du Chef dans slot 17
@@ -87,7 +91,26 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
       }
     };
 
+    // Charger la faction du joueur
+    const loadPlayerFaction = async () => {
+      if (user?.id) {
+        try {
+          const response = await fetch('/api/players/');
+          if (response.ok) {
+            const data = await response.json();
+            const player = data.players?.find((p: any) => p.id === user.id);
+            if (player?.faction) {
+              setPlayerFaction(player.faction);
+            }
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement de la faction:', error);
+        }
+      }
+    };
+
     loadUnreadCount();
+    loadPlayerFaction();
 
     // Actualiser périodiquement les notifications (toutes les 30 secondes)
     const interval = setInterval(loadUnreadCount, 30000);
@@ -305,6 +328,47 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
               {RESOURCE_EMOJIS.diamonds}{formatNumber(playerResources.diamonds)}
             </button>
           )}
+
+          {/* Logo de faction */}
+          {playerFaction && FACTIONS[playerFaction] && (
+            <button
+              className="nav-faction-btn"
+              title={`Faction: ${FACTIONS[playerFaction].name}`}
+              onClick={() => setIsFactionStatsOpen(true)}
+              style={{
+                background: 'transparent',
+                border: `2px solid ${FACTIONS[playerFaction].theme.accent}`,
+                borderRadius: '50%',
+                padding: '2px',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = `0 0 12px ${FACTIONS[playerFaction].theme.accent}`;
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <img 
+                src={FACTIONS[playerFaction].logo} 
+                alt={FACTIONS[playerFaction].name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '50%',
+                }}
+              />
+            </button>
+          )}
           
           {/* Conteneur pour le bouton de tutoriel minimisé (injecté par TutorialOverlay) */}
           <div id="tutorial-minimized-container" />
@@ -378,6 +442,12 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
       <MessagesPopup
         isOpen={isMessagesOpen}
         onClose={() => setIsMessagesOpen(false)}
+      />
+
+      <FactionStatsPopup
+        open={isFactionStatsOpen}
+        onClose={() => setIsFactionStatsOpen(false)}
+        playerFaction={playerFaction}
       />
     </>
   );

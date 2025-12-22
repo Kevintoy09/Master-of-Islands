@@ -3,6 +3,8 @@ import { Box, Typography, Container, Paper, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import { useUser } from "../hooks/useUser";
+import FactionWelcomePopup from "../popups/FactionWelcomePopup";
+import { getFactionByResource, Faction } from "../data/factions";
 import "../styles/theme.css";
 import "../styles/login.css";
 
@@ -50,6 +52,8 @@ const IslandSelectionPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showBackground, setShowBackground] = useState(false);
+  const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
+  const [factionPopupOpen, setFactionPopupOpen] = useState(false);
 
   // Afficher le background avec un léger délai
   useEffect(() => {
@@ -99,17 +103,35 @@ const IslandSelectionPage: React.FC = () => {
   // Suggérer automatiquement la meilleure île pour une ressource
   const handleSelectResource = async (baseResource: string) => {
     try {
+      // Déterminer la faction selon la ressource
+      const faction = getFactionByResource(baseResource);
+      if (faction) {
+        setSelectedFaction(faction);
+        setFactionPopupOpen(true);
+      }
+
       const response = await fetch(`/api/islands/assignment/suggest/${baseResource}`);
       if (!response.ok) {
         throw new Error('Aucune île disponible pour cette ressource');
       }
       const data = await response.json();
       if (data.success && data.suggestion) {
-        // Naviguer vers l'île suggérée
-        navigate(`/island/${data.suggestion.island.id}/city-selection`);
+        // Stocker l'île suggérée temporairement
+        sessionStorage.setItem('selectedIsland', JSON.stringify(data.suggestion.island));
       }
     } catch (err: any) {
       alert(`Erreur : ${err.message}`);
+    }
+  };
+
+  // Gérer la fermeture du popup de faction et naviguer vers la sélection de ville
+  const handleFactionConfirm = () => {
+    setFactionPopupOpen(false);
+    const selectedIsland = sessionStorage.getItem('selectedIsland');
+    if (selectedIsland) {
+      const island = JSON.parse(selectedIsland);
+      navigate(`/island/${island.id}/city-selection`);
+      sessionStorage.removeItem('selectedIsland');
     }
   };
 
@@ -258,6 +280,18 @@ const IslandSelectionPage: React.FC = () => {
           </Box>
         </Paper>
       </Container>
+
+      {/* Popup de bienvenue de la faction */}
+      <FactionWelcomePopup
+        open={factionPopupOpen}
+        faction={selectedFaction}
+        onClose={handleFactionConfirm}
+        onBack={() => {
+          setFactionPopupOpen(false);
+          setSelectedFaction(null);
+          sessionStorage.removeItem('selectedIsland');
+        }}
+      />
     </div>
   );
 };

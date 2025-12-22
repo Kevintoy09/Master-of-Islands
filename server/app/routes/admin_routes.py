@@ -1467,7 +1467,7 @@ def get_json_data(filename):
         if filename not in allowed_files:
             return jsonify({'success': False, 'message': 'Fichier non autorisé'}), 403
         
-        file_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', filename)
+        file_path = os.path.join(os.path.dirname(__file__), '..', '..', 'gamedata', filename)
         
         if not os.path.exists(file_path):
             return jsonify({'success': False, 'message': 'Fichier non trouvé'}), 404
@@ -1518,7 +1518,7 @@ def save_json_data(filename):
         if content is None:
             return jsonify({'success': False, 'message': 'Contenu manquant'}), 400
         
-        file_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', filename)
+        file_path = os.path.join(os.path.dirname(__file__), '..', '..', 'gamedata', filename)
         
         # Créer une sauvegarde avant modification
         backup_path = file_path + '.backup'

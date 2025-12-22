@@ -290,6 +290,13 @@
   .battle-result-popup {
     width: 95%;
     max-width: none;
+    max-height: calc(100vh - 120px); /* Laisser de l'espace pour les barres de navigation */
+    overflow-y: auto; /* Permettre le scroll vertical */
+    margin-bottom: 60px; /* Éviter que le popup soit masqué par la barre de navigation */
+  }
+
+  .battle-result-body {
+    padding-bottom: 80px; /* Espace supplémentaire pour le bouton fermer */
   }
 
   .battle-result-stats {
