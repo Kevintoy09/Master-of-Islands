@@ -1283,6 +1283,9 @@ class BattleCreationServiceV2:
             try:
                 with open(battles_file, 'r', encoding='utf-8') as f:
                     battles_data = json.load(f)
+                    # ✅ FIX: Convertir [] en {} si nécessaire (problème Railway)
+                    if isinstance(battles_data, list):
+                        battles_data = {}
             except:
                 battles_data = {}
             
@@ -1296,12 +1299,12 @@ class BattleCreationServiceV2:
             base_entry = {
                 "battleId": battle_id,
                 "unit_counts": unit_counts,
-                "hero_participants": hero_participants,  # 🦸 Mapping player_id -> hero_id
+                "hero_participants": hero_participants,
                 "location": location,
                 "timestamp": timestamp,
                 "current_round": 1,
-                "current_player": attacker_player_id,  # 🎯 CORRECTION: L'attaquant commence toujours en premier
-                "turn_started_at": int(time.time() * 1000),  # ⏱️ Initialiser le timer au démarrage
+                "current_player": attacker_player_id,
+                "turn_started_at": int(time.time() * 1000),
                 "teams": {
                     attacker_player_id: [],
                     defender_player_id: []
@@ -1312,7 +1315,6 @@ class BattleCreationServiceV2:
             
             # Sauvegarder avec format compact unifié
             try:
-                # Import direct ici pour éviter l'import circulaire
                 from app.routes.battle_routes_v2 import save_battles_ultra_compact
                             
                 with open(battles_file, 'w', encoding='utf-8') as f:
@@ -1322,12 +1324,13 @@ class BattleCreationServiceV2:
                 with open(battles_file, 'w', encoding='utf-8') as f:
                     json.dump(battles_data, f, ensure_ascii=False, indent=2)
             
-                    
-            # Synchronisation désactivée (sera forcée seulement pour les renforts)
+            # Synchronisation désactivée
             sync_to_client(force=False)
             
         except Exception as e:
-            print(f"❌ Erreur sauvegarde bataille: {e}")
+            print(f"❌ [BATTLE-CREATE] Erreur: {e}")
+            import traceback
+            traceback.print_exc()
         
         return {
             "current_player": attacker_player_id,
