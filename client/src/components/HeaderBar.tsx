@@ -492,9 +492,9 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
                 <span style={{ fontSize: '16px', marginRight: '2px' }}>{RESOURCE_EMOJIS[key]}</span>
                 {formatNumber(asNumber(resources[key]))}
               </span>
-              {key === 'cereal' && asNumber(resources['cereal_needed']) > 0 && (
+              {key === 'cereal' && asNumber(resources['cereal_consumption_per_tick']) > 0 && (
                 <span style={{ color: '#FFB6C1', fontSize: '0.8em', marginLeft: 2 }}>
-                  -{asNumber(resources['cereal_needed']).toFixed(1)}
+                  -{(asNumber(resources['cereal_consumption_per_tick']) * 360).toFixed(1)}
                 </span>
               )}
             </span>

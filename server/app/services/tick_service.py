@@ -224,7 +224,8 @@ class TickService:
             'forest': 'wood',
             'quarry': 'stone', 
             'iron_mine': 'iron',
-            'grain_field': 'cereal',
+            'grain_field': 'cereal',  # Ancien nom
+            'cereal_field': 'cereal',  # Nom utilisé dans le savegame
             'vineyard': 'wine',
             'marble_quarry': 'marble',
             'horse_farm': 'horse',
@@ -242,10 +243,10 @@ class TickService:
             workers = workers_assigned.get(worker_type, 0)
             
             if workers > 0 and resource != 'research':  # research géré dans _process_player_tick
-                # Production de ressources : 1 ouvrier = 1.44 ressources/heure (style Ikariam)
+                # Production de ressources : 1 ouvrier = 1 ressource/heure
                 # Avec 1 tick = 10 sec, il y a 360 ticks/heure
-                # Donc : 1.44 / 360 = 0.004 ressources/tick par ouvrier
-                RESOURCES_PER_WORKER_PER_HOUR = 1.44
+                # Donc : 1.0 / 360 ≈ 0.00278 ressources/tick par ouvrier
+                RESOURCES_PER_WORKER_PER_HOUR = 1.0
                 TICKS_PER_HOUR = 360
                 base_production = workers * (RESOURCES_PER_WORKER_PER_HOUR / TICKS_PER_HOUR)
                 
@@ -284,6 +285,7 @@ class TickService:
             # Utiliser le PopulationManager pour une gestion complète de la population
             # IMPORTANT: elapsed_seconds doit correspondre à l'intervalle de tick réel
             self.population_manager.update_city_population(city, elapsed_seconds=self.auto_tick_interval)
+            
         except Exception as e:
             self.logger.error(f"Erreur PopulationManager pour ville {city.get('id', 'unknown')}: {e}")
         
@@ -501,11 +503,27 @@ class TickService:
         # Limites par défaut (peuvent être augmentées par bâtiments)
         base_limits = {
             'wood': 3500, 'stone': 3500, 'iron': 3500, 'cereal': 3500, 'papyrus': 3500,
-            'horse': 1000, 'marble': 1000, 'glass': 1000, 'meat': 1000, 'coal': 1000,
+            'horse': 1000, 'marble': 1000, 'glass': 1000, 'wine': 1000, 'coal': 1000,
             'gunpowder': 1000, 'spices': 1000, 'cotton': 1000
         }
         
         base_limit = base_limits.get(resource, 1000)
+        
+        # Chercher l'entrepôt pour augmenter la capacité
+        storage_capacity = city.get('storage_capacity', {})
+        
+        # Si on a une capacité définie dans storage_capacity, l'utiliser
+        if resource in storage_capacity:
+            return storage_capacity[resource]
+        
+        # Sinon, calculer depuis le niveau de l'entrepôt
+        for building in city.get('buildings', []):
+            if building.get('name') == 'Entrepôt' and building.get('status') == 'Terminé':
+                level = building.get('level', 1)
+                # Capacité selon le niveau (basé sur buildings.json)
+                # Niveau 1: 6500, Niveau 2: 13000, Niveau 3: 19500, etc.
+                warehouse_capacity = 6500 * level
+                return warehouse_capacity
         
         return base_limit
     
@@ -577,9 +595,7 @@ class TickService:
                 
                 execution_time = time.time() - tick_start
                 cities_updated = result.get('cities_updated', 0)
-                # Log seulement toutes les 10 ticks pour éviter le spam
-                if tick_count % 10 == 0:
-                    print(f"[AUTO-TICK] Tick #{tick_count} ({execution_time:.3f}s) - {cities_updated} villes")
+                # Logs désactivés pour éviter le spam
                     
             except Exception as e:
                 print(f"❌ [AUTO-TICK] Erreur: {e}")

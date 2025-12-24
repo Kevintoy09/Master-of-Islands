@@ -210,65 +210,8 @@ class ResearchService:
             
         research_effects = player.get("research_effects", {})
         
-        # Effet de déverrouillage de bâtiments
-        if "unlock_building" in effects:
-            building_name = effects["unlock_building"]
-            player_id = player.get("id")
-            
-            try:
-                # Charger les données du bâtiment pour vérifier le slot_restriction
-                buildings_data = self.data_manager.load_buildings()
-                building_info = buildings_data.get(building_name, {})
-                slot_restriction = building_info.get("slot_restriction")
-                
-                savegame = self.data_manager.load_savegame()
-                cities = savegame.get("cities", [])
-                
-                buildings_added = 0
-                for city in cities:
-                    if city.get("owner") == player_id:
-                        buildings = city.get("buildings", [])
-                        
-                        # Vérifier si le bâtiment n'existe pas déjà
-                        building_exists = any(b.get("name") == building_name for b in buildings)
-                        if not building_exists:
-                            # Déterminer le slot à utiliser
-                            available_slot = None
-                            
-                            if slot_restriction:
-                                # Si slot_restriction défini, utiliser ce slot spécifique
-                                required_slot = f"slot_{slot_restriction}"
-                                # Vérifier que le slot n'est pas déjà occupé
-                                slot_occupied = any(b.get("slot_id") == required_slot for b in buildings)
-                                if not slot_occupied:
-                                    available_slot = required_slot
-                            else:
-                                # Sinon, trouver un slot libre
-                                used_slots = {b.get("slot_id") for b in buildings}
-                                for i in range(1, 30):
-                                    slot_id = f"slot_{i}"
-                                    if slot_id not in used_slots:
-                                        available_slot = slot_id
-                                        break
-                            
-                            if available_slot:
-                                # Ajouter le bâtiment
-                                new_building = {
-                                    "slot_id": available_slot,
-                                    "name": building_name,
-                                    "level": 1,
-                                    "status": "Terminé"
-                                }
-                                buildings.append(new_building)
-                                buildings_added += 1
-                
-                # Sauvegarder le savegame
-                if buildings_added > 0:
-                    self.data_manager.save_savegame(savegame, force_save=True)
-            except Exception as e:
-                print(f"❌ [RESEARCH] Erreur lors de l'ajout du bâtiment: {e}")
-                import traceback
-                traceback.print_exc()
+        # Effet de déverrouillage de bâtiments - Ne plus auto-construire, juste notifier
+        # Le joueur devra construire le bâtiment lui-même
         
         # Effet de déverrouillage de ressources
         if "unlock_resources" in effects:
@@ -306,7 +249,7 @@ class ResearchService:
             
         # Mapping des recherches vers les ressources qu'elles débloquent
         research_to_resources = {
-            "ressources_avancees": ["marble", "meat", "horse", "glass"],
+            "ressources_avancees": ["marble", "wine", "horse", "glass"],
             "ressources_industrielles": ["coal", "gunpowder", "spices", "cotton"]
         }
         
@@ -358,7 +301,7 @@ class ResearchService:
             "horse": 0,
             "marble": 0,
             "glass": 0,
-            "meat": 0,
+            "wine": 0,
             "coal": 0,
             "gunpowder": 0,
             "spices": 0,

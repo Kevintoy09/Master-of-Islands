@@ -126,7 +126,7 @@ def get_available_offers(city_id):
             'horse': '🐎',
             'marble': '🏛️',
             'glass': '🔷',
-            'meat': '🥩',
+            'wine': '🍷',
             'coal': '⚫',
             'gunpowder': '💥',
             'spices': '🌶️',
@@ -190,7 +190,7 @@ def create_offer(city_id):
     # Ressources autorisées (toutes sauf l'or et les points de recherche)
     allowed_resources = [
         'wood', 'stone', 'iron', 'cereal', 'papyrus', 'marble', 
-        'meat', 'horse', 'glass', 'coal', 'gunpowder', 'spices', 'cotton'
+        'wine', 'horse', 'glass', 'coal', 'gunpowder', 'spices', 'cotton'
     ]
     
     if resource not in allowed_resources:
@@ -258,7 +258,7 @@ def get_my_offers(city_id):
             'horse': '🐎',
             'marble': '🏛️',
             'glass': '🔷',
-            'meat': '🥩',
+            'wine': '🍷',
             'coal': '⚫',
             'gunpowder': '💥',
             'spices': '🌶️',

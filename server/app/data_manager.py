@@ -57,10 +57,35 @@ import threading
 import re
 from typing import Optional, Dict, Any
 
+class CompactFloatEncoder(json.JSONEncoder):
+    """Encoder JSON qui limite les floats à 4 décimales"""
+    def encode(self, obj):
+        if isinstance(obj, float):
+            return f"{obj:.4f}".rstrip('0').rstrip('.')
+        return super().encode(obj)
+    
+    def iterencode(self, obj, _one_shot=False):
+        """Override iterencode pour traiter récursivement les floats"""
+        for chunk in super().iterencode(obj, _one_shot):
+            yield chunk
+
+def round_floats_recursive(obj):
+    """Arrondit récursivement tous les floats à 4 décimales"""
+    if isinstance(obj, float):
+        return round(obj, 4)
+    elif isinstance(obj, dict):
+        return {k: round_floats_recursive(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [round_floats_recursive(item) for item in obj]
+    return obj
+
 def format_savegame_json(data: Dict) -> str:
     """
     Formate le savegame.json avec les sections critiques sur une ligne
     """
+    # Arrondir tous les floats à 4 décimales
+    data = round_floats_recursive(data)
+    
     # Générer le JSON avec indentation normale
     json_str = json.dumps(data, ensure_ascii=False, indent=2)
     
@@ -79,7 +104,7 @@ def format_savegame_json(data: Dict) -> str:
     
     # 2. Compacter les 13 ressources de base sur une ligne (approche simple et efficace)
     # Chercher et remplacer le pattern spécifique des 13 ressources consécutives
-    resources_pattern = r'(\s*"wood":\s*[0-9.]+,\s*\n\s*"stone":\s*[0-9.]+,\s*\n\s*"iron":\s*[0-9.]+,\s*\n\s*"cereal":\s*[0-9.]+,\s*\n\s*"papyrus":\s*[0-9.]+,\s*\n\s*"horse":\s*[0-9.]+,\s*\n\s*"marble":\s*[0-9.]+,\s*\n\s*"glass":\s*[0-9.]+,\s*\n\s*"meat":\s*[0-9.]+,\s*\n\s*"coal":\s*[0-9.]+,\s*\n\s*"gunpowder":\s*[0-9.]+,\s*\n\s*"spices":\s*[0-9.]+,\s*\n\s*"cotton":\s*[0-9.]+,\s*)'
+    resources_pattern = r'(\s*"wood":\s*[0-9.]+,\s*\n\s*"stone":\s*[0-9.]+,\s*\n\s*"iron":\s*[0-9.]+,\s*\n\s*"cereal":\s*[0-9.]+,\s*\n\s*"papyrus":\s*[0-9.]+,\s*\n\s*"horse":\s*[0-9.]+,\s*\n\s*"marble":\s*[0-9.]+,\s*\n\s*"glass":\s*[0-9.]+,\s*\n\s*"wine":\s*[0-9.]+,\s*\n\s*"coal":\s*[0-9.]+,\s*\n\s*"gunpowder":\s*[0-9.]+,\s*\n\s*"spices":\s*[0-9.]+,\s*\n\s*"cotton":\s*[0-9.]+,\s*)'
     resources_matches = re.findall(resources_pattern, json_str, re.DOTALL)
     for resources_match in resources_matches:
         # Compacter sur une ligne avec espacement propre
@@ -90,28 +115,67 @@ def format_savegame_json(data: Dict) -> str:
     
     # 3. satisfaction_factors supprimé - maintenant dans satisfaction_details uniquement
     
-    # 4. Compacter satisfaction_details (plus complexe, avec objets imbriqués)
-    satisfaction_details_pattern = r'"satisfaction_details":\s*\{[^}]*?"cereal_consumption":\s*\{[^}]*?\}\s*\}'
-    matches = re.findall(satisfaction_details_pattern, json_str, re.DOTALL)
+    # 3b. Compacter les stats de population sur une ligne
+    # Pattern: "population_total": X, "population_free": Y, "population_fractional": Z
+    pop_pattern = r'("population_total":\s*\d+,\s*"population_free":\s*\d+),\s*\n\s*("population_fractional":\s*[0-9.]+)'
+    json_str = re.sub(pop_pattern, r'\1, \2', json_str)
+    
+    # 3c. Compacter population unfed + townhall + cereal_consumption + windmill sur une ligne
+    # Pattern: population_unfed, pop_nourished_by_townhall, cereal_consumption_per_tick, windmill_cereal_bonus
+    pop_food_pattern = r'("population_unfed":\s*\d+),\s*\n\s*("pop_nourished_by_townhall":\s*\d+),\s*\n\s*("cereal_consumption_per_tick":\s*[0-9.]+),\s*\n\s*("windmill_cereal_bonus":\s*\d+)'
+    json_str = re.sub(pop_food_pattern, r'\1, \2, \3, \4', json_str)
+    
+    # 4. Compacter cereal_consumption (standalone)
+    cereal_consumption_pattern = r'"cereal_consumption":\s*\{[^}]*\}'
+    matches = re.findall(cereal_consumption_pattern, json_str, re.DOTALL)
     for match in matches:
-        # Pour satisfaction_details, on garde une structure semi-compacte
+        compact_match = re.sub(r'\s+', ' ', match).strip()
+        json_str = json_str.replace(match, compact_match)
+    
+    # 5. Compacter satisfaction_details sur une ligne
+    # Pattern : "satisfaction_details": { ... } avec tous les champs
+    satisfaction_pattern = r'"satisfaction_details":\s*\{[^}]*?"real_growth_per_hour":\s*[0-9.]+\s*\}'
+    matches = re.findall(satisfaction_pattern, json_str, re.DOTALL)
+    for match in matches:
+        # Compacter tout sur une ligne
         compact_match = re.sub(r'\n\s+', ' ', match)
         compact_match = re.sub(r'\s+', ' ', compact_match)
         compact_match = re.sub(r'\{\s*"', '{ "', compact_match)
         compact_match = re.sub(r'",\s*"', '", "', compact_match)
         compact_match = re.sub(r'"\s*\}', '" }', compact_match)
+        compact_match = re.sub(r'\}\s*,\s*"', ' }, "', compact_match)
         json_str = json_str.replace(match, compact_match)
     
-    # 5. Compacter chaque building individuellement sur une ligne
-    # Trouver tous les objets building individuels et les compacter
-    building_objects = re.findall(r'\{\s*"slot_id":[^}]*\}', json_str, re.DOTALL)
-    for building_obj in building_objects:
+    # 6. Compacter chaque building individuellement sur une ligne (SAUF ceux avec effect)
+    # Deux stratégies:
+    # A) Buildings SANS effect: compacter sur une ligne
+    # Pattern pour buildings sans effect (pas de virgule après "status": "Terminé")
+    building_no_effect_pattern = r'\{\s*"slot_id":\s*"[^"]*",\s*"name":\s*"[^"]*",\s*"level":\s*\d+,\s*"status":\s*"[^"]*"\s*\}'
+    building_no_effect_matches = re.findall(building_no_effect_pattern, json_str, re.DOTALL)
+    for building_obj in building_no_effect_matches:
         # Compacter ce building sur une ligne
         compact_building = re.sub(r'\s+', ' ', building_obj).strip()
         compact_building = re.sub(r'\{\s*"', '{ "', compact_building)
         compact_building = re.sub(r'",\s*"', '", "', compact_building)
         compact_building = re.sub(r'"\s*\}', '" }', compact_building)
         json_str = json_str.replace(building_obj, compact_building)
+    
+    # 6b. Compacter les bâtiments EN CONSTRUCTION sur une ligne (avec construction_end, started_at, duration, etc.)
+    # Pattern pour les bâtiments en construction avec tous leurs champs
+    building_construction_pattern = r'\{\s*"slot_id":\s*"[^"]*",\s*"name":\s*"[^"]*",\s*"level":\s*\d+,\s*"construction_end":[^}]*?"status":\s*"En construction"[^}]*?\}'
+    building_construction_matches = re.findall(building_construction_pattern, json_str, re.DOTALL)
+    for building_obj in building_construction_matches:
+        # Compacter ce building en construction sur une ligne
+        compact_building = re.sub(r'\s+', ' ', building_obj).strip()
+        compact_building = re.sub(r'\{\s*"', '{ "', compact_building)
+        compact_building = re.sub(r'",\s*"', '", "', compact_building)
+        compact_building = re.sub(r'":\s*', '": ', compact_building)
+        compact_building = re.sub(r',\s*"', ', "', compact_building)
+        compact_building = re.sub(r'"\s*\}', '" }', compact_building)
+        json_str = json_str.replace(building_obj, compact_building)
+    
+    # B) Buildings AVEC effect: laisser multi-lignes (ne rien faire, déjà formaté correctement)
+    # Ces buildings ont déjà une structure lisible avec des retours à la ligne
     
     # 6. Compacter chaque unité militaire sur une ligne (ex: "infantry_light": { "quantity": 4 })
     # Pattern plus spécifique pour les objets contenant "quantity"
@@ -179,12 +243,13 @@ def format_savegame_json(data: Dict) -> str:
     
     # 11. Compacter les champs simples de resources sur une seule ligne
     # Pattern pour les champs de compatibilité frontend (cereal_needed, population_unfed, etc.)
-    simple_fields_pattern = r'(\s*"growth_blocked_no_cereal":\s*(?:true|false)),\s*\n(\s*"cereal_needed":\s*[0-9.-]+),\s*\n(\s*"population_unfed":\s*[0-9.-]+),\s*\n(\s*"pop_nourished_by_townhall":\s*[0-9.-]+),\s*\n(\s*"pop_nourished_by_windmill":\s*[0-9.-]+),\s*\n(\s*"total_food_supply":\s*[0-9.-]+)'
+    # Note: pop_nourished_by_windmill supprimé avec la nouvelle logique du moulin
+    simple_fields_pattern = r'(\s*"growth_blocked_no_cereal":\s*(?:true|false)),\s*\n(\s*"cereal_needed":\s*[0-9.-]+),\s*\n(\s*"population_unfed":\s*[0-9.-]+),\s*\n(\s*"pop_nourished_by_townhall":\s*[0-9.-]+),\s*\n(\s*"total_food_supply":\s*[0-9.-]+)'
     
     def compact_simple_fields_replacement(match):
         # Récupérer l'indentation du premier champ
         indentation = re.match(r'(\s*)', match.group(1)).group(1) if match.group(1) else '        '
-        return f'{match.group(1)}, {match.group(2).strip()}, {match.group(3).strip()}, {match.group(4).strip()}, {match.group(5).strip()}, {match.group(6).strip()}'
+        return f'{match.group(1)}, {match.group(2).strip()}, {match.group(3).strip()}, {match.group(4).strip()}, {match.group(5).strip()}'
     
     json_str = re.sub(simple_fields_pattern, compact_simple_fields_replacement, json_str, flags=re.DOTALL)
     
@@ -485,22 +550,23 @@ class DataManager:
             return result
     
     def _clean_savegame_data(self, data: Dict) -> Dict:
-        """Nettoie les données du savegame avant sauvegarde (supprime gold, players, etc.)"""
-        import copy
-        cleaned_data = copy.deepcopy(data)
+        """Nettoie les données du savegame avant sauvegarde (supprime gold, players, research_points des villes, etc.)"""
+        # NE PAS utiliser deepcopy car cela ignorerait les modifications du tick !
+        # On modifie directement les données en place
         
-        # Supprimer "gold" de chaque ville
-        for city in cleaned_data.get("cities", []):
+        # Supprimer "gold" et "research_points" de chaque ville (pollution ancienne)
+        for city in data.get("cities", []):
             resources = city.get("resources", {})
             if "gold" in resources:
                 del resources["gold"]
+            if "research_points" in resources:
+                del resources["research_points"]  # research_points appartient au player, pas à la ville
         
         # Supprimer la section "players" qui fait doublon avec players.json
-        # (Fait silencieusement pour ne pas polluer les logs)
-        if "players" in cleaned_data:
-            del cleaned_data["players"]
+        if "players" in data:
+            del data["players"]
         
-        return cleaned_data
+        return data
     
     def _detect_new_buildings(self, new_data: Dict):
         """Détecte les nouveaux bâtiments et crée des notifications"""

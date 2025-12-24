@@ -417,9 +417,18 @@ ADMIN_INTERFACE_HTML = """
                         <option value="players.json">👥 players.json</option>
                         <option value="savegame.json">💾 savegame.json</option>
                         <option value="player_quests.json">🎯 player_quests.json</option>
-                        <option value="battlefields_v2.json">⚔️ battlefields_v2.json</option>
+                        <option value="player_heroes.json">🦸 player_heroes.json</option>
+                        <option value="player_profiles.json">📋 player_profiles.json</option>
+                        <option value="player_unit_improvements.json">⚔️ player_unit_improvements.json</option>
+                        <option value="battlefields_v2.json">🗺️ battlefields_v2.json</option>
+                        <option value="battlesv2.json">⚔️ battlesv2.json</option>
+                        <option value="battle_reports.json">📜 battle_reports.json</option>
+                        <option value="battle_replays.json">🎬 battle_replays.json</option>
+                        <option value="battle_notifications.json">🔔 battle_notifications.json</option>
                         <option value="transports.json">🚢 transports.json</option>
+                        <option value="transport_history.json">📊 transport_history.json</option>
                         <option value="messages.json">✉️ messages.json</option>
+                        <option value="notifications.json">📬 notifications.json</option>
                         <option value="market.json">🏛️ market.json</option>
                     </select>
                 </div>
@@ -447,6 +456,10 @@ ADMIN_INTERFACE_HTML = """
                     <button class="freq-button" onclick="loadJsonFile()" 
                             style="flex: 1; font-size: 1em; padding: 12px; background: linear-gradient(to bottom, var(--bronze), #8B4513);">
                         🔄 Recharger
+                    </button>
+                    <button class="freq-button" onclick="resetJsonFile()" 
+                            style="flex: 1; font-size: 1em; padding: 12px; background: linear-gradient(to bottom, var(--roman-red), #5a0000);">
+                        🗑️ Réinitialiser
                     </button>
                 </div>
 
@@ -996,6 +1009,69 @@ ADMIN_INTERFACE_HTML = """
                 resultDiv.innerHTML = `<strong>❌ JSON invalide :</strong> ${e.message}`;
             }
         }
+        
+        async function resetJsonFile() {
+            const editor = document.getElementById('jsonEditor');
+            const resultDiv = document.getElementById('jsonEditorResult');
+            
+            if (!currentJsonFile) {
+                alert('⚠️ Veuillez sélectionner un fichier');
+                return;
+            }
+            
+            // Demander confirmation avec avertissement sévère
+            const confirmMessage = `⚠️⚠️⚠️ ATTENTION CRITIQUE ⚠️⚠️⚠️
+
+Vous êtes sur le point de RÉINITIALISER complètement :
+${currentJsonFile}
+
+Cette action va :
+❌ SUPPRIMER toutes les données actuelles
+❌ Restaurer une structure VIERGE par défaut
+❌ Cette action est IRRÉVERSIBLE
+
+Êtes-vous ABSOLUMENT SÛR de vouloir continuer ?`;
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Double confirmation pour les fichiers critiques
+            if (['players.json', 'savegame.json'].includes(currentJsonFile)) {
+                if (!confirm(`⚠️ DERNIÈRE CONFIRMATION :\\n\\nVous allez réinitialiser ${currentJsonFile}.\\nTOUTES LES DONNÉES SERONT PERDUES !\\n\\nContinuer ?`)) {
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch(`/admin/api/reset-json-data/${currentJsonFile}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Recharger le contenu réinitialisé
+                    editor.value = JSON.stringify(data.content, null, 2);
+                    
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.color = '#2d5016';
+                    resultDiv.innerHTML = `<strong>✅ Réinitialisé :</strong> ${currentJsonFile} (backup créé)`;
+                } else {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#f8d7da';
+                    resultDiv.style.color = '#8B0000';
+                    resultDiv.innerHTML = `<strong>❌ Erreur :</strong> ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.color = '#8B0000';
+                resultDiv.innerHTML = `<strong>❌ Erreur :</strong> ${error.message}`;
+            }
+        }
     </script>
 </body>
 </html>
@@ -1457,11 +1533,11 @@ def get_json_data(filename):
         # Liste des fichiers autorisés
         allowed_files = [
             'players.json', 'savegame.json', 'player_quests.json',
-            'battlefields_v2.json', 'transports.json', 'messages.json',
-            'market.json', 'battlesv2.json', 'battle_reports.json',
-            'battle_replays.json', 'transport_history.json',
-            'notifications.json', 'player_heroes.json', 'player_profiles.json',
-            'player_unit_improvements.json'
+            'player_heroes.json', 'player_profiles.json', 'player_unit_improvements.json',
+            'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
+            'battle_replays.json', 'battle_notifications.json',
+            'transports.json', 'transport_history.json',
+            'messages.json', 'notifications.json', 'market.json'
         ]
         
         if filename not in allowed_files:
@@ -1502,11 +1578,11 @@ def save_json_data(filename):
         # Liste des fichiers autorisés
         allowed_files = [
             'players.json', 'savegame.json', 'player_quests.json',
-            'battlefields_v2.json', 'transports.json', 'messages.json',
-            'market.json', 'battlesv2.json', 'battle_reports.json',
-            'battle_replays.json', 'transport_history.json',
-            'notifications.json', 'player_heroes.json', 'player_profiles.json',
-            'player_unit_improvements.json'
+            'player_heroes.json', 'player_profiles.json', 'player_unit_improvements.json',
+            'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
+            'battle_replays.json', 'battle_notifications.json',
+            'transports.json', 'transport_history.json',
+            'messages.json', 'notifications.json', 'market.json'
         ]
         
         if filename not in allowed_files:
@@ -1538,3 +1614,67 @@ def save_json_data(filename):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+@admin_bp.route('/api/reset-json-data/<filename>', methods=['POST'])
+def reset_json_data(filename):
+    """Réinitialise un fichier JSON avec sa structure par défaut"""
+    try:
+        # Liste des fichiers autorisés
+        allowed_files = [
+            'players.json', 'savegame.json', 'player_quests.json',
+            'player_heroes.json', 'player_profiles.json', 'player_unit_improvements.json',
+            'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
+            'battle_replays.json', 'battle_notifications.json',
+            'transports.json', 'transport_history.json',
+            'messages.json', 'notifications.json', 'market.json'
+        ]
+        
+        if filename not in allowed_files:
+            return jsonify({'success': False, 'message': 'Fichier non autorisé'}), 403
+        
+        # Définir les structures par défaut pour chaque fichier
+        default_structures = {
+            'players.json': {"players": []},
+            'savegame.json': {"cities": [], "timestamp": 0},
+            'player_quests.json': {},
+            'player_heroes.json': {},
+            'player_profiles.json': {},
+            'player_unit_improvements.json': {},
+            'battlefields_v2.json': [],
+            'battlesv2.json': [],
+            'battle_reports.json': [],
+            'battle_replays.json': [],
+            'battle_notifications.json': [],
+            'transports.json': [],
+            'transport_history.json': [],
+            'messages.json': [],
+            'notifications.json': [],
+            'market.json': {
+                "offers": [],
+                "next_offer_id": 1
+            }
+        }
+        
+        # Récupérer la structure par défaut
+        default_content = default_structures.get(filename, {})
+        
+        file_path = os.path.join(os.path.dirname(__file__), '..', '..', 'gamedata', filename)
+        
+        # Créer une sauvegarde avant réinitialisation
+        backup_path = file_path + '.backup'
+        if os.path.exists(file_path):
+            import shutil
+            shutil.copy2(file_path, backup_path)
+        
+        # Écrire la structure par défaut
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(default_content, f, indent=2, ensure_ascii=False)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Fichier {filename} réinitialisé avec succès (backup créé)',
+            'content': default_content
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500

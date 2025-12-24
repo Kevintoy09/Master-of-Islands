@@ -47,7 +47,7 @@ def get_active_resources_by_era(era: str = "all") -> List[str]:
         era: "early", "mid", "late", ou "all"
     """
     early_game_resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus']
-    mid_game_resources = ['marble', 'meat', 'horse', 'glass']
+    mid_game_resources = ['marble', 'wine', 'horse', 'glass']
     late_game_resources = ['coal', 'gunpowder', 'spices', 'cotton']
     
     if era == "early":
@@ -87,7 +87,7 @@ class GameLogic:
         # Capacité de base de 3500 pour toutes les ressources (pour les joueurs débutants sans entrepôt)
         base_storage = {
             'wood': 3500, 'stone': 3500, 'iron': 3500, 'cereal': 3500, 'papyrus': 3500,
-            'meat': 3500, 'marble': 3500, 'horse': 3500, 'glass': 3500,
+            'wine': 3500, 'marble': 3500, 'horse': 3500, 'glass': 3500,
             'gunpowder': 3500, 'coal': 3500, 'cotton': 3500, 'spices': 3500
         }
         
@@ -413,7 +413,7 @@ class GameLogic:
                     city['resources']['building_bonus'] = {}
                 
                 # Mettre à jour tous les bonus (même à 0) - or exclu car géré au niveau joueur
-                base_resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus', 'horse', 'marble', 'glass', 'meat', 'coal', 'gunpowder', 'spices', 'cotton']
+                base_resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus', 'horse', 'marble', 'glass', 'wine', 'coal', 'gunpowder', 'spices', 'cotton']
                 for resource in base_resources:
                     city['resources']['building_bonus'][resource] = building_bonuses.get(resource, 0)
                 
@@ -748,7 +748,7 @@ class GameLogic:
                     city['resources']['building_bonus'] = {}
                 
                 # Mettre à jour tous les bonus (même à 0) - or exclu car géré au niveau joueur
-                base_resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus', 'horse', 'marble', 'glass', 'meat', 'coal', 'gunpowder', 'spices', 'cotton']
+                base_resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus', 'horse', 'marble', 'glass', 'wine', 'coal', 'gunpowder', 'spices', 'cotton']
                 for resource in base_resources:
                     city['resources']['building_bonus'][resource] = building_bonuses.get(resource, 0)
                 

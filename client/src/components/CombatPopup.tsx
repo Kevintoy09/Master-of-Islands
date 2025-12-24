@@ -135,6 +135,25 @@ const CombatPopup: React.FC<CombatPopupProps> = ({
     };
   }, [isOpen]);
 
+  // 🔒 Empêcher le scroll du background sur mobile lors du drag du popup
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const preventScroll = (e: TouchEvent) => {
+      // Empêcher le scroll du body/background
+      if (e.target === document.body || !(e.target as HTMLElement).closest('.combat-popup')) {
+        e.preventDefault();
+      }
+    };
+
+    // Ajouter l'écouteur avec { passive: false } pour pouvoir preventDefault()
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, [isOpen]);
+
   // Charger les données de bataille (moral + terrainDefinitions)
   useEffect(() => {
     if (isOpen && battlefieldId) {

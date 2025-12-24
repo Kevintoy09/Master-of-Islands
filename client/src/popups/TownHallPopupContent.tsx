@@ -18,7 +18,6 @@ const TownHallPopupContent: React.FC<TownHallPopupContentProps> = ({
   const [cityName, setCityName] = useState(city?.name || '');
   const [renameValue, setRenameValue] = useState(city?.name || '');
   const [goldRate, setGoldRate] = useState(city?.gold_rate || 1);
-  const [windmillMultiplier, setWindmillMultiplier] = useState(1); // Multiplicateur du moulin
   const [loading, setLoading] = useState(false);
 
   // Hook pour la mise à jour automatique de la population
@@ -43,27 +42,10 @@ const TownHallPopupContent: React.FC<TownHallPopupContentProps> = ({
     return goldRate;
   };
 
-  // Fonction pour récupérer le multiplicateur du moulin depuis le serveur
-  const fetchWindmillMultiplier = async () => {
-    try {
-      const response = await fetch(`/api/city/${city.id}/windmill-multiplier`);
-      if (response.ok) {
-        const data = await response.json();
-        const multiplier = data?.multiplier || 1;
-        setWindmillMultiplier(multiplier);
-        return multiplier;
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération du multiplicateur du moulin:', error);
-    }
-    return windmillMultiplier;
-  };
-
   // Récupérer les données au montage du composant
   useEffect(() => {
     if (city?.id) {
       fetchCurrentGoldRate();
-      fetchWindmillMultiplier();
     }
   }, [city?.id]);
 
@@ -76,12 +58,7 @@ const TownHallPopupContent: React.FC<TownHallPopupContentProps> = ({
     if (cityGoldRate && cityGoldRate > 0) {
       setGoldRate(cityGoldRate);
     }
-    
-    // Rafraîchir le multiplicateur du moulin si la ville change
-    if (city?.id) {
-      fetchWindmillMultiplier();
-    }
-  }, [city?.name, city?.gold_rate, city?.windmill_cereal_multiplier, city?.id]);
+  }, [city?.name, city?.gold_rate, city?.id]);
 
   // Fonction pour changer le taux d'impôt
   const handleGoldRateChange = async (newRate: number) => {
@@ -126,21 +103,19 @@ const TownHallPopupContent: React.FC<TownHallPopupContentProps> = ({
   const currentCereal = city?.resources?.cereal || 0;
   
   // Détection préventive : afficher le bouton dès que conditions réunies (avant même le tick)
-  const foodCapacity = (city?.resources?.pop_nourished_by_townhall || 0) + (city?.resources?.pop_nourished_by_windmill || 0);
+  const foodCapacity = city?.resources?.pop_nourished_by_townhall || 0;
   const shouldShowBlockWarning = isGrowthBlocked || (currentPopulation >= foodCapacity && currentCereal < 1);
   
-  // Données dynamiques (adapter selon structure réelle)
+  // Données dynamiques
   const populationAssigned = city?.workers_assigned
     ? (Object.values(city.workers_assigned) as number[]).reduce((a, b) => a + b, 0)
     : 0;
-  const populationFree = Math.max(0, (populationData?.info?.current_population || 0) - populationAssigned); // Ne peut pas être négative
+  const populationFree = Math.max(0, (populationData?.info?.current_population || 0) - populationAssigned);
   const maxPopulation = populationInfo?.max_capacity || city?.max_population || 0;
   const popNourishedByTownHall = city?.resources?.pop_nourished_by_townhall || 0;
-  const popNourishedByWindmill = city?.resources?.pop_nourished_by_windmill || 0;
-  const totalNourished = popNourishedByTownHall + popNourishedByWindmill;
-  const cerealNeeded = city?.resources?.cereal_needed || 0;
-  const multiplicateur = windmillMultiplier;
-  const satisfaction = (populationData?.info as any)?.satisfaction || city?.satisfaction || 0;
+  const popUnfed = city?.resources?.population_unfed || 0;
+  const cerealNeeded = (city?.resources?.cereal_consumption_per_tick || 0);  // Déjà par tick, on multiplie par 360 dans l'affichage
+  const satisfaction = (populationData?.info as any)?.satisfaction || city?.satisfaction_details?.total || 50;
   
   // Calculs pour la croissance de population
   const baseGrowthRate = populationInfo?.base_growth_per_hour || 0; // Croissance de base de l'Hôtel de Ville
@@ -251,17 +226,14 @@ const TownHallPopupContent: React.FC<TownHallPopupContentProps> = ({
       {/* Informations nourriture */}
       <div className="popup-section info">
         <div>Population actuelle : {Math.floor(currentPopulation)}</div>
-        <div>Population nourrie : {Math.floor(totalNourished)}</div>
-        <div>• Hôtel de Ville : {Math.floor(popNourishedByTownHall)}</div>
-        <div>• Moulin : {Math.floor(popNourishedByWindmill)}</div>
-        <div>Restant à nourrir : {Math.max(0, Math.floor(currentPopulation - totalNourished))}</div>
-        {Math.floor(currentPopulation - totalNourished) > 0 && (
+        <div>Population nourrie gratuitement : {Math.floor(popNourishedByTownHall)}</div>
+        <div>Population à nourrir : {Math.floor(popUnfed)} → {(popUnfed * 0.1).toFixed(1)} céréales/h</div>
+        {popUnfed > 0 && (
           <div style={{color: '#ff6b6b', fontSize: '0.9em', fontStyle: 'italic'}}>
-            ⚠️ Population limitée par la capacité des bâtiments
+            ⚠️ {Math.floor(popUnfed)} habitants doivent être nourris avec des céréales
           </div>
         )}
-        <div>Consommation de céréales : {(cerealNeeded * 360).toFixed(1)} céréales/h</div>
-        <div>Conso. par habitant : 0.1 céréales/h × {multiplicateur.toFixed(2)} = {(0.1 * multiplicateur).toFixed(2)} céréales/h</div>
+        <div>Consommation de céréales : {(popUnfed * 0.1).toFixed(1)} + {city?.windmill_cereal_bonus || 0} = {(cerealNeeded * 360).toFixed(1)} céréales/h</div>
       </div>
 
       {/* Satisfaction et gestion */}

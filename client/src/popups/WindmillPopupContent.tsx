@@ -13,77 +13,88 @@ const WindmillPopupContent: React.FC<WindmillPopupContentProps> = ({
   onClose,
   onCityDataChange
 }) => {
-  const [cerealMultiplier, setCerealMultiplier] = useState(1); // Valeur par défaut, sera mise à jour par fetchCurrentMultiplier
-  const [confirmedMultiplier, setConfirmedMultiplier] = useState(1); // Multiplicateur confirmé côté serveur
+  const [cerealBonus, setCerealBonus] = useState(0); // Slider du moulin (céréales/h)
+  const [confirmedBonus, setConfirmedBonus] = useState(0); // Bonus confirmé côté serveur
   const [loading, setLoading] = useState(false);
+  const [buildingData, setBuildingData] = useState<any>(null); // Données du bâtiment depuis l'API
 
-  // Récupérer le multiplicateur actuel depuis le serveur
-  const fetchCurrentMultiplier = async () => {
+  // Récupérer le bonus actuel et les données du bâtiment depuis le serveur
+  const fetchCurrentBonus = async () => {
     try {
       const response = await fetch(`/api/city/${city.id}/state`);
       if (response.ok) {
         const cityData = await response.json();
-        const currentMultiplier = cityData?.windmill_cereal_multiplier || 1;
-        setCerealMultiplier(currentMultiplier);
-        setConfirmedMultiplier(currentMultiplier); // Mise à jour du multiplicateur confirmé
-        return currentMultiplier;
+        const currentBonus = cityData?.windmill_cereal_bonus || 0;
+        setCerealBonus(currentBonus);
+        setConfirmedBonus(currentBonus);
+        
+        // Trouver le moulin dans les bâtiments de la ville
+        const windmill = cityData?.buildings?.find((b: any) => b.name === 'Windmill');
+        if (windmill) {
+          setBuildingData(windmill);
+        }
+        
+        return currentBonus;
       } else {
-        console.error(`Erreur HTTP lors de la récupération du multiplicateur:`, response.status);
+        console.error(`Erreur HTTP lors de la récupération du bonus:`, response.status);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération du multiplicateur:', error);
+      console.error('Erreur lors de la récupération du bonus:', error);
     }
-    return cerealMultiplier;
+    return cerealBonus;
   };
 
-  // Récupérer le multiplicateur au montage du composant
+  // Récupérer le bonus au montage du composant
   useEffect(() => {
     if (city?.id) {
-      fetchCurrentMultiplier();
+      fetchCurrentBonus();
     }
   }, [city?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fonction pour changer le multiplicateur de céréales
-  const handleMultiplierChange = async (newMultiplier: number) => {
-    if (loading || newMultiplier === confirmedMultiplier) return;
+  // Fonction pour changer le bonus de céréales
+  const handleBonusChange = async (newBonus: number) => {
+    if (loading || newBonus === confirmedBonus) return;
     
     setLoading(true);
     try {
-      const response = await fetch(`/api/city/${city.id}/windmill-multiplier`, {
+      const response = await fetch(`/api/city/${city.id}/windmill-bonus`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ multiplier: newMultiplier })
+        body: JSON.stringify({ bonus: newBonus })
       });
+      
+      console.log('[WINDMILL POST] Response status:', response.status);
       
       if (response.ok) {
         const result = await response.json();
+        console.log('[WINDMILL POST] Result:', result);
         
         if (result.success) {
-          setCerealMultiplier(newMultiplier);
-          setConfirmedMultiplier(newMultiplier); // Mise à jour du multiplicateur confirmé
+          setCerealBonus(newBonus);
+          setConfirmedBonus(newBonus);
           
-          // IMPORTANT: Mettre à jour l'objet city pour synchroniser avec les autres popups
+          // Mettre à jour l'objet city pour synchronisation
           if (city && typeof city === 'object') {
-            city.windmill_cereal_multiplier = newMultiplier;
+            city.windmill_cereal_bonus = newBonus;
           }
           
-          // Forcer une re-synchronisation pour s'assurer que la valeur est correcte
+          // Re-synchroniser
           setTimeout(() => {
-            fetchCurrentMultiplier();
+            fetchCurrentBonus();
           }, 100);
           
-          // Notifier le changement de données de ville
+          // Notifier le changement
           if (onCityDataChange) {
             onCityDataChange();
           }
         } else {
-          console.error('Échec de mise à jour du multiplicateur');
+          console.error('Échec de mise à jour du bonus');
         }
       } else {
         console.error('Erreur HTTP lors de la mise à jour:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Erreur lors du changement du multiplicateur:', error);
+      console.error('Erreur lors du changement du bonus:', error);
     } finally {
       setLoading(false);
     }
@@ -91,101 +102,86 @@ const WindmillPopupContent: React.FC<WindmillPopupContentProps> = ({
 
   // Calcul des effets du bâtiment
   const currentLevel = building?.level || 1;
-  const foodSupply = building?.effect?.food_supply || 0;
-  const maxMultiplier = building?.effect?.cereal_consumption_multiplier || 2;
+  const maxCerealBonus = buildingData?.effect?.cereal_bonus_per_hour || 0;
 
   // Informations de population
-  const popNourishedByWindmill = city?.resources?.pop_nourished_by_windmill || 0;
+  const popUnfed = city?.resources?.population_unfed || 0;
+  const popNourishedByTownhall = city?.resources?.pop_nourished_by_townhall || 0;
   const currentPopulation = city?.resources?.population_total || 0;
-  // const totalCerealConsumption = city?.resources?.cereal_needed || 0; // Unused for now
 
-  // Calcul de l'effet du multiplicateur sur la consommation
-  const baseConsumptionRate = 0.1; // Doit correspondre à POPULATION_CONSTANTS["CEREAL_CONSUMPTION_PER_PERSON"]
-  const popNotFedByTownHall = Math.max(0, currentPopulation - (city?.resources?.pop_nourished_by_townhall || 0));
-  const popUsingWindmill = Math.min(popNotFedByTownHall, popNourishedByWindmill);
-  const cerealConsumptionByWindmill = popUsingWindmill * baseConsumptionRate * cerealMultiplier;
+  // Calcul de la consommation de céréales
+  // Consommation = (pop_unfed × 0.1) + windmill_bonus
+  const baseCerealConsumption = popUnfed * 0.1; // En céréales/h
+  const totalCerealConsumption = baseCerealConsumption + cerealBonus;
+  const satisfactionBonus = cerealBonus; // 1 point de satisfaction par céréale/h
 
-  // DEBUG : Vérifier l'état du bouton Appliquer
-  const isButtonDisabled = loading || cerealMultiplier === confirmedMultiplier;
   return (
     <div className="popup-content">
-      {/* Titre et informations de base */}
-      <div className="popup-header">
-        <h3>{building?.name || 'Moulin'} - Niveau {currentLevel}</h3>
-      </div>
-
-      {/* Statistiques du moulin */}
-      <div className="popup-section">
-        <div className="popup-section-title">Capacité alimentaire :</div>
-        <div className="popup-stats-grid">
-          <div>Population nourrie : {Math.floor(popNourishedByWindmill)}</div>
-          <div>Capacité totale : {foodSupply}</div>
-        </div>
-      </div>
-
-      {/* Contrôle du multiplicateur de céréales */}
+      {/* Ration de nourriture (slider) */}
       <div className="popup-section highlight">
-        <div className="popup-section-title">Multiplicateur de consommation :</div>
+        <div className="popup-section-title">🌾 Ration de nourriture supplémentaire :</div>
         
-        {/* Slider pour le multiplicateur */}
-        <div style={{ margin: '10px 0' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
-            Multiplicateur actuel : ×{cerealMultiplier.toFixed(2)}
-          </label>
-          <div style={{ fontSize: '0.8em', color: '#666', marginBottom: '5px' }}>
-            DEBUG: slider={cerealMultiplier.toFixed(2)}, confirmé={confirmedMultiplier.toFixed(2)}, bouton={isButtonDisabled ? 'désactivé' : 'actif'}
+        {maxCerealBonus > 0 ? (
+          <>
+            <div style={{ margin: '10px 0' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Consommation bonus : {cerealBonus.toFixed(1)} céréales/h
+              </label>
+              <input
+                type="range"
+                min="0"
+                max={maxCerealBonus}
+                step="1"
+                value={cerealBonus}
+                onChange={(e) => {
+                  const newValue = parseFloat(e.target.value);
+                  setCerealBonus(newValue);
+                }}
+                disabled={loading}
+                style={{ width: '100%' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8em', color: '#666' }}>
+                <span>0 (Min)</span>
+                <span>{maxCerealBonus} (Max - Niveau {currentLevel})</span>
+              </div>
+            </div>
+
+            {/* Boutons */}
+            <div className="popup-button-group" style={{ marginTop: '10px' }}>
+              <button
+                onClick={() => handleBonusChange(cerealBonus)}
+                disabled={loading || cerealBonus === confirmedBonus}
+                className="popup-action-button primary"
+              >
+                {loading ? 'Application...' : 'Appliquer'}
+              </button>
+              <button
+                onClick={() => setCerealBonus(confirmedBonus)}
+                disabled={loading}
+                className="popup-action-button secondary"
+              >
+                Annuler
+              </button>
+            </div>
+
+            {/* Effets */}
+            <div style={{ marginTop: '15px', fontSize: '0.9em', backgroundColor: '#f8f9fa', padding: '10px', borderRadius: '5px' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>💡 Effets :</div>
+              <div>• Consommation de base : {baseCerealConsumption.toFixed(1)} céréales/h ({popUnfed} pop × 0.1)</div>
+              <div>• Consommation bonus : {cerealBonus.toFixed(1)} céréales/h</div>
+              <div style={{ fontWeight: 'bold', color: '#d9534f' }}>• Total : {totalCerealConsumption.toFixed(1)} céréales/h</div>
+              <div style={{ color: '#5cb85c', fontWeight: 'bold', marginTop: '5px' }}>• Bonus de satisfaction : +{satisfactionBonus} points</div>
+            </div>
+
+            <div style={{ marginTop: '10px', fontSize: '0.85em', color: '#666', fontStyle: 'italic' }}>
+              ℹ️ Plus vous augmentez la ration, plus la population est satisfaite. Si vous manquez de céréales, le bonus se réinitialise automatiquement à 0.
+            </div>
+          </>
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center', color: '#666', fontStyle: 'italic' }}>
+            ⚠️ Ce moulin n'a pas de capacité de bonus. Vérifiez que le bâtiment est bien terminé et configuré correctement.
           </div>
-          <input
-            type="range"
-            min="1"
-            max={maxMultiplier}
-            step="0.1"
-            value={cerealMultiplier}
-            onChange={(e) => {
-              const newValue = parseFloat(e.target.value);
-              setCerealMultiplier(newValue);
-            }}
-            disabled={loading}
-            style={{ width: '100%' }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8em', color: '#666' }}>
-            <span>1.0 (Min)</span>
-            <span>{maxMultiplier.toFixed(1)} (Max)</span>
-          </div>
-        </div>
-
-        {/* Boutons de validation */}
-        <div className="popup-button-group" style={{ marginTop: '10px' }}>
-          <button
-            onClick={() => {
-              handleMultiplierChange(cerealMultiplier);
-            }}
-            disabled={isButtonDisabled}
-            className="popup-action-button primary"
-          >
-            {loading ? 'Application...' : 'Appliquer'}
-          </button>
-          <button
-            onClick={() => setCerealMultiplier(confirmedMultiplier)}
-            disabled={loading}
-            className="popup-action-button secondary"
-          >
-            Annuler
-          </button>
-        </div>
-
-        {/* Informations sur l'effet */}
-        <div style={{ marginTop: '10px', fontSize: '0.9em' }}>
-          <div>• Consommation par hab. : {(baseConsumptionRate * cerealMultiplier * 360).toFixed(1)} céréales/h</div>
-          <div>• Population utilisant le moulin : {Math.floor(popUsingWindmill)}</div>
-          <div>• Consommation totale moulin : {(cerealConsumptionByWindmill * 360).toFixed(1)} céréales/h</div>
-          <div>• Bonus de satisfaction : +{Math.floor(cerealMultiplier * 10)} points</div>
-        </div>
-      </div>
-
-      {/* Informations de débogage */}
-      <div style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
-        Debug: multiplier={cerealMultiplier}, max={maxMultiplier}, loading={loading}
+        )}
       </div>
 
       {/* Actions */}

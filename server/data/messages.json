@@ -1,0 +1,15 @@
+[
+  {
+    "id": "msg_1766504826372",
+    "sender_id": "player_1",
+    "recipient_id": "player_3",
+    "subject": "test",
+    "content": "test1",
+    "timestamp": "2025-12-23T16:47:06.372072",
+    "read": true,
+    "is_admin_message": false,
+    "attachment": null,
+    "deleted_by_sender": false,
+    "deleted_by_recipient": false
+  }
+]

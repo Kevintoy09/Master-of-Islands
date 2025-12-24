@@ -1,0 +1,100 @@
+{
+  "players": [
+    {
+      "id": "player_1",
+      "username": "aaa",
+      "research_points": 79.2546,
+      "unlocked_research": [
+        "maison_chef",
+        "acces_ressources"
+      ],
+      "research_effects": {
+        "resource_bonuses": {}
+      },
+      "gold": 1209.7897,
+      "diamonds": 10,
+      "transport_ships_total": 1,
+      "transport_ships_busy": 0,
+      "total_units_killed": 0,
+      "total_units_lost": 0,
+      "total_xp_gained": 0,
+      "battles_fought": 0,
+      "victories": 0,
+      "defeats": 0,
+      "victories_barbarians": 0,
+      "creation_date": 1766520299,
+      "last_login": null,
+      "last_activity": null,
+      "session_count": 0,
+      "total_play_time_minutes": 0,
+      "faction": "stone",
+      "tutorial": {
+        "completed": true
+      }
+    },
+    {
+      "id": "player_2",
+      "username": "bbb",
+      "research_points": 478.3494,
+      "unlocked_research": [
+        "maison_chef",
+        "acces_ressources"
+      ],
+      "research_effects": {
+        "resource_bonuses": {}
+      },
+      "gold": 749.1001,
+      "diamonds": 10,
+      "transport_ships_total": 1,
+      "transport_ships_busy": 0,
+      "total_units_killed": 0,
+      "total_units_lost": 0,
+      "total_xp_gained": 0,
+      "battles_fought": 0,
+      "victories": 0,
+      "defeats": 0,
+      "victories_barbarians": 0,
+      "creation_date": 1766522402,
+      "last_login": 1766525994,
+      "last_activity": 1766525994,
+      "session_count": 2,
+      "total_play_time_minutes": 0,
+      "faction": "cereal",
+      "tutorial": {
+        "completed": true
+      }
+    },
+    {
+      "id": "player_3",
+      "username": "ccc",
+      "research_points": 50,
+      "unlocked_research": [
+        "sablier"
+      ],
+      "research_effects": {
+        "resource_bonuses": {}
+      },
+      "gold": 563.6205,
+      "diamonds": 10,
+      "transport_ships_total": 1,
+      "transport_ships_busy": 0,
+      "total_units_killed": 0,
+      "total_units_lost": 0,
+      "total_xp_gained": 0,
+      "battles_fought": 0,
+      "victories": 0,
+      "defeats": 0,
+      "victories_barbarians": 0,
+      "creation_date": 1766527069,
+      "last_login": null,
+      "last_activity": null,
+      "session_count": 0,
+      "total_play_time_minutes": 0,
+      "tutorial": {
+        "completed": false,
+        "current_step": "welcome",
+        "completed_steps": 7
+      }
+    }
+  ]
+}

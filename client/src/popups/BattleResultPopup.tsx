@@ -2,7 +2,7 @@
  * BattleResultPopup.tsx
  * Popup d'affichage des résultats de bataille
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import './BattleResultPopup.css';
 
 interface BattleNotification {
@@ -29,6 +29,23 @@ interface BattleResultPopupProps {
 
 const BattleResultPopup: React.FC<BattleResultPopupProps> = ({ notification, onClose, onMarkRead }) => {
   const isVictory = notification.type === 'victory';
+  
+  // 🔒 Empêcher le scroll du background sur mobile
+  useEffect(() => {
+    const preventScroll = (e: TouchEvent) => {
+      if (e.target === document.body || !(e.target as HTMLElement).closest('.battle-result-popup')) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('touchmove', preventScroll);
+      document.body.style.overflow = '';
+    };
+  }, []);
   
   const handleClose = () => {
     // Marquer comme lu avant de fermer

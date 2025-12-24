@@ -3,35 +3,35 @@
     "description": "Petit campement sauvage avec quelques guerriers",
     "difficulty": "Facile",
     "units": {"barbarian_warrior": 3, "barbarian_archer": 2},
-    "rewards": {"wood": 150, "stone": 100, "cereal": 80},
+    "rewards": {"wood": 150, "stone": 100, "cereal": 280},
     "battlefield": "battlefield_map_2.json"
   },
   "level_2": {
     "description": "Camp de sauvages renforcé avec des pillards",
     "difficulty": "Facile",
     "units": {"barbarian_warrior": 5, "barbarian_archer": 3, "barbarian_raider": 1},
-    "rewards": {"wood": 250, "stone": 180, "cereal": 140, "iron": 50},
+    "rewards": {"wood": 250, "stone": 180, "cereal": 340, "iron": 50},
     "battlefield": "battlefield_map_1.json"
   },
   "level_3": {
     "description": "Tribu sauvage avec un chaman pour soutien magique",
     "difficulty": "Moyen",
-    "units": {"barbarian_warrior": 7, "barbarian_archer": 5, "barbarian_raider": 2, "tribal_shaman": 1},
-    "rewards": {"wood": 400, "stone": 300, "cereal": 220, "iron": 100, "papyrus": 30},
+    "units": {"barbarian_warrior": 7, "barbarian_archer": 5, "barbarian_raider": 3},
+    "rewards": {"wood": 600, "stone": 300, "cereal": 620, "iron": 100, "papyrus": 30},
     "battlefield": "battlefield_map_1.json"
   },
   "level_4": {
     "description": "Forteresse sauvage commandée par un chef bandit",
     "difficulty": "Moyen",
-    "units": {"barbarian_warrior": 10, "barbarian_archer": 7, "barbarian_raider": 3, "tribal_shaman": 2, "bandit_leader": 1},
-    "rewards": {"wood": 600, "stone": 450, "cereal": 350, "iron": 180, "papyrus": 60, "horse": 10},
+    "units": {"barbarian_warrior": 12, "barbarian_archer": 9, "barbarian_raider": 6},
+    "rewards": {"wood": 600, "stone": 450, "cereal": 850, "iron": 180, "papyrus": 60, "horse": 10},
     "battlefield": "battlefield_map_2.json"
   },
   "level_5": {
     "description": "Repaire de pirates et sauvages alliés",
     "difficulty": "Difficile",
     "units": {"barbarian_warrior": 12, "barbarian_archer": 8, "barbarian_raider": 4, "tribal_shaman": 2, "bandit_leader": 1, "pirate_crew": 3},
-    "rewards": {"wood": 1000, "stone": 750, "cereal": 600, "iron": 300, "papyrus": 120, "horse": 20, "marble": 15, "glass": 10},
+    "rewards": {"wood": 1000, "stone": 750, "cereal": 900, "iron": 300, "papyrus": 120, "horse": 20, "marble": 15, "glass": 10},
     "battlefield": "battlefield_map_2.json"
   },
   "level_6": {

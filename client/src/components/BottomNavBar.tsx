@@ -47,6 +47,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [hasChiefHouse, setHasChiefHouse] = useState(false); // Maison du Chef dans slot 17
   const [hasUnclaimedQuestRewards, setHasUnclaimedQuestRewards] = useState(false);
+  const [preselectedRecipient, setPreselectedRecipient] = useState<string | undefined>(undefined);
   const { user, logout } = useUser();
   const { isMuted, toggleMute } = useMusicPlayer();
 
@@ -164,12 +165,20 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
     window.addEventListener('notificationUpdate', handleNotificationUpdate);
     window.addEventListener('notificationsRead', handleNotificationsRead);
     
+    // Écouter l'événement pour ouvrir les messages avec un destinataire pré-sélectionné
+    const handleOpenMessages = (e: any) => {
+      setPreselectedRecipient(e.detail?.recipientId);
+      setIsMessagesOpen(true);
+    };
+    window.addEventListener('openMessagesPopup', handleOpenMessages);
+    
     return () => {
       clearInterval(interval);
       clearInterval(messagesInterval);
       clearInterval(questRewardsInterval);
       window.removeEventListener('notificationUpdate', handleNotificationUpdate);
       window.removeEventListener('notificationsRead', handleNotificationsRead);
+      window.removeEventListener('openMessagesPopup', handleOpenMessages);
     };
   }, [user?.id, user?.username]);
 
@@ -441,7 +450,11 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
 
       <MessagesPopup
         isOpen={isMessagesOpen}
-        onClose={() => setIsMessagesOpen(false)}
+        onClose={() => {
+          setIsMessagesOpen(false);
+          setPreselectedRecipient(undefined);
+        }}
+        preselectedRecipient={preselectedRecipient}
       />
 
       <FactionStatsPopup

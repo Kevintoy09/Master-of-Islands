@@ -14,7 +14,7 @@ interface SatisfactionData {
   hygiene_percent: number;
   has_plague: boolean;
   cereal_multiplier: number;
-  cereal_needed: number;
+  cereal_consumption_per_tick: number;
 }
 
 interface SatisfactionPopupProps {
@@ -272,11 +272,15 @@ const SatisfactionPopup: React.FC<SatisfactionPopupProps> = ({
           <div className="satisfaction-explanation">
             <h4>ℹ️ Comment ça marche :</h4>
             <ul>
-              <li><strong>Satisfaction 0-25 :</strong> Crise démographique (-50% croissance)</li>
-              <li><strong>Satisfaction 25-50 :</strong> Déclin (-25% croissance)</li>
-              <li><strong>Satisfaction 50-75 :</strong> Croissance normale</li>
-              <li><strong>Satisfaction 75-100 :</strong> Boom démographique (+25% croissance)</li>
+              <li><strong>Satisfaction 0 :</strong> Décroissance maximale (-400% = croissance × -4)</li>
+              <li><strong>Satisfaction 25 :</strong> Forte décroissance (-250%)</li>
+              <li><strong>Satisfaction 50 :</strong> Croissance normale (±0%)</li>
+              <li><strong>Satisfaction 75 :</strong> Bonne croissance (+150%)</li>
+              <li><strong>Satisfaction 100 :</strong> Croissance maximale (+300% = croissance × 4)</li>
             </ul>
+            <p style={{fontSize: '0.9em', fontStyle: 'italic', marginTop: '8px', color: '#ff6666'}}>
+              ⚠️ Attention : Si la satisfaction descend en dessous de 50, votre population va diminuer ! En famine (pas assez de céréales), vous perdez -40 satisfaction.
+            </p>
           </div>
 
           {/* Bouton fermer */}

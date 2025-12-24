@@ -236,9 +236,33 @@ def get_city_state(city_id: str):
     
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
     if city:
+        # Charger les effets depuis buildings.json SANS modifier le savegame
+        # On ajoute les effects seulement dans la réponse API
+        buildings_data = data_manager.load_buildings()
+        buildings_with_effects = []
+        
+        for building in city.get('buildings', []):
+            building_copy = building.copy()  # Copie pour ne pas modifier le savegame
+            building_name = building.get('name')
+            level = building.get('level', 1)
+            status = building.get('status')
+            
+            # Charger l'effet depuis buildings.json si le bâtiment est terminé
+            if status == 'Terminé' and building_name in buildings_data:
+                building_config = buildings_data[building_name]
+                levels = building_config.get('levels', [])
+                
+                # Trouver le niveau correspondant (level est 1-indexed)
+                if 0 < level <= len(levels):
+                    level_data = levels[level - 1]
+                    building_copy['effect'] = level_data.get('effect', {})
+            
+            buildings_with_effects.append(building_copy)
+        
         # Ajouter les limites de stockage
         storage_limits = game_logic.get_city_storage_limits(city)
         city_response = city.copy()
+        city_response['buildings'] = buildings_with_effects  # Utiliser les buildings avec effects
         city_response['storage_limits'] = storage_limits
         return jsonify(city_response)
     else:
@@ -320,6 +344,20 @@ def get_city_population(city_id):
     cereal_consumption = pop_manager.calculate_cereal_consumption(city, population_food_status, dt=1.0)
     satisfaction_factors = pop_manager.calculate_satisfaction_factors(city, cereal_consumption)
     
+    # IMPORTANT : Vérifier si en famine pour ajouter le malus
+    # Simuler apply_consumption_and_famine pour obtenir le bon malus
+    resources = city['resources']
+    current_cereal = resources.get('cereal', 0)
+    total_needed = cereal_consumption['total_needed']
+    is_growth_blocked = resources.get('growth_blocked_no_cereal', False)
+    
+    if not is_growth_blocked and total_needed > 0 and current_cereal < total_needed:
+        # En famine : ajouter le malus
+        satisfaction_factors['malus']['famine'] = 40  # FAMINE_SATISFACTION_MALUS
+    else:
+        # Pas de famine : retirer le malus
+        satisfaction_factors['malus'].pop('famine', None)
+    
     # Mettre à jour satisfaction_details avec les factors recalculés
     satisfaction_details = city.get('satisfaction_details', {})
     if satisfaction_factors:
@@ -357,7 +395,7 @@ def get_city_population(city_id):
         'time_multiplier': 1,
         'hygiene_percent': city.get('hygiene_percent', 100),
         'has_plague': city.get('has_plague', False),
-        'satisfaction': city.get('satisfaction', 50),
+        'satisfaction': satisfaction_details.get('total', 50),  # Depuis satisfaction_details, pas city.satisfaction
         # Données pour SatisfactionPopup
         'satisfaction_factors': {
             'bonus': satisfaction_details.get('bonus', {}),
@@ -376,7 +414,7 @@ def get_city_population(city_id):
         'max_capacity': max_capacity,
         'workers_assigned': workers_assigned,
         'growth_rate': satisfaction_details.get('real_growth_per_hour', 0),
-        'satisfaction': city.get('satisfaction', 50),
+        'satisfaction': satisfaction_details.get('total', 50),  # Depuis satisfaction_details, pas city.satisfaction
         # Garder aussi l'ancien format pour compatibilité
         'population': resources.get('population_total', 0),
         'info': population_info,
@@ -392,8 +430,11 @@ def get_city_population(city_id):
 @handle_errors
 def cure_city_plague(city_id):
     """
-    Soigne la peste dans une ville.
+    Tente de soigner la peste dans une ville.
+    Coût : 10% de l'or du joueur
+    Chance de réussite : 50%
     """
+    import random
     from ..transition_utils import load_savegame_transition, save_savegame_transition
     
     try:
@@ -404,20 +445,13 @@ def cure_city_plague(city_id):
         raise GameValidationError(f'Erreur de chargement des données: {str(e)}')
     
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
-    if not city:        raise CityNotFoundError(f'City {city_id} not found')
+    if not city:
+        raise CityNotFoundError(f'City {city_id} not found')
     
     # Vérifier si la ville a la peste
     has_plague = city.get('has_plague', False)
     if not has_plague:
         return jsonify({'success': False, 'message': 'La ville n\'a pas la peste'}), 200
-    
-    # Vérifier les conditions : hygiène >= 100% et coût en or (2x population)
-    population = city['resources'].get('population_total', 0)
-    hygiene = city.get('hygiene_percent', 0)
-    cost = 2 * population
-    
-    if hygiene < 100:
-        return jsonify({'success': False, 'message': 'Hygiène insuffisante (minimum 100%)'}), 200
     
     # Charger l'or du joueur depuis players.json
     players_data = data_manager.load_players()
@@ -429,28 +463,38 @@ def cure_city_plague(city_id):
     
     player_gold = player.get('gold', 0)
     
+    # Coût = 10% de l'or du joueur (minimum 1)
+    cost = max(1, int(player_gold * 0.10))
+    
     if player_gold < cost:
         return jsonify({'success': False, 'message': f'Or insuffisant ({cost} requis, vous avez {player_gold})'}), 200
     
-    # Soigner la peste
-    from app.managers.population_manager import PopulationManager
-    pop_manager = PopulationManager(os.path.join(BASE_DIR, 'data'))
-    pop_manager.cure_plague(city)
-    
-    # Déduire l'or du joueur
+    # Déduire l'or AVANT le test de chance
     player['gold'] -= cost
     
-    # Sauvegarder players.json
-    with open(players_path, 'w', encoding='utf-8') as f:
-        json.dump(players_data, f, indent=2, ensure_ascii=False)
+    # Sauvegarder players.json IMMÉDIATEMENT (avant savegame)
+    players_save_result = data_manager.save_players(players_data, force_save=True)
+    if not players_save_result:
+        raise GameValidationError('Erreur lors de la sauvegarde de players.json')
     
-    success = True
+    # 50% de chance de réussite
+    success = random.random() < 0.5
     
-    # Sauvegarder (forcer la sauvegarde pour les actions critiques)
+    if success:
+        # Soigner la peste
+        city['has_plague'] = False
+        message = f'Peste soignée avec succès ! ({cost} or dépensé)'
+    else:
+        message = f'Échec du traitement... ({cost} or perdu)'
+    
+    # Sauvegarder savegame (forcer la sauvegarde pour les actions critiques)
     save_result = data_manager.save_savegame(savegame, force_save=True)
     
-    if success and save_result:        return jsonify({'success': True, 'message': 'Peste soignée avec succès'})
-    else:        raise GameValidationError('Erreur lors de la sauvegarde')
+    if save_result:
+        return jsonify({'success': success, 'message': message, 'cost': cost})
+    else:
+        raise GameValidationError('Erreur lors de la sauvegarde')
+
 
 @city_bp.route('/<city_id>/build', methods=['POST'])
 @handle_errors 
@@ -615,7 +659,6 @@ def build_building(city_id):
             'duration': actual_construction_time,
             'status': 'En construction'
         })
-        print(f"🔄 Bâtiment en développement: {existing_building}")
         action_message = f'{building_name} niveau {target_level} en développement sur le slot {slot_id}.'
     else:
         # CONSTRUCTION - Ajouter un nouveau bâtiment
@@ -1142,12 +1185,13 @@ def get_resource_production_details(city_id, resource):
         workers_assigned = city.get('workers_assigned', {})
         base_production = 0.0  # Production de base calculée à partir des ouvriers
         
+        # Production : 1 ouvrier = 1 ressource/heure
+        RESOURCES_PER_WORKER_PER_HOUR = 1.0
+        
         for site_type, workers in workers_assigned.items():
             if workers > 0 and site_type in SITE_TO_RESOURCE:
                 if SITE_TO_RESOURCE[site_type] == resource:
-                    site_data = RESOURCE_SITE_LEVELS.get(resource, {}).get('1', {})
-                    base_production_per_worker = site_data.get('base_yield', 1.0)
-                    base_production += workers * base_production_per_worker
+                    base_production += workers * RESOURCES_PER_WORKER_PER_HOUR
         
         # Récupérer les bonus depuis la sauvegarde (plus de recalcul en temps réel)
         building_bonus = city.get('resources', {}).get('building_bonus', {}).get(resource, 0)
@@ -1409,22 +1453,23 @@ def set_gold_rate(city_id):
         print(f"Erreur set_gold_rate: {e}")
         return jsonify({'error': f'Erreur serveur: {str(e)}'}), 500
 
-@city_bp.route('/<city_id>/windmill-multiplier', methods=['POST'])
+@city_bp.route('/<city_id>/windmill-bonus', methods=['POST'])
 @handle_errors
-def set_windmill_multiplier(city_id):
-    """Définit le multiplicateur de consommation de céréales du moulin d'une ville."""
+def set_windmill_cereal_bonus(city_id):
+    """NOUVELLE API : Définit le bonus de céréales du moulin (slider)."""
     try:
         data = request.get_json()
-        if not data or 'multiplier' not in data:
-            return jsonify({'error': 'multiplier requis'}), 400
+        if not data or 'bonus' not in data:
+            return jsonify({'error': 'bonus requis'}), 400
         
-        multiplier = data['multiplier']
-        if not isinstance(multiplier, (int, float)) or multiplier < 1:
-            return jsonify({'error': 'multiplier doit être un nombre >= 1'}), 400
+        bonus_value = data['bonus']
+        if not isinstance(bonus_value, (int, float)) or bonus_value < 0:
+            return jsonify({'error': 'bonus doit être un nombre >= 0'}), 400
         
         # Charger les données
         savegame_data = data_manager.load_savegame()
-        if not savegame_data:            return jsonify({'error': 'Données non trouvées'}), 404
+        if not savegame_data:
+            return jsonify({'error': 'Données non trouvées'}), 404
         
         # Trouver la ville
         city = None
@@ -1433,19 +1478,21 @@ def set_windmill_multiplier(city_id):
                 city = c
                 break
         
-        if not city:            return jsonify({'error': 'Ville non trouvée'}), 404
+        if not city:
+            return jsonify({'error': 'Ville non trouvée'}), 404
         
-        # SIMPLIFIÉ - set windmill multiplier directement
-        city['windmill_cereal_multiplier'] = multiplier
-        actual_multiplier = multiplier
+        # Utiliser PopulationManager pour définir le bonus (avec validation)
+        from app.managers.population_manager import PopulationManager
+        pop_manager = PopulationManager(data_dir=os.path.join(data_manager.base_dir, 'data'))
+        actual_bonus = pop_manager.set_windmill_cereal_bonus(city, bonus_value)
         
-        # Sauvegarder (forcer la sauvegarde pour les changements de multiplicateur - action critique)
+        # Sauvegarder
         data_manager.save_savegame(savegame_data, force_save=True)
         
         result = {
             'success': True,
             'city_id': city_id,
-            'multiplier': actual_multiplier
+            'bonus': actual_bonus
         }
         return jsonify(result)
         
@@ -1454,9 +1501,9 @@ def set_windmill_multiplier(city_id):
         traceback.print_exc()
         return jsonify({'error': f'Erreur serveur: {str(e)}'}), 500
 
-@city_bp.route('/<city_id>/windmill-multiplier', methods=['GET'])
+@city_bp.route('/<city_id>/windmill-bonus', methods=['GET'])
 @handle_errors  
-def get_windmill_multiplier(city_id):
+def get_windmill_cereal_bonus(city_id):
     """Récupère le multiplicateur de consommation de céréales du moulin d'une ville."""
     try:
         # Charger les données
@@ -1474,15 +1521,15 @@ def get_windmill_multiplier(city_id):
         if not city:
             return jsonify({'error': 'Ville non trouvée'}), 404
         
-        multiplier = city.get('windmill_cereal_multiplier', 1)
+        bonus = city.get('windmill_cereal_bonus', 0)
         
         return jsonify({
             'city_id': city_id,
-            'multiplier': multiplier
+            'bonus': bonus
         })
         
     except Exception as e:
-        print(f"Error in get_windmill_multiplier: {e}")
+        print(f"Error in get_windmill_cereal_bonus: {e}")
         return jsonify({'error': f'Erreur serveur: {str(e)}'}), 500
 
 @city_bp.route('/<city_id>/rename', methods=['POST'])
@@ -1581,7 +1628,7 @@ def get_city_storage(city_id):
                 'iron': current_resources.get('iron', 0),
                 'cereal': current_resources.get('cereal', 0),
                 'papyrus': current_resources.get('papyrus', 0),
-                'meat': current_resources.get('meat', 0),
+                'wine': current_resources.get('wine', 0),
                 'marble': current_resources.get('marble', 0),
                 'horse': current_resources.get('horse', 0),
                 'glass': current_resources.get('glass', 0),
@@ -1624,7 +1671,7 @@ def calculate_storage_capacities(city):
     
     # Initialiser les capacités sécurisées
     secure_storage = {}
-    resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus', 'meat', 'marble', 
+    resources = ['wood', 'stone', 'iron', 'cereal', 'papyrus', 'wine', 'marble', 
                 'horse', 'glass', 'gunpowder', 'coal', 'cotton', 'spices']
     
     for resource in resources:

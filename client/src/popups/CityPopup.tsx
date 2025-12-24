@@ -3,7 +3,6 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import AttackPopupV3 from './AttackPopupV3';
 
 // Charger buildings.json une seule fois au chargement du module
@@ -84,9 +83,6 @@ const CityPopup: React.FC<CityPopupProps> = ({
   const [attackerCityV3, setAttackerCityV3] = useState<any>(null);
   const [popupMode, setPopupMode] = useState<'attack' | 'transport' | 'protect'>('attack');
   const [ambassade, setAmbassade] = useState<any>(null);
-  
-  // Hook de navigation
-  const navigate = useNavigate();
 
   // Charger les données du joueur propriétaire
   useEffect(() => {
@@ -414,7 +410,11 @@ const CityPopup: React.FC<CityPopupProps> = ({
                     onClick={() => {
                       const ownerId = city.owner || city.ownerId;
                       if (ownerId) {
-                        navigate(`/messages?recipient=${ownerId}`);
+                        // Déclencher l'événement pour ouvrir le popup de messages
+                        const messageEvent = new CustomEvent('openMessagesPopup', { 
+                          detail: { recipientId: ownerId } 
+                        });
+                        window.dispatchEvent(messageEvent);
                         onClose();
                       }
                     }}

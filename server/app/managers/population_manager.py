@@ -9,7 +9,7 @@ try:
     BASE_SATISFACTION = POPULATION_CONSTANTS["BASE_SATISFACTION"]
     FAMINE_SATISFACTION_MALUS = POPULATION_CONSTANTS["FAMINE_SATISFACTION_MALUS"]
     BLOCK_GROWTH_WHEN_NO_CEREAL = POPULATION_CONSTANTS["BLOCK_GROWTH_WHEN_NO_CEREAL"]
-    BASE_SECONDS_PER_UPDATE = 1  # 1 seconde par update
+    BASE_SECONDS_PER_UPDATE = 10  # 1 tick = 10 secondes
     TICKS_PER_HOUR = 360  # 1 tick = 10 secondes, donc 360 ticks par heure
 except ImportError:
     # Fallback si l'import échoue (compatibilité)
@@ -17,7 +17,7 @@ except ImportError:
     BASE_SATISFACTION = 50
     FAMINE_SATISFACTION_MALUS = 40
     BLOCK_GROWTH_WHEN_NO_CEREAL = True
-    BASE_SECONDS_PER_UPDATE = 1
+    BASE_SECONDS_PER_UPDATE = 10  # 1 tick = 10 secondes
     TICKS_PER_HOUR = 360
 
 class PopulationManager:
@@ -92,10 +92,8 @@ class PopulationManager:
         """
         S'assure que la ville a la structure de données nécessaire pour la satisfaction.
         """
-        if 'satisfaction' not in city:
-            city['satisfaction'] = BASE_SATISFACTION
-        if 'windmill_cereal_multiplier' not in city:
-            city['windmill_cereal_multiplier'] = 1
+        if 'windmill_cereal_bonus' not in city:
+            city['windmill_cereal_bonus'] = 0  # Nouveau : slider du moulin (céréales/h)
         if 'has_plague' not in city:
             city['has_plague'] = False
         if 'hygiene_percent' not in city:
@@ -117,7 +115,6 @@ class PopulationManager:
         
         # Valeur de base = 50
         satisfaction = max(0, min(100, BASE_SATISFACTION - total_malus + total_bonus))
-        city['satisfaction'] = satisfaction
         return satisfaction
 
     def get_population_malus(self, city):
@@ -183,20 +180,10 @@ class PopulationManager:
 
     def calculate_windmill_food_supply(self, city):
         """
-        Calcule la capacité totale de nourriture fournie par les moulins.
+        OBSOLÈTE - Supprimé avec la nouvelle logique du moulin.
+        Le moulin ne nourrit plus d'habitants, il ajoute seulement un bonus de satisfaction.
         """
-        food_supply = 0
-        for building in city.get('buildings', []):
-            if building.get('name') == 'Windmill':
-                level = self.get_effective_building_level(building)
-                
-                # Ignorer si pas d'effets (construction initiale)
-                if level == 0:
-                    continue
-                
-                supply = self.get_building_effect('Windmill', level, 'food_supply')
-                food_supply += supply
-        return food_supply
+        return 0
 
     def calculate_cleanliness_capacity(self, city):
         """
@@ -254,13 +241,12 @@ class PopulationManager:
     # ===== NOUVELLES MÉTHODES SPÉCIALISÉES (PHASE 2) =====
     
     def calculate_food_capacities(self, city):
-        """Calcule les capacités alimentaires de la ville."""
+        """Calcule les capacités alimentaires de la ville (seulement Hôtel de Ville maintenant)."""
         townhall_capacity = self.calculate_food_limit(city)
-        windmill_capacity = self.calculate_windmill_food_supply(city)
         return {
             'townhall_capacity': townhall_capacity,
-            'windmill_capacity': windmill_capacity,
-            'total_capacity': townhall_capacity + windmill_capacity
+            'windmill_capacity': 0,  # Supprimé : le moulin ne nourrit plus
+            'total_capacity': townhall_capacity
         }
     
     def calculate_population_food_status(self, city, food_capacities):
@@ -270,53 +256,63 @@ class PopulationManager:
         # Population nourrie par l'Hôtel de Ville (gratuit)
         nourished_by_townhall = min(current_population, food_capacities['townhall_capacity'])
         
-        # Population excédentaire à nourrir par le moulin
-        remaining_population = max(0, current_population - food_capacities['townhall_capacity'])
-        nourished_by_windmill = min(remaining_population, food_capacities['windmill_capacity'])
-        
-        # Population non nourrie (famine)
-        unfed = max(0, current_population - food_capacities['total_capacity'])
-        
-        # DEBUG: Afficher les calculs
-        logging.debug(f"[POPULATION_FOOD_STATUS] City {city.get('id')}: current_pop={current_population:.2f}, townhall_cap={food_capacities['townhall_capacity']}, windmill_cap={food_capacities['windmill_capacity']}, starving={unfed:.2f}")
+        # Population excédentaire = population non nourrie (consomme des céréales)
+        unfed = max(0, current_population - food_capacities['townhall_capacity'])
         
         return {
             'total': current_population,
             'fed_by_townhall': nourished_by_townhall,
-            'fed_by_windmill': nourished_by_windmill,
+            'fed_by_windmill': 0,  # Supprimé
             'starving': unfed
         }
     
     def calculate_cereal_consumption(self, city, population_food_status, dt=1.0):
-        """Calcule la consommation de céréales en fonction du temps écoulé."""
-        # Récupérer le multiplicateur choisi
-        cereal_multiplier = city.get('windmill_cereal_multiplier', 1)
+        """
+        NOUVELLE LOGIQUE : Calcule la consommation de céréales.
         
-        # Récupérer le multiplicateur max selon le niveau du moulin
-        max_multiplier = 1
+        Consommation = (pop_unfed × 0.1 céréale/h) + windmill_cereal_bonus
+        
+        - pop_unfed : habitants au-delà de la capacité de l'Hôtel de Ville
+        - windmill_cereal_bonus : bonus du slider du moulin (0 à capacité max)
+        """
+        # Récupérer le bonus céréales actuel (slider)
+        windmill_bonus = city.get('windmill_cereal_bonus', 0)
+        
+        # Récupérer la capacité max du moulin
+        max_windmill_bonus = 0
         for building in city.get('buildings', []):
             if building.get('name') == 'Windmill':
                 level = self.get_effective_building_level(building)
                 if level > 0:
-                    multiplier = self.get_building_effect('Windmill', level, 'cereal_consumption_multiplier')
-                    max_multiplier = max(max_multiplier, multiplier)
+                    max_windmill_bonus = self.get_building_effect('Windmill', level, 'cereal_bonus_per_hour')
+                    break
         
-        # Forcer le multiplicateur dans les bornes
-        cereal_multiplier = max(1, min(cereal_multiplier, max_multiplier))
-        city['windmill_cereal_multiplier'] = cereal_multiplier
+        # Forcer le bonus dans les limites
+        windmill_bonus = max(0, min(windmill_bonus, max_windmill_bonus))
+        city['windmill_cereal_bonus'] = windmill_bonus
         
-        # Calcul du besoin en céréales POUR LE TEMPS ÉCOULÉ
-        # Conversion : 0.1 céréale/hab/heure → céréale/hab/tick (÷360)
-        base_consumption_per_tick = cereal_multiplier * (CEREAL_CONSUMPTION_PER_HOUR / TICKS_PER_HOUR) * population_food_status['starving']
-        total_needed = base_consumption_per_tick * dt
+        # Consommation de base : pop_unfed × 0.1 céréale/hab/heure
+        pop_unfed = population_food_status['starving']
+        base_consumption_per_hour = pop_unfed * CEREAL_CONSUMPTION_PER_HOUR
+        
+        # Consommation totale = base + bonus moulin
+        total_consumption_per_hour = base_consumption_per_hour + windmill_bonus
+        
+        # Conversion en consommation par tick
+        consumption_per_tick = total_consumption_per_hour / TICKS_PER_HOUR
+        total_needed = consumption_per_tick * dt
+        
+        # LOG DEBUG
+        city_name = city.get('name', 'Unknown')
+        logging.info(f"[CEREAL] {city_name}: pop_unfed={pop_unfed:.1f}, base={base_consumption_per_hour:.2f}/h, windmill_bonus={windmill_bonus:.1f}/h, total={total_consumption_per_hour:.2f}/h, per_tick={consumption_per_tick:.4f}")
         
         return {
-            'multiplier': cereal_multiplier,
-            'max_multiplier': max_multiplier,
-            'population_unfed': population_food_status['starving'],
-            'base_rate_per_hour': CEREAL_CONSUMPTION_PER_HOUR,  # Pour affichage
+            'windmill_bonus': windmill_bonus,
+            'population_unfed': pop_unfed,
+            'base_rate_per_hour': CEREAL_CONSUMPTION_PER_HOUR,
+            'total_consumption_per_hour': total_consumption_per_hour,
             'total_needed': total_needed,
-            'consumption_per_tick': base_consumption_per_tick,
+            'consumption_per_tick': consumption_per_tick,
             'dt': dt
         }
     
@@ -327,11 +323,10 @@ class PopulationManager:
         bonus = {}
         malus = {}
         
-        # Bonus du moulin (formule simplifiée : multiplicateur * 10)
-        # Ne s'applique que si le multiplicateur > 1 (Windmill existant et utilisé)
-        windmill_multiplier = cereal_consumption['multiplier']
-        if windmill_multiplier > 1:
-            bonus['windmill'] = int((windmill_multiplier - 1) * 10)
+        # NOUVEAU : Bonus du moulin = consommation de céréales bonus (windmill_cereal_bonus)
+        windmill_bonus_value = cereal_consumption.get('windmill_bonus', 0)
+        if windmill_bonus_value > 0:
+            bonus['windmill'] = int(windmill_bonus_value)  # 1 point de satisfaction par céréale/h
         
         # Bonus des Thermes
         thermes_bonus = 0
@@ -395,17 +390,26 @@ class PopulationManager:
         # Stocker le pourcentage d'hygiène dans la ville
         city['hygiene_percent'] = hygiene_percent
         
-        # Bonus/malus selon le niveau d'hygiène
-        if hygiene_percent >= 75:
-            bonus['hygiene'] = 5  # Bonne hygiène
-        elif hygiene_percent < 50 and population > 50:
-            malus['hygiene'] = 10  # Mauvaise hygiène
-            city['has_plague'] = True  # Déclenche la peste (seulement si pop > 50)
+        # Système de paliers d'hygiène progressifs
+        if hygiene_percent >= 80:
+            bonus['hygiene'] = 10  # Excellente hygiène
+        elif hygiene_percent >= 60:
+            bonus['hygiene'] = 5   # Bonne hygiène
+        elif hygiene_percent >= 40:
+            malus['hygiene'] = 5   # Hygiène médiocre
         else:
-            bonus['hygiene'] = 0  # Hygiène neutre
-            # Désactiver la peste si les conditions ne sont plus remplies
-            if hygiene_percent >= 50 or population <= 50:
-                city['has_plague'] = False
+            malus['hygiene'] = 15  # Hygiène catastrophique
+            
+            # Déclenchement de la peste si hygiène < 40% et population > 50
+            if population > 50 and not city.get('has_plague', False):
+                # MORTALITÉ : tuer 25% de la population libre au déclenchement
+                population_free = city['resources'].get('population_free', 0)
+                deaths = int(population_free * 0.25)
+                if deaths > 0:
+                    city['resources']['population_free'] = max(0, population_free - deaths)
+                    city['resources']['population_total'] = max(0, city['resources'].get('population_total', 0) - deaths)
+                
+                city['has_plague'] = True  # Déclenche la peste
         
         # Malus de peste (cumulatif avec le malus d'hygiène)
         if city.get('has_plague', False):
@@ -420,13 +424,8 @@ class PopulationManager:
         
         hygiene_percent = 100 if population == 0 else int(100 * cleanliness_capacity / max(1, population))
         
-        # Gestion de la peste (seulement si population > 50)
-        if hygiene_percent < 50 and population > 50:
-            city['has_plague'] = True
-        else:
-            # Désactiver la peste si les conditions ne sont plus remplies
-            if hygiene_percent >= 50 or population <= 50:
-                city['has_plague'] = False
+        # NOTE: La peste ne se désactive PAS automatiquement ici
+        # Elle doit être guérie via le bouton dans le popup des thermes (cure_plague endpoint)
         
         return {
             'hygiene_percent': hygiene_percent,
@@ -460,9 +459,13 @@ class PopulationManager:
         if current_cereal >= total_needed:
             resources['cereal'] = max(0, current_cereal - total_needed)
             satisfaction_factors['malus'].pop('famine', None)
+            # Logging supprimé pour réduire le bruit
         else:
+            # Plus de céréales : réinitialiser le slider du moulin automatiquement
             resources['cereal'] = 0
+            city['windmill_cereal_bonus'] = 0
             satisfaction_factors['malus']['famine'] = FAMINE_SATISFACTION_MALUS
+            # Logging supprimé (famine visible dans l'UI via malus satisfaction)
     
     def calculate_population_growth(self, city, satisfaction: int, dt: float, population_food_status):
         """
@@ -486,7 +489,19 @@ class PopulationManager:
         TICKS_PER_HOUR = 360
         base_growth_rate_per_tick = base_growth_rate_per_hour / TICKS_PER_HOUR
         
-        modificateur = max(-1, min(1, (satisfaction - BASE_SATISFACTION) / BASE_SATISFACTION))
+        # Modificateur basé sur satisfaction:
+        # satisfaction = 50 → modificateur = 0 → croissance × 1 (normale)
+        # satisfaction = 100 → modificateur = 3 → croissance × 4 (quadruplée)
+        # satisfaction = 0 → modificateur = -5 → croissance × (-4) (décroissance forte)
+        if satisfaction >= BASE_SATISFACTION:
+            # Au-dessus de 50: bonus de 0% à +300%
+            modificateur = 3 * (satisfaction - BASE_SATISFACTION) / BASE_SATISFACTION
+        else:
+            # En-dessous de 50: malus progressif jusqu'à -500% à satisfaction=0
+            # À satisfaction=0, modificateur=-5 → growth × (1-5) = growth × -4
+            modificateur = -5 * (BASE_SATISFACTION - satisfaction) / BASE_SATISFACTION
+        
+        modificateur = max(-5, min(3, modificateur))  # Limiter entre -500% et +300%
         return base_growth_rate_per_tick * (1 + modificateur)
 
     def apply_population_growth(self, city, growth_rate: float, dt: float):
@@ -505,7 +520,8 @@ class PopulationManager:
         food_capacity = int(resources.get('pop_nourished_by_townhall', 0) + resources.get('pop_nourished_by_windmill', 0))
         
         # Calcul avec accumulateur fractionnaire
-        growth_amount = growth_rate * dt
+        # Note: growth_rate est déjà calculé PAR TICK, donc on ne multiplie PAS par dt
+        growth_amount = growth_rate
         total_growth = pop_fractional + growth_amount
         population_gained = math.floor(total_growth)  # floor pour gérer correctement les négatifs
         pop_fractional = total_growth - population_gained
@@ -603,9 +619,8 @@ class PopulationManager:
         resources['population_total'] = int(new_population)
         resources['population_fractional'] = pop_fractional
         
-        # 6. Pas de peste/satisfaction pour IA
+        # 6. Pas de peste pour IA
         city['has_plague'] = False
-        city['satisfaction'] = 50
         city['hygiene_percent'] = 100
         
         # 7. Mise à jour satisfaction_details (pour le frontend)
@@ -620,32 +635,15 @@ class PopulationManager:
             'malus': satisfaction_factors['malus'],
             'total': city.get('satisfaction', 50),
             'growth_rate': growth_rate,  # En hab/tick (pour le calcul réel)
-            'real_growth_per_hour': real_growth_per_hour,  # En hab/h (pour l'affichage)
-            'food_capacities': {
-                'townhall': food_capacities['townhall_capacity'],
-                'windmill': food_capacities['windmill_capacity'],
-                'total': food_capacities['total_capacity']
-            },
-            'population_food_status': {
-                'total': population_food_status['total'],
-                'fed_by_townhall': population_food_status['fed_by_townhall'],
-                'fed_by_windmill': population_food_status['fed_by_windmill'],
-                'starving': population_food_status['starving']
-            },
-            'cereal_consumption': {
-                'multiplier': cereal_consumption['multiplier'],
-                'max_multiplier': cereal_consumption['max_multiplier'],
-                'total_needed': cereal_consumption['total_needed'],
-                'base_rate_per_hour': cereal_consumption['base_rate_per_hour']
-            }
+            'real_growth_per_hour': real_growth_per_hour  # En hab/h (pour l'affichage)
         }
         
         # 8. Mise à jour données compatibilité frontend
-        resources['cereal_needed'] = cereal_consumption['consumption_per_tick']  # Consommation par tick (sera × 360 dans le frontend pour affichage /h)
+        # Toutes les données de population/nourriture sont dans resources, pas de duplication
         resources['population_unfed'] = population_food_status['starving']
         resources['pop_nourished_by_townhall'] = population_food_status['fed_by_townhall']
-        resources['pop_nourished_by_windmill'] = population_food_status['fed_by_windmill']
-        resources['total_food_supply'] = food_capacities['total_capacity']
+        resources['cereal_consumption_per_tick'] = cereal_consumption['consumption_per_tick']  # Consommation par tick (pas total_needed qui est * dt)
+        resources['windmill_cereal_bonus'] = cereal_consumption['windmill_bonus']  # Bonus du moulin (slider)
         
         # 9. Population libre
         workers_assigned = city.get('workers_assigned', {})
@@ -743,36 +741,17 @@ class PopulationManager:
                 'malus': satisfaction_factors['malus'],
                 'total': satisfaction,
                 'growth_rate': growth_rate,  # En hab/tick (pour le calcul réel)
-                'real_growth_per_hour': real_growth_per_hour,  # En hab/h (pour l'affichage)
-                'food_capacities': {
-                    'townhall': food_capacities['townhall_capacity'],
-                    'windmill': food_capacities['windmill_capacity'],
-                    'total': food_capacities['total_capacity']
-                },
-                'population_food_status': {
-                    'total': population_food_status['total'],
-                    'fed_by_townhall': population_food_status['fed_by_townhall'],
-                    'fed_by_windmill': population_food_status['fed_by_windmill'],
-                    'starving': population_food_status['starving']
-                },
-                'cereal_consumption': {
-                    'multiplier': cereal_consumption['multiplier'],
-                    'max_multiplier': cereal_consumption['max_multiplier'],
-                    'total_needed': cereal_consumption['total_needed'],
-                    'base_rate_per_hour': cereal_consumption['base_rate_per_hour']
-                }
+                'real_growth_per_hour': real_growth_per_hour  # En hab/h (pour l'affichage)
             }
             
-            # 12. Garder satisfaction comme valeur numérique simple
-            city['satisfaction'] = satisfaction
+            # SUPPRIMÉ: satisfaction en racine (doublon de satisfaction_details.total)
             
             # 13. Mise à jour des resources pour compatibilité frontend
             # Garder ces champs pour compatibilité avec le frontend React (WindmillPopupContent.tsx, TownHallPopupContent.tsx)
-            resources['cereal_needed'] = cereal_consumption['consumption_per_tick']  # Consommation par tick (sera × 360 dans le frontend pour affichage /h)
             resources['population_unfed'] = population_food_status['starving']
             resources['pop_nourished_by_townhall'] = population_food_status['fed_by_townhall']
-            resources['pop_nourished_by_windmill'] = population_food_status['fed_by_windmill']
-            resources['total_food_supply'] = food_capacities['total_capacity']
+            resources['cereal_consumption_per_tick'] = cereal_consumption['consumption_per_tick']  # Consommation par tick (pas total_needed qui est * dt)
+            resources['windmill_cereal_bonus'] = cereal_consumption['windmill_bonus']  # Bonus du moulin (slider)
             
             # Mettre à jour population_free basée sur workers_assigned
             workers_assigned = city.get('workers_assigned', {})
@@ -809,28 +788,31 @@ class PopulationManager:
 
     # get_city_population_info() supprimée - les données sont maintenant dans satisfaction_details
 
-    def set_windmill_cereal_multiplier(self, city, multiplier):
+    def set_windmill_cereal_bonus(self, city, bonus_value):
         """
-        Définit le multiplicateur de consommation de céréales pour les moulins d'une ville.
+        NOUVELLE MÉTHODE : Définit le bonus de céréales du moulin (slider).
+        
+        Args:
+            city: La ville
+            bonus_value: Valeur du slider (céréales/heure)
+        
+        Returns:
+            La valeur réellement appliquée (limitée par la capacité max du moulin)
         """
         self.ensure_city_satisfaction_structure(city)
         
-        # Vérifier les limites selon les moulins disponibles
-        max_multiplier = 1
+        # Récupérer la capacité max du moulin
+        max_bonus = 0
         for building in city.get('buildings', []):
             if building.get('name') == 'Windmill':
                 level = self.get_effective_building_level(building)
-                
-                # Ignorer si pas d'effets (construction initiale)
-                if level == 0:
-                    continue
-                
-                mult = self.get_building_effect('Windmill', level, 'cereal_consumption_multiplier')
-                max_multiplier = max(max_multiplier, mult)
+                if level > 0:
+                    max_bonus = self.get_building_effect('Windmill', level, 'cereal_bonus_per_hour')
+                    break
         
-        # Forcer dans les bornes
-        city['windmill_cereal_multiplier'] = max(1, min(multiplier, max_multiplier))
-        return city['windmill_cereal_multiplier']
+        # Forcer dans les bornes [0, max]
+        city['windmill_cereal_bonus'] = max(0, min(bonus_value, max_bonus))
+        return city['windmill_cereal_bonus']
 
     def cure_plague(self, city):
         """

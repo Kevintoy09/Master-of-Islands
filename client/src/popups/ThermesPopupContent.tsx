@@ -86,17 +86,11 @@ const ThermesPopupContent: React.FC<ThermesPopupContentProps> = ({
   };
 
   const tryPlagueCure = async () => {
-    if (!city?.id || curePlagueCooldown) return;
-    
-    const population = populationInfo?.current_population || 0;
-    const cost = 2 * population;
-    
-    if (!populationInfo?.has_plague || population > cleanlinessCapacity || playerGold < cost) {
-      setResultMessage({ text: 'Conditions non réunies pour guérir la peste', type: 'error' });
-      return;
-    }
+    if (!city?.id || curePlagueCooldown || !hasPlague) return;
 
     setLoading(true);
+    setResultMessage({ text: '', type: null });
+    
     try {
       const response = await fetch(`/api/city/${city.id}/cure-plague`, {
         method: 'POST',
@@ -106,21 +100,23 @@ const ThermesPopupContent: React.FC<ThermesPopupContentProps> = ({
         const result = await response.json();
         
         if (result.success) {
-          setResultMessage({ text: 'Succès ! La peste a disparu.', type: 'success' });
+          setResultMessage({ text: `✓ Peste soignée ! (${result.cost} or dépensé)`, type: 'success' });
           await fetchPopulationInfo();
           await fetchPlayerGold();
           onCityDataChange?.();
         } else {
-          setResultMessage({ text: 'Échec… La peste persiste.', type: 'error' });
+          setResultMessage({ text: `✗ Échec du traitement (${result.cost} or perdu)`, type: 'error' });
+          await fetchPlayerGold();
           setCurePlagueCooldown(true);
           setTimeout(() => setCurePlagueCooldown(false), 5000);
         }
       } else {
-        setResultMessage({ text: `Erreur HTTP: ${response.status}`, type: 'error' });
+        const errorData = await response.json();
+        setResultMessage({ text: errorData.message || 'Erreur', type: 'error' });
       }
     } catch (error) {
       console.error('Erreur lors de la guérison de la peste:', error);
-      setResultMessage({ text: 'Erreur lors de la guérison', type: 'error' });
+      setResultMessage({ text: 'Erreur réseau', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -142,14 +138,15 @@ const ThermesPopupContent: React.FC<ThermesPopupContentProps> = ({
   const hasPlague = populationInfo?.has_plague || false;
 
   const getHygieneStatus = (hygiene: number) => {
-    if (hygiene > 100) return { text: 'Excellente hygiène', color: 'excellent', bonus: '+5 satisfaction' };
-    if (hygiene >= 70) return { text: 'Bonne hygiène', color: 'good', bonus: '' };
-    if (hygiene >= 50) return { text: 'Attention : hygiène insuffisante', color: 'warning', bonus: '' };
-    return { text: 'Danger : risque élevé de peste !', color: 'danger', bonus: '' };
+    if (hygiene >= 80) return { text: 'Excellente', color: 'excellent', bonus: '+10', icon: '✨' };
+    if (hygiene >= 60) return { text: 'Bonne', color: 'good', bonus: '+5', icon: '✓' };
+    if (hygiene >= 40) return { text: 'Médiocre', color: 'warning', bonus: '-5', icon: '⚠️' };
+    return { text: 'Catastrophique', color: 'danger', bonus: '-15', icon: '☠️' };
   };
 
   const hygieneStatus = getHygieneStatus(hygienePercent);
-  const cureDisabled = !hasPlague || population > cleanlinessCapacity || playerGold < (2 * population) || curePlagueCooldown || loading;
+  const cureCost = Math.max(1, Math.floor(playerGold * 0.10));
+  const cureDisabled = !hasPlague || curePlagueCooldown || loading;
 
   return (
     <div className="thermes-popup-content">
@@ -199,68 +196,128 @@ const ThermesPopupContent: React.FC<ThermesPopupContentProps> = ({
       {/* État d'hygiène */}
       <div className="hygiene-section">
         <div className="hygiene-info">
-          <span className="hygiene-label">Hygiène de la population :</span>
-          <span className="hygiene-value">{Math.round(hygienePercent)}%</span>
+          <span className="hygiene-label">Hygiène :</span>
+          <span className={`hygiene-value ${hygieneStatus.color}`}>
+            {hygieneStatus.icon} {Math.round(hygienePercent)}% - {hygieneStatus.text}
+          </span>
         </div>
-        <div className={`hygiene-status ${hygieneStatus.color}`}>
-          {hygieneStatus.text}
-          {hygieneStatus.bonus && <span className="hygiene-bonus"> ({hygieneStatus.bonus})</span>}
+        <div className="hygiene-impact">
+          Satisfaction : <strong className={hygieneStatus.bonus.startsWith('+') ? 'positive' : 'negative'}>
+            {hygieneStatus.bonus}
+          </strong>
         </div>
 
         {/* Barre d'hygiène avec zones colorées */}
-        <div className="hygiene-zones">
-          <div className="zone excellent"></div>
-          <div className="zone good"></div>
-          <div className="zone warning"></div>
-          <div className="zone danger"></div>
-        </div>
-        <div className="hygiene-thresholds">
-          <span>100%</span>
-          <span>70%</span>
-          <span>50%</span>
+        <div className="hygiene-bar-wrapper">
+          <div className="hygiene-bar">
+            <div 
+              className={`hygiene-fill ${hygieneStatus.color}`}
+              style={{ width: `${Math.min(100, hygienePercent)}%` }}
+            />
+          </div>
+          <div className="hygiene-zones">
+            <div className="zone excellent" title="80%+ : +10 satisfaction"></div>
+            <div className="zone good" title="60-80% : +5 satisfaction"></div>
+            <div className="zone warning" title="40-60% : -5 satisfaction"></div>
+            <div className="zone danger" title="<40% : -15 satisfaction + risque peste"></div>
+          </div>
+          <div className="hygiene-thresholds">
+            <span>80%</span>
+            <span>60%</span>
+            <span>40%</span>
+            <span>0%</span>
+          </div>
         </div>
       </div>
 
       {/* État de la peste */}
-      <div className="plague-section">
-        {hasPlague ? (
-          <div className="plague-active">
-            <strong>⚠️ PESTE ACTIVE !</strong>
+      {hasPlague ? (
+        <div className="plague-active-section">
+          <div className="plague-header">
+            <span className="plague-icon">☠️</span>
+            <strong>PESTE ACTIVE</strong>
           </div>
-        ) : (
-          <div className="plague-inactive">
-            ✅ Aucune peste dans la ville
+          <div className="plague-effects">
+            <div className="effect-item danger">
+              <span className="effect-icon">💀</span>
+              <span>-20 satisfaction</span>
+            </div>
+            <div className="effect-item danger">
+              <span className="effect-icon">⚰️</span>
+              <span>Fort ralentissement croissance</span>
+            </div>
           </div>
-        )}
-      </div>
-
-      {/* Bouton de guérison */}
-      <div className="cure-section">
-        <button 
-          className={`cure-button ${cureDisabled ? 'disabled' : ''}`}
-          onClick={tryPlagueCure}
-          disabled={cureDisabled}
-        >
-          {getCureButtonText(hasPlague, hygienePercent, playerGold, population, curePlagueCooldown, loading)}
-        </button>
-        
-        {resultMessage.text && (
-          <div className={`result-message ${resultMessage.type}`}>
-            {resultMessage.text}
+          <div className="cure-info">
+            <div className="cure-cost">Traitement : <strong>{cureCost} or</strong> (10% de votre or)</div>
+            <div className="cure-chance">Réussite : <strong>50%</strong></div>
+            <div className="cure-warning">⚠️ L'or est perdu même en cas d'échec</div>
           </div>
-        )}
-      </div>
+          <button 
+            className={`cure-button ${cureDisabled ? 'disabled' : ''}`}
+            onClick={tryPlagueCure}
+            disabled={cureDisabled}
+          >
+            {getCureButtonText(hasPlague, cureCost, playerGold, curePlagueCooldown, loading)}
+          </button>
+          
+          {resultMessage.text && (
+            <div className={`result-message ${resultMessage.type}`}>
+              {resultMessage.text}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="plague-inactive-section">
+          <div className="no-plague">
+            <span className="check-icon">✓</span>
+            <span>Aucune peste</span>
+          </div>
+          
+          {/* Informations préventives */}
+          <div className={`plague-prevention ${hygienePercent < 40 && population > 50 ? 'at-risk' : ''}`}>
+            <div className="prevention-title">
+              {hygienePercent < 40 && population > 50 ? (
+                <>⚠️ <strong>Risque actuel de peste</strong></>
+              ) : (
+                <>📋 <strong>Prévention peste</strong></>
+              )}
+            </div>
+            
+            <div className="prevention-conditions">
+              <div className="condition-title">Déclenchement si :</div>
+              <div className="conditions-list">
+                <div className={`condition-item ${hygienePercent < 40 ? 'danger' : 'ok'}`}>
+                  <span className="condition-icon">{hygienePercent < 40 ? '✗' : '✓'}</span>
+                  <span>Hygiène &lt; 40%</span>
+                  <span className="condition-value">({Math.round(hygienePercent)}%)</span>
+                </div>
+                <div className={`condition-item ${population > 50 ? 'danger' : 'ok'}`}>
+                  <span className="condition-icon">{population > 50 ? '✗' : '✓'}</span>
+                  <span>Population &gt; 50</span>
+                  <span className="condition-value">({population})</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="prevention-consequences">
+              <div className="consequence-title">Conséquences :</div>
+              <div className="consequence-item death">💀 <strong>25%</strong> de la population libre meurt</div>
+              <div className="consequence-item malus">📉 <strong>-35</strong> satisfaction (-15 hygiène, -20 peste)</div>
+              <div className="consequence-item block">� Fort ralentissement de la croissance</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-function getCureButtonText(hasPlague: boolean, hygiene: number, gold: number, population: number, cooldown: boolean, loading: boolean): string {
-  if (loading) return 'Traitement en cours...';
-  if (!hasPlague) return 'Aucune peste à soigner';
-  if (hygiene < 100) return 'Hygiène insuffisante';
-  if (gold < 2 * population) return `Or insuffisant (${2 * population} requis)`;
+function getCureButtonText(hasPlague: boolean, cost: number, gold: number, cooldown: boolean, loading: boolean): string {
+  if (loading) return '⏳ Traitement en cours...';
+  if (!hasPlague) return 'Aucune peste';
+  if (gold < cost) return `Or insuffisant (${cost} requis)`;
   if (cooldown) return 'Nouvelle tentative dans 5s';
-  return `Soigner la peste (${2 * population} or)`;
+  return `🏥 Tenter le traitement (${cost} or)`;
 }
 
 export default ThermesPopupContent;

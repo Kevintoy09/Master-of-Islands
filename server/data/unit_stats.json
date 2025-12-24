@@ -90,7 +90,7 @@
       "max_stack_size": 12,
       "production_cost": {"wood": 40, "stone": 5, "population": 1},
       "production_time": 45,
-      "required_barracks_level": 2,
+      "required_barracks_level": 3,
       "required_research": "archers",
       "xp_value": 35,
       "era": "classical",

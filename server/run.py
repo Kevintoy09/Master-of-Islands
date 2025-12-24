@@ -3,12 +3,7 @@ import logging
 import sys
 import traceback
 
-# Initialiser les fichiers de données au démarrage
-try:
-    from init_data_files import init_data_files
-    init_data_files()
-except Exception as e:
-    print(f"⚠️ Erreur lors de l'initialisation des fichiers de données: {e}")
+# init_data_files supprimé - plus nécessaire
 
 if __name__ == "__main__":
     try:

@@ -208,10 +208,8 @@ def legacy_claim_city():
                 'workers_assigned': {},
                 'construction_queue': [],
                 'resources': resources,
-                'satisfaction': 100,
-                'unlocked_buildings': [],
                 'gold_rate': 1,
-                'windmill_cereal_multiplier': 1,
+                'windmill_cereal_bonus': 0,
                 'has_plague': False,
                 'storage_capacity': {}
             }

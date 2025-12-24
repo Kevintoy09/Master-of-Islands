@@ -147,7 +147,7 @@ class MigrationManager:
         resources = {}
         resource_keys = [
             'wood', 'stone', 'iron', 'cereal', 'papyrus', 
-            'horse', 'marble', 'glass', 'meat', 'coal', 
+            'horse', 'marble', 'glass', 'wine', 'coal', 
             'gunpowder', 'spices', 'cotton'
         ]
         

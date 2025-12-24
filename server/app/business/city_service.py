@@ -221,11 +221,9 @@ class CityService:
             'storage_capacity': {},
             'buildings': [],
             'workers_assigned': {},
-            'satisfaction': 100,
-            'unlocked_buildings': [],
             'controlable': city_data.get('controlable', True),
             'gold_rate': 1,
-            'windmill_cereal_multiplier': 1,
+            'windmill_cereal_bonus': 0,
             'has_plague': False
         }
         
