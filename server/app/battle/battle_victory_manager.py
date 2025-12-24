@@ -17,6 +17,8 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, Tuple
 from app.services.quest_service import QuestService
+from app.data_manager import DataManager
+from app.business.transport_timer_service import TransportTimerService
 
 
 class BattleVictoryManager:
@@ -38,6 +40,10 @@ class BattleVictoryManager:
         self.config_dir = os.path.join(base_dir, 'data')  # Configs statiques
         self.data_dir = self.gamedata_dir  # Alias pour compatibilité
         self.notifications_file = os.path.join(self.gamedata_dir, 'battle_notifications.json')
+        
+        # Service de transport pour libérer les transports quand bataille terminée
+        self.data_manager = DataManager(base_dir)
+        self.transport_timer = TransportTimerService(self.data_manager)
     
     def _load_json(self, filename: str) -> Dict[str, Any]:
         """Charge un fichier JSON du dossier gamedata (données dynamiques)"""
@@ -191,6 +197,9 @@ class BattleVictoryManager:
             battlefield['surrender_info'] = surrender_details
             battlefield['status'] = 'completed'
             battlefield['completed_at'] = time.time()
+            
+            # LIBÉRER LES TRANSPORTS (retour vers villes)
+            self.transport_timer.complete_battle_transports(battle_id)
             
             # Actions post-victoire
             self._credit_victory_units_to_winner(battlefield, surrendering_team, winning_team)
@@ -1123,6 +1132,9 @@ class BattleVictoryManager:
             # Verrouillage immédiat pour bloquer les appels parallèles
             battlefield['status'] = 'completed'
             self._save_json('battlefields_v2.json', battlefields_data)
+            
+            # LIBÉRER LES TRANSPORTS (retour vers villes)
+            self.transport_timer.complete_battle_transports(battle_id)
             
             # Ajouter le bilan final
             battlefield['battle_result'] = {
