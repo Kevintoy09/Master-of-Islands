@@ -22,10 +22,24 @@
   position: relative;
 }
 
+.research-header-bar h2 {
+  color: var(--roman-red);
+  font-family: var(--font-bold);
+  font-size: 1.4em;
+  margin: 0;
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  pointer-events: none; /* Pour éviter de bloquer les clics */
+}
+
 .research-header-left {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  z-index: 1; /* Au-dessus du titre centré */
 }
 
 .back-button {
@@ -662,17 +676,25 @@
   
   .research-header-left {
     width: 100%;
-    justify-content: center;
+    justify-content: space-between;
+    order: 1;
   }
   
   .research-header-bar h2 {
-    font-size: 1.3em;
+    font-size: 1.2em;
     margin: 0;
+    position: static;
+    transform: none;
+    order: 0;
+    width: 100%;
+    text-align: center;
+    margin-bottom: var(--spacing-xs);
   }
   
   .research-status-bar {
     align-items: center;
     width: 100%;
+    order: 2;
   }
   
   .current-research-info {

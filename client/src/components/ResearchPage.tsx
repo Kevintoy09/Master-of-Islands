@@ -309,6 +309,7 @@ const ResearchPage: React.FC = () => {
   return (
     <div className="research-page">
       <div className="research-header-bar">
+        <h2>Centre de Recherche</h2>
         <div className="research-header-left">
           <button 
             className="back-button"
@@ -317,7 +318,6 @@ const ResearchPage: React.FC = () => {
           >
             ← Retour
           </button>
-          <h2>Centre de Recherche</h2>
         </div>
         <div className="research-status-bar">
           <div className="current-research-points">

@@ -91,8 +91,8 @@ def unlock_research(player_id, research_id):
                     # Générer les quêtes quotidiennes (déjà sauvegardées par get_or_generate)
                     quest_service.get_or_generate_daily_quests(username)
                     
-                    # Générer les quêtes hebdomadaires et les sauvegarder
-                    weekly_quests = quest_service.generate_weekly_quests(username)
+                    # Générer les quêtes principales et les sauvegarder
+                    weekly_quests = quest_service.generate_main_quests(username)
                     all_player_data = quest_service.load_all_player_quests()
                     username_data = all_player_data.get(username, {})
                     username_data['weekly_quests'] = {

@@ -1479,8 +1479,8 @@ def generate_weekly_quests():
             # Calculer le niveau du joueur
             player_level = quest_service.calculate_player_level(username)
             
-            # Générer les quêtes hebdomadaires (progression chronologique)
-            weekly_quests = quest_service.generate_weekly_quests(username)
+            # Générer les quêtes principales (progression chronologique)
+            weekly_quests = quest_service.generate_main_quests(username)
             
             # Initialiser le joueur s'il n'existe pas
             if username not in player_quests_data:

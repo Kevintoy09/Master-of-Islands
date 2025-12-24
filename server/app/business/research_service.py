@@ -202,6 +202,46 @@ class ResearchService:
             "new_research_points": updated_research_points
         }
     
+    def _auto_build_chief_house(self, player: Dict) -> None:
+        """Construit automatiquement la Maison du Chef sur slot_17"""
+        try:
+            player_id = player.get("id")
+            if not player_id:
+                return
+            
+            savegame_data = self.data_manager.load_savegame()
+            if not savegame_data:
+                return
+            
+            # Première ville du joueur
+            player_cities = [c for c in savegame_data.get('cities', []) if c.get('owner') == player_id]
+            if not player_cities:
+                return
+            
+            first_city = player_cities[0]
+            buildings = first_city.get('buildings', [])
+            if not isinstance(buildings, list):
+                buildings = []
+                first_city['buildings'] = buildings
+            
+            # Vérifier que slot_17 est libre
+            if "slot_17" in {b.get('slot_id') for b in buildings}:
+                print(f"⚠️ [AUTO-BUILD] Slot 17 déjà occupé dans {first_city.get('id')}")
+                return
+            
+            # Construction instantanée sur slot_17
+            from ..business.building_manager import Building
+            building = Building("slot_17", "Maison du Chef de Village", level=1)
+            building.status = "Terminé"
+            building.construction_end = None
+            buildings.append(building.to_dict())
+            
+            if self.data_manager.save_savegame(savegame_data, force_save=True):
+                print(f"✅ [AUTO-BUILD] Maison du Chef construite (slot_17)")
+                
+        except Exception as e:
+            print(f"❌ [AUTO-BUILD] Erreur: {e}")
+    
     def _apply_research_effects(self, player: Dict, effects: Dict) -> None:
         """Applique les effets d'une recherche au joueur"""
         if not player:
@@ -210,8 +250,14 @@ class ResearchService:
             
         research_effects = player.get("research_effects", {})
         
-        # Effet de déverrouillage de bâtiments - Ne plus auto-construire, juste notifier
-        # Le joueur devra construire le bâtiment lui-même
+        # Effet de déverrouillage de bâtiments
+        # La Maison du Chef se construit automatiquement, les autres (Entrepôt, Ambassade) doivent être construits manuellement
+        if "unlock_building" in effects:
+            building_name = effects["unlock_building"]
+            
+            # Auto-construction uniquement pour la Maison du Chef
+            if building_name == "Maison du Chef de Village":
+                self._auto_build_chief_house(player)
         
         # Effet de déverrouillage de ressources
         if "unlock_resources" in effects:

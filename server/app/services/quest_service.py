@@ -383,7 +383,9 @@ class QuestService:
                 # Satisfaction maximale dans une ville
                 max_satisfaction = 0
                 for city in player_cities:
-                    satisfaction = city.get('satisfaction', 0)
+                    # La satisfaction est maintenant dans satisfaction_details.total
+                    satisfaction_details = city.get('satisfaction_details', {})
+                    satisfaction = satisfaction_details.get('total', 0)
                     max_satisfaction = max(max_satisfaction, satisfaction)
                 return max_satisfaction
             
