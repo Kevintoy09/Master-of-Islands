@@ -466,19 +466,16 @@ class TransportTimerService:
             transport_type = transport.get('transport_type', 'resources')
             
             if transport_type == 'attack':
-                # Pour les transports d'attaque, déterminer si c'est un retour de bataille
-                # Les transports de retour ont leurs rôles inversés, donc les bateaux appartiennent à destination_player_id
-                is_battle_return = (transport.get('timeline', {}).get('return_start') is not None)
-                
-                if is_battle_return:
-                    # Transport d'attaque de retour : les bateaux appartiennent à destination_player_id (vrai attaquant)
-                    player_id = transport['destination_player_id']
-                else:
-                    # Transport d'attaque aller : les bateaux appartiennent à source_player_id (attaquant)
-                    player_id = transport['source_player_id']
+                # Pour les transports d'attaque, les bateaux appartiennent toujours à source_player_id
+                # (car source/destination ne sont jamais inversés dans notre code)
+                player_id = transport['source_player_id']
             else:
                 # Transport normal : bateaux pour source_player_id
                 player_id = transport['source_player_id']
+            
+            # Skip si le joueur est null (wild camps)
+            if player_id is None:
+                return
             
             ships_count = transport['ships_needed']
             
@@ -536,26 +533,15 @@ class TransportTimerService:
     def _credit_battle_return(self, transport: Dict[str, Any]):
         """Crédite la ville d'origine avec les ressources pillées et unités survivantes au retour de bataille."""
         try:
-            # Détecter si c'est un transport d'attaque
-            is_attack_transport = (
-                transport.get('transport_type') == 'attack' or 
-                transport.get('type') == 'attack' or
-                (transport.get('is_cross_player') and 
-                 transport.get('timeline', {}).get('battle_start') and
-                 any(key.startswith('unit_') for key in transport.get('resources', {}).keys()))
-            )
+            # Pour un transport d'attaque, source_city est toujours la ville de l'attaquant
+            # (car on n'inverse jamais les champs dans notre code)
+            target_city_id = transport['source_city']
             
-            # Pour un transport d'attaque, créditer TOUJOURS la ville de l'attaquant (destination)
-            if is_attack_transport:
-                source_city_id = transport['destination_city']  # Ville de l'attaquant
-            else:
-                source_city_id = transport['source_city']  # Transport normal
             savegame = self.data_manager.load_savegame()
             cities = savegame.get('cities', [])
-            city = next((c for c in cities if c.get('id') == source_city_id), None)
+            city = next((c for c in cities if c.get('id') == target_city_id), None)
             
             if not city:
-                print(f"❌ Ville {source_city_id} non trouvée pour retour de bataille")
                 return False
             
             city_resources = city.get('resources', {})
@@ -682,19 +668,16 @@ class TransportTimerService:
                         transport['last_update'] = current_time
                         transport['timeline']['return_start'] = current_time
                         transport['timeline']['return_end'] = current_time + transport['travel_time']
-                        print(f"🚢 Transport d'attaque {transport['id']} commence le retour")
                     else:
                         # Same-player = transport terminé
                         transport['status'] = self.TRANSPORT_STATES['COMPLETED']
                         transport['timeline']['completed'] = current_time
                         self._free_ships(transport)
-                        print(f"✅ Transport d'attaque {transport['id']} terminé")
                     
                     completed_transports.append(transport['id'])
             
             if completed_transports:
                 self.data_manager.save_transports(transports_data, force_save=True)
-                print(f"⚔️ {len(completed_transports)} transports d'attaque libérés pour bataille {battle_id}")
             
             return completed_transports
             
