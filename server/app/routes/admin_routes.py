@@ -1646,7 +1646,7 @@ def reset_json_data(filename):
             'battle_replays.json': {"replays": []},
             'battle_notifications.json': {},  # Structure: {"player_id": [notifications]}
             'transports.json': {"transports": [], "next_id": 1},
-            'transport_history.json': {"history": []},
+            'transport_history.json': {"transport_history": []},
             'messages.json': {"messages": []},
             'notifications.json': {"notifications": []},
             'market.json': {

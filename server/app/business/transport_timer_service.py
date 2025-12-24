@@ -681,6 +681,7 @@ class TransportTimerService:
                         transport['remaining_time'] = transport['travel_time']
                         transport['last_update'] = current_time
                         transport['timeline']['return_start'] = current_time
+                        transport['timeline']['return_end'] = current_time + transport['travel_time']
                         print(f"🚢 Transport d'attaque {transport['id']} commence le retour")
                     else:
                         # Same-player = transport terminé
