@@ -11,6 +11,9 @@
   justify-content: center;
   z-index: 10000;
   padding: 10px;
+  /* Empêcher le scroll du background sur mobile */
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .hero-detail-popup {
@@ -23,6 +26,10 @@
   max-height: 90vh;
   overflow-y: auto;
   color: #ecf0f1;
+  /* Isoler le scroll du popup */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .hero-detail-header {

@@ -30,19 +30,10 @@ interface BattleResultPopupProps {
 const BattleResultPopup: React.FC<BattleResultPopupProps> = ({ notification, onClose, onMarkRead }) => {
   const isVictory = notification.type === 'victory';
   
-  // 🔒 Empêcher le scroll du background sur mobile
+  // Bloquer le scroll du body
   useEffect(() => {
-    const preventScroll = (e: TouchEvent) => {
-      if (e.target === document.body || !(e.target as HTMLElement).closest('.battle-result-popup')) {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('touchmove', preventScroll, { passive: false });
     document.body.style.overflow = 'hidden';
-
     return () => {
-      document.removeEventListener('touchmove', preventScroll);
       document.body.style.overflow = '';
     };
   }, []);

@@ -12,6 +12,9 @@
   align-items: flex-start;
   padding-top: 20px;
   z-index: 2000;
+  /* Empêcher le scroll du background sur mobile */
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .combat-popup {
@@ -24,8 +27,11 @@
   max-height: calc(100vh - 160px);
   overflow-y: auto;
   font-family: 'Times New Roman', serif;
-  /* ✅ Activer le scroll vertical smooth comme popup déploiement */
   scroll-behavior: smooth;
+  /* Isoler le scroll du popup */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .combat-header {

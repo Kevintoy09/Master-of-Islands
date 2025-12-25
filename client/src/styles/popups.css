@@ -18,6 +18,9 @@
   padding-top: 16vh; /* Espacement depuis le HeaderBar (15vh + 1vh de marge) */
   padding-bottom: 10vh; /* Espacement depuis le BottomNavBar (9vh + 1vh de marge) */
   box-sizing: border-box;
+  /* Empêcher le scroll du background sur mobile */
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 /* Media queries pour très petits écrans */
@@ -48,6 +51,10 @@
   max-height: 75vh; /* Réduit pour tenir compte des paddings */
   overflow-y: auto;
   overflow-x: hidden;
+  /* Isoler le scroll du popup */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   font-family: var(--font-primary);
   position: relative;
   /* Amélioration du scroll sur mobile */

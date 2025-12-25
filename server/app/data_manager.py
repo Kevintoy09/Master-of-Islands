@@ -505,37 +505,12 @@ class DataManager:
         """Charge savegame.json avec récupération automatique et création si absent"""
         filepath = self._get_file_path('savegame.json')
         
-        # Vérifier si le fichier existe physiquement
-        if not os.path.exists(filepath):
-            # Fichier inexistant : essayer le backup
-            backup_path = filepath + ".backup"
-            if os.path.exists(backup_path):
-                data = self._load_json_file(backup_path, use_cache=False)
-                if data:
-                    # Restaurer le fichier principal
-                    if self._save_json_file(filepath, data, create_backup=False):
-                        return data
-            
-            # Aucun fichier ni backup : créer un nouveau savegame
-            print("Aucun savegame trouvé, création d'un nouveau fichier vierge...")
-            empty_savegame = {
-                "cities": [],
-                "players": {}
-            }
-            
-            if self._save_json_file(filepath, empty_savegame, create_backup=False):
-                print(f"Nouveau savegame créé: {filepath}")
-                return empty_savegame
-            else:
-                print("Erreur lors de la création du nouveau savegame")
-                return empty_savegame
-        
-        # Fichier existe : essayer de le charger
-        data = self._load_json_file(filepath, use_cache=False)
+        # Essayer le fichier principal
+        data = self._load_json_file(filepath, use_cache=False)  # Pas de cache pour savegame
         if data:
             return data
         
-        # Fichier corrompu : essayer le backup
+        # Essayer le backup seulement s'il existe
         backup_path = filepath + ".backup"
         if os.path.exists(backup_path):
             data = self._load_json_file(backup_path, use_cache=False)
@@ -544,9 +519,20 @@ class DataManager:
                 if self._save_json_file(filepath, data, create_backup=False):
                     return data
         
-        # Échec total : retourner structure vide SANS recréer le fichier
-        print(f"⚠️ Impossible de charger savegame.json, retour structure vide temporaire")
-        return {"cities": [], "players": {}}
+        # Si aucun fichier trouvé, créer un savegame vierge
+        print("Aucun savegame trouvé, création d'un nouveau fichier vierge...")
+        empty_savegame = {
+            "cities": [],
+            "players": {}
+        }
+        
+        # Sauvegarder le nouveau savegame
+        if self._save_json_file(filepath, empty_savegame, create_backup=False):
+            print(f"Nouveau savegame créé: {filepath}")
+            return empty_savegame
+        else:
+            print("Erreur lors de la création du nouveau savegame")
+            return empty_savegame  # Retourner quand même la structure vierge
     
     def save_savegame(self, data: Dict, force_save: bool = False) -> bool:
         """Sauvegarde savegame.json avec protection contre les écritures simultanées"""

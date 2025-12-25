@@ -12,6 +12,9 @@
   justify-content: center;
   z-index: 10000;
   animation: fadeIn 0.2s ease-out;
+  /* Empêcher le scroll du background sur mobile */
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .battle-result-popup {
@@ -21,8 +24,13 @@
   border: 2px solid rgba(255, 255, 255, 0.1);
   width: 90%;
   max-width: 500px;
-  overflow: hidden;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
   animation: slideUp 0.3s ease-out;
+  /* Isoler le scroll du popup */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes fadeIn {

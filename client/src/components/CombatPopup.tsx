@@ -123,34 +123,13 @@ const CombatPopup: React.FC<CombatPopupProps> = ({
   const [battleMoral, setBattleMoral] = useState<{attacker: number, defender: number}>({attacker: 100, defender: 100});
   const [terrainDefinitions, setTerrainDefinitions] = useState<{[key: string]: TerrainDefinition} | null>(null);
 
-  // Verrouiller le scroll du battlefield quand le popup est ouvert
+  // Verrouiller le scroll du body quand le popup est ouvert
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // 🔒 Empêcher le scroll du background sur mobile lors du drag du popup
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const preventScroll = (e: TouchEvent) => {
-      // Empêcher le scroll du body/background
-      if (e.target === document.body || !(e.target as HTMLElement).closest('.combat-popup')) {
-        e.preventDefault();
-      }
-    };
-
-    // Ajouter l'écouteur avec { passive: false } pour pouvoir preventDefault()
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-
-    return () => {
-      document.removeEventListener('touchmove', preventScroll);
     };
   }, [isOpen]);
 

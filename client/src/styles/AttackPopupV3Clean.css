@@ -13,6 +13,9 @@
   justify-content: center;
   z-index: 100000;
   padding: 20px 0;
+  /* Empêcher le scroll du background sur mobile */
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .attack-popup .popup-content {
@@ -28,6 +31,10 @@
   box-shadow: var(--shadow-heavy);
   color: var(--text-primary);
   font-family: var(--font-primary);
+  /* Isoler le scroll du popup */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Header */
