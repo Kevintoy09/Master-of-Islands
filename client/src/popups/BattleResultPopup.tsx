@@ -68,10 +68,6 @@ const BattleResultPopup: React.FC<BattleResultPopupProps> = ({ notification, onC
       <div 
         className="battle-result-popup" 
         onClick={(e) => e.stopPropagation()}
-        style={{
-          maxHeight: 'calc(100vh - 120px)',
-          overflowY: 'auto'
-        }}
       >
         {/* En-tête */}
         <div className={`battle-result-header ${isVictory ? 'victory' : 'defeat'}`}>

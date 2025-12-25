@@ -501,21 +501,34 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
     const quantity = selectedQuantities[unitType] || 0;
     const { cost, time } = calculateCost(unit, quantity > 0 ? quantity : 1);
     const available = isUnitAvailable(unit);
+    const garrisonCount = garrison[unitType] || 0;
 
     return (
       <div key={unitType} className="ikariam-unit-row">
-        {/* Colonne 1: Image */}
+        {/* Colonne 1: Image + Effectif en garnison */}
         <div 
           className="unit-image-col" 
           onClick={() => {
             setSelectedUnit({ type: unitType, stats: unit });
             setShowUnitDetail(true);
           }}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
         >
           <div className={`unit-icon-large ${unit.category}`}>
             {getCategoryIcon(unit.category, unitType)}
           </div>
+          {/* Affichage de l'effectif en garnison */}
+          {garrisonCount > 0 && (
+            <div style={{
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: '#666',
+              marginTop: '1px',
+              textAlign: 'center'
+            }}>
+              {garrisonCount}
+            </div>
+          )}
         </div>
 
         {/* Colonne 2: Nom + Coûts OU Message de prérequis */}

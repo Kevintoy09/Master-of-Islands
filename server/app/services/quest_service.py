@@ -1217,6 +1217,61 @@ class QuestService:
             print(f"⚠️ Failed to update construction quest: {e}")
             traceback.print_exc()
 
+    def update_research_invested_quest(self, username: str) -> None:
+        """
+        Met à jour la progression de la quête sci_reach_research_level
+        en calculant le total des points de recherche investis par le joueur
+        
+        Args:
+            username: Le nom d'utilisateur
+        """
+        try:
+            from app.services.player_progression_service import PlayerProgressionService
+            from app.data_manager import DataManager
+            
+            quest_data = self.load_player_quests(username)
+            daily_quests = quest_data.get('daily_quests', {}).get('quests', [])
+            
+            # Chercher la quête sci_reach_research_level
+            for quest in daily_quests:
+                if quest.get('id') == 'sci_reach_research_level':
+                    # Récupérer le player_id depuis players.json
+                    with open(self.players_path, 'r', encoding='utf-8') as f:
+                        players_data = json.load(f)
+                    
+                    player_id = None
+                    for player in players_data.get('players', []):
+                        if player.get('username') == username:
+                            player_id = player.get('id')
+                            break
+                    
+                    if not player_id:
+                        return
+                    
+                    # Créer le data_manager avec le base_dir de quest_service
+                    data_manager = DataManager(self.base_dir)
+                    progression_service = PlayerProgressionService(data_manager)
+                    
+                    # Calculer le total des points investis
+                    total_invested = progression_service.calculate_research_points_invested(player_id)
+                    
+                    # Mettre à jour la progression
+                    old_progress = quest.get('progress', 0)
+                    quest['progress'] = total_invested
+                    
+                    # Vérifier et attribuer les étoiles si nécessaire
+                    if quest['progress'] != old_progress:
+                        self.check_and_award_stars(username, quest, quest_data)
+                        self.save_player_quests(username, quest_data)
+                    
+                    break
+                    
+        except Exception as e:
+            # Silent fail - ne pas interrompre le déblocage de recherche
+            import traceback
+            print(f"⚠️ Failed to update research invested quest: {e}")
+            traceback.print_exc()
+
 
 # Instance globale
 quest_service = QuestService()

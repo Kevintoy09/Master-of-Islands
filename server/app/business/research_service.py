@@ -193,6 +193,17 @@ class ResearchService:
         # Créer une notification de recherche débloquée
         self._create_research_notification(player_id, research_data.get("name", research_id))
         
+        # Mettre à jour la quête de recherche investie (sci_reach_research_level)
+        try:
+            from app.services.quest_service import quest_service
+            # Récupérer le username depuis le player_id
+            username = player.get("username")
+            if username:
+                quest_service.update_research_invested_quest(username)
+        except Exception as e:
+            # Silent fail - ne pas bloquer le déblocage de recherche
+            print(f"⚠️ Failed to update research quest: {e}")
+        
         # Utiliser les valeurs modifiées directement depuis l'objet player
         updated_research_points = player.get("research_points", 0)
         
