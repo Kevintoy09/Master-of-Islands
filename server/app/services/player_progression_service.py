@@ -4,14 +4,16 @@ player_progression_service.py
 SERVICE DE CALCUL DE LA PROGRESSION DU JOUEUR
 
 RÔLE:
-    Calcule les scores de progression du joueur sur 3 axes:
+    Calcule les scores de progression du joueur sur 4 axes:
     - Construction (points basés sur niveaux de bâtiments)
     - Recherche (somme des coûts des recherches débloquées)
     - Militaire (XP, victoires, unités tuées - déjà existant)
+    - Puissance Militaire (somme(quantité × xp_value) / 100)
 
 FORMULES:
     Construction: Pour un bâtiment niveau N -> 1+2+3+...+N = N*(N+1)/2
     Recherche: Somme(coût recherches débloquées) + points_recherche_actuels
+    Puissance Militaire: sum(quantity × xp_value) / 100 pour toutes les unités
 
 UTILISATION:
     - Appelé après chaque construction/amélioration de bâtiment
@@ -113,9 +115,58 @@ class PlayerProgressionService:
             print(f"Erreur calcul points recherche: {e}")
             return 0
     
+    def calculate_military_power(self, player_id: str) -> int:
+        """
+        Calcule la puissance militaire d'un joueur.
+        Formule: sum(quantity × xp_value) / 100 pour toutes les unités dans toutes les villes
+        
+        Returns:
+            int: Puissance militaire arrondie
+        """
+        try:
+            # Charger les données nécessaires
+            savegame_data = self.data_manager.load_savegame()
+            cities = savegame_data.get('cities', [])
+            
+            # Charger unit_stats.json
+            unit_stats_path = os.path.join(self.base_dir, 'data', 'unit_stats.json')
+            with open(unit_stats_path, 'r', encoding='utf-8') as f:
+                unit_stats_data = json.load(f)
+            
+            # Créer un dictionnaire de xp_value par type d'unité
+            xp_values = {}
+            for category in ['classical_age', 'enemy_units']:
+                for unit_type, unit_data in unit_stats_data.get(category, {}).items():
+                    xp_values[unit_type] = unit_data.get('xp_value', 0)
+            
+            total_power = 0
+            
+            # Parcourir toutes les villes
+            for city in cities:
+                military_data = city.get('military', {})
+                garrison = military_data.get('garrison', {})
+                
+                # Récupérer les unités du joueur dans cette ville
+                player_garrison = garrison.get(player_id, {})
+                
+                # Calculer la puissance pour chaque type d'unité
+                for unit_type, unit_data in player_garrison.items():
+                    quantity = unit_data.get('quantity', 0)
+                    xp_value = xp_values.get(unit_type, 0)
+                    total_power += quantity * xp_value
+            
+            # Diviser par 100 selon la formule
+            military_power = int(total_power / 100)
+            
+            return military_power
+            
+        except Exception as e:
+            print(f"Erreur calcul puissance militaire pour {player_id}: {e}")
+            return 0
+    
     def get_player_level(self, player_id: str) -> Dict[str, Any]:
         """
-        Calcule le niveau global du joueur basé sur ses 3 scores.
+        Calcule le niveau global du joueur basé sur ses scores.
         Retourne un dictionnaire avec les scores détaillés.
         """
         try:
@@ -127,6 +178,7 @@ class PlayerProgressionService:
                     'construction_points': 0,
                     'research_points_invested': 0,
                     'military_xp': 0,
+                    'military_power': 0,
                     'total_score': 0,
                     'estimated_level': 1
                 }
@@ -135,6 +187,7 @@ class PlayerProgressionService:
             construction_points = self.calculate_construction_points(player_id)
             research_points_invested = self.calculate_research_points_invested(player_id)
             military_xp = player.get('total_xp_gained', 0)
+            military_power = self.calculate_military_power(player_id)
             
             # Score total (pondéré)
             total_score = construction_points + research_points_invested + (military_xp // 10)
@@ -146,6 +199,7 @@ class PlayerProgressionService:
                 'construction_points': construction_points,
                 'research_points_invested': research_points_invested,
                 'military_xp': military_xp,
+                'military_power': military_power,
                 'total_score': total_score,
                 'estimated_level': estimated_level,
                 'victories': player.get('victories', 0),
@@ -160,6 +214,7 @@ class PlayerProgressionService:
                 'construction_points': 0,
                 'research_points_invested': 0,
                 'military_xp': 0,
+                'military_power': 0,
                 'total_score': 0,
                 'estimated_level': 1
             }

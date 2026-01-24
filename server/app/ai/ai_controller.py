@@ -16,6 +16,7 @@ import random
 import threading
 from typing import Dict, List, Optional
 from .ai_strategy_manager import AIStrategyManager
+from .ai_military_manager import AIMilitaryManager
 from .strategies.development_strategy import BUILD_ORDER, RESEARCH_PRIORITY
 
 # Mode debug pour contrôler la verbosité des logs IA
@@ -30,6 +31,7 @@ class AIController:
         'construction',  # Construire/upgrader bâtiments
         'workers',       # Affecter ouvriers
         'research',      # Débloquer recherches
+        'military',      # Gérer production militaire (conditionnel)
         'transport',     # Envoyer ressources entre villes
     ]
     
@@ -48,6 +50,9 @@ class AIController:
         
         # Initialiser le gestionnaire de stratégies
         self.strategy_manager = AIStrategyManager(self.data_manager)
+        
+        # Initialiser le gestionnaire militaire
+        self.military_manager = AIMilitaryManager(self.data_manager)
     
     def execute_all_ais(self, force=False, savegame_data=None) -> Dict:
         """
@@ -241,6 +246,8 @@ class AIController:
                 city_result = self._decide_workers(ai_player, city, savegame_data=savegame_data)
             elif city_domaine == 'research':
                 city_result = self._decide_research(ai_player, city)
+            elif city_domaine == 'military':
+                city_result = self._decide_military(ai_player, city, savegame_data=savegame_data)
             elif city_domaine == 'transport':
                 city_result = self._decide_transport(ai_player, city, savegame_data)
             
@@ -796,6 +803,67 @@ class AIController:
             'message': '✓ Recherches prioritaires complètes',
             'success': False
         }
+    
+    def _decide_military(self, ai_player: Dict, city: Dict, savegame_data=None) -> Dict:
+        """
+        Décide si production militaire nécessaire (conditionnel avec seuil 80%)
+        
+        Returns:
+            Dict avec résultat de l'action ou skip si seuil non atteint
+        """
+        player_id = ai_player.get('id')
+        player_name = ai_player.get('username', 'Unknown')
+        city_id = city.get('id')
+        city_name = city.get('name', f'City {city_id}')
+        
+        # Vérifier si production nécessaire
+        if not self.military_manager.needs_military_production(player_id, savegame_data):
+            current_power = self.military_manager.calculate_current_power(player_id, savegame_data)
+            target_power = self.military_manager.calculate_target_power(player_id, savegame_data)
+            
+            self._log_debug(
+                f"[{player_name}] ⏭️ Armée suffisante ({current_power:.0f}/{target_power:.0f})", 
+                player_id, 
+                player_name
+            )
+            
+            return {
+                'player_id': player_id,
+                'player_name': player_name,
+                'action': 'military_skip',
+                'message': f'⏭️ Armée suffisante ({current_power:.0f}/{target_power:.0f})',
+                'success': False
+            }
+        
+        # Calculer plan de production
+        production_plan = self.military_manager.calculate_production_plan(player_id, city_id, savegame_data)
+        
+        if not production_plan or not production_plan.get('units'):
+            return {
+                'player_id': player_id,
+                'player_name': player_name,
+                'action': 'military_no_plan',
+                'message': '⚠️ Aucune unité disponible',
+                'success': False
+            }
+        
+        # Exécuter production
+        result = self.military_manager.execute_military_production(
+            player_id=player_id,
+            city_id=city_id,
+            production_plan=production_plan,
+            savegame_data=savegame_data
+        )
+        
+        if result.get('success'):
+            units_summary = result.get('units_summary', '')
+            self._log_debug(
+                f"[{player_name}] 🏹 Production: {units_summary}",
+                player_id,
+                player_name
+            )
+        
+        return result
     
     def _decide_transport(self, ai_player: Dict, city: Dict, savegame_data: Dict) -> Dict:
         """

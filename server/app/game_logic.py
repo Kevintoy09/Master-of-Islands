@@ -777,6 +777,19 @@ class GameLogic:
                                         current_pop = city['resources'].get('population_total', 0)
                                         city['resources']['population_total'] = current_pop + instant_pop
                                         
+                                        # IMPORTANT: Recalculer aussi la capacité maximale de population
+                                        # Car l'Hôtel de Ville donne aussi un bonus de population_capacity
+                                        try:
+                                            from app.managers.population_manager import PopulationManager
+                                            pop_manager = PopulationManager(self.data)
+                                            new_capacity = pop_manager.calculate_population_limit(city)
+                                            # La capacité totale est maintenant la capacité de l'Hôtel de Ville
+                                            # La population actuelle ne peut pas dépasser cette capacité
+                                            if city['resources']['population_total'] > new_capacity:
+                                                city['resources']['population_total'] = new_capacity
+                                        except Exception as e:
+                                            print(f"⚠️ Erreur calcul capacité population: {e}")
+                                        
                                         # Marquer comme traité (SET GLOBAL)
                                         _GLOBAL_PROCESSED_CONSTRUCTIONS.add(instant_pop_id)
                                         # NE PAS ajouter instant_population_applied au bâtiment (pollue le JSON)

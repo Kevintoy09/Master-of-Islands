@@ -93,22 +93,47 @@ const CityPopup: React.FC<CityPopupProps> = ({
       }
 
       try {
-        // Utiliser l'API backend au lieu du fichier statique
-        const response = await fetch('/api/players');
+        const ownerId = city.owner || city.ownerId;
         
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP: ${response.status}`);
+        // Charger les informations de base du joueur
+        const playersResponse = await fetch('/api/players');
+        
+        if (!playersResponse.ok) {
+          throw new Error(`Erreur HTTP: ${playersResponse.status}`);
         }
         
-        const data = await response.json();
-        const players = data.players || data;
+        const playersData = await playersResponse.json();
+        const players = playersData.players || playersData;
         
-        const ownerId = city.owner || city.ownerId;
         const ownerInfo = players.find((p: any) => 
           p.id === ownerId || p.name === ownerId || p.username === ownerId
         );
         
-        setOwnerData(ownerInfo || null);
+        if (ownerInfo) {
+          // Charger les statistiques enrichies (construction_points, military_power)
+          try {
+            const progressionResponse = await fetch(`/api/progression/${ownerInfo.id}`);
+            if (progressionResponse.ok) {
+              const progressionData = await progressionResponse.json();
+              if (progressionData.success && progressionData.scores) {
+                // Fusionner les données de base avec les scores calculés
+                setOwnerData({
+                  ...ownerInfo,
+                  construction_points: progressionData.scores.construction_points,
+                  military_power: progressionData.scores.military_power
+                });
+                return;
+              }
+            }
+          } catch (err) {
+            console.warn('Impossible de charger les statistiques enrichies:', err);
+          }
+          
+          // Si l'API progression échoue, utiliser les données de base
+          setOwnerData(ownerInfo);
+        } else {
+          setOwnerData(null);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des données du joueur:', error);
         setOwnerData(null);
@@ -365,10 +390,10 @@ const CityPopup: React.FC<CityPopupProps> = ({
                     <span style={{color: '#d4c4a8'}}>Joueur :</span> {ownerData?.username || 'Chargement...'}
                   </div>
                   <div style={{fontSize: '14px', marginBottom: '4px'}}>
-                    <span style={{color: '#d4c4a8'}}>Points :</span> {ownerData?.quest_points || 0}
+                    <span style={{color: '#d4c4a8'}}>Points Construction :</span> {ownerData?.construction_points || 0}
                   </div>
                   <div style={{fontSize: '14px'}}>
-                    <span style={{color: '#d4c4a8'}}>XP Militaire :</span> {ownerData?.total_xp_gained || 0}
+                    <span style={{color: '#d4c4a8'}}>Puissance Armée :</span> {ownerData?.military_power || 0}
                   </div>
                 </>
               )}

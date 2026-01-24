@@ -10,6 +10,7 @@ interface PlayerStats {
   construction_points: number;
   research_points_invested: number;
   military_xp: number;
+  military_power: number;
   units_killed: number;
   units_lost: number;
   victories: number;
@@ -17,7 +18,7 @@ interface PlayerStats {
   quest_points: number;
 }
 
-type Category = 'general' | 'construction' | 'research' | 'military_xp' | 'units_killed' | 'units_lost' | 'victories' | 'quests';
+type Category = 'general' | 'construction' | 'research' | 'military_xp' | 'military_power' | 'units_killed' | 'units_lost' | 'victories' | 'quests';
 
 const LeaderboardPage: React.FC = () => {
   const { user } = useUser();
@@ -51,6 +52,7 @@ const LeaderboardPage: React.FC = () => {
       construction: 'Points de Construction',
       research: 'Points de Recherche',
       military_xp: 'Expérience Militaire',
+      military_power: 'Puissance Militaire',
       units_killed: 'Unités Tuées',
       units_lost: 'Unités Perdues',
       victories: 'Victoires',
@@ -65,6 +67,7 @@ const LeaderboardPage: React.FC = () => {
       construction: '🏗️',
       research: '🔬',
       military_xp: '⚔️',
+      military_power: '💪',
       units_killed: '💀',
       units_lost: '☠️',
       victories: '🎖️',
@@ -79,6 +82,7 @@ const LeaderboardPage: React.FC = () => {
       construction: player.construction_points,
       research: player.research_points_invested,
       military_xp: player.military_xp,
+      military_power: player.military_power,
       units_killed: player.units_killed,
       units_lost: player.units_lost,
       victories: player.victories,
@@ -133,6 +137,12 @@ const LeaderboardPage: React.FC = () => {
           onClick={() => setCategory('military_xp')}
         >
           ⚔️ XP Militaire
+        </button>
+        <button
+          className={`category-btn ${category === 'military_power' ? 'active' : ''}`}
+          onClick={() => setCategory('military_power')}
+        >
+          💪 Armée
         </button>
         <button
           className={`category-btn ${category === 'units_killed' ? 'active' : ''}`}

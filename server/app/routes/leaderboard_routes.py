@@ -12,6 +12,7 @@ CATÉGORIES:
     - construction: Points de construction
     - research: Points de recherche investis
     - military_xp: XP militaire gagnée
+    - military_power: Puissance militaire (sum(quantity × xp_value) / 100)
     - units_killed: Unités ennemies tuées
     - units_lost: Unités perdues
     - victories: Nombre de victoires
@@ -40,6 +41,7 @@ def get_leaderboard(category):
     - construction: Points de construction
     - research: Points de recherche investis
     - military_xp: XP militaire
+    - military_power: Puissance militaire
     - units_killed: Unités tuées
     - units_lost: Unités perdues
     - victories: Victoires
@@ -63,6 +65,7 @@ def get_leaderboard(category):
             # Calculer les scores en temps réel
             construction_points = progression_service.calculate_construction_points(player_id)
             research_points_invested = progression_service.calculate_research_points_invested(player_id)
+            military_power = progression_service.calculate_military_power(player_id)
             
             # Récupérer les stats militaires
             military_xp = player.get('total_xp_gained', 0)
@@ -84,6 +87,7 @@ def get_leaderboard(category):
                 'construction_points': construction_points,
                 'research_points_invested': research_points_invested,
                 'military_xp': military_xp,
+                'military_power': military_power,
                 'units_killed': units_killed,
                 'units_lost': units_lost,
                 'victories': victories,
@@ -99,6 +103,7 @@ def get_leaderboard(category):
             'construction': 'construction_points',
             'research': 'research_points_invested',
             'military_xp': 'military_xp',
+            'military_power': 'military_power',
             'units_killed': 'units_killed',
             'units_lost': 'units_lost',
             'victories': 'victories',
