@@ -46,6 +46,9 @@ class AIAutoCycleManager:
     
     def _save_config_data(self, config_data: dict):
         """Sauvegarde des données de configuration dans le fichier JSON"""
+        # Créer le dossier gamedata s'il n'existe pas
+        os.makedirs(os.path.dirname(self.config_file), exist_ok=True)
+        
         with open(self.config_file, 'w', encoding='utf-8') as f:
             json.dump(config_data, f, indent=2, ensure_ascii=False)
     

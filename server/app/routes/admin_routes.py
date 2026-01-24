@@ -1619,7 +1619,8 @@ def get_json_data(filename):
             'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
             'battle_replays.json', 'battle_notifications.json',
             'transports.json', 'transport_history.json',
-            'messages.json', 'notifications.json', 'market.json'
+            'messages.json', 'notifications.json', 'market.json',
+            'resource_sites.json', 'ai_auto_cycles.json', 'ai_console_logs.json', 'ai_strategies_state.json'
         ]
         
         if filename not in allowed_files:
@@ -1664,7 +1665,8 @@ def save_json_data(filename):
             'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
             'battle_replays.json', 'battle_notifications.json',
             'transports.json', 'transport_history.json',
-            'messages.json', 'notifications.json', 'market.json'
+            'messages.json', 'notifications.json', 'market.json',
+            'resource_sites.json', 'ai_auto_cycles.json', 'ai_console_logs.json', 'ai_strategies_state.json'
         ]
         
         if filename not in allowed_files:
@@ -1740,7 +1742,8 @@ def reset_json_data(filename):
             'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
             'battle_replays.json', 'battle_notifications.json',
             'transports.json', 'transport_history.json',
-            'messages.json', 'notifications.json', 'market.json'
+            'messages.json', 'notifications.json', 'market.json',
+            'resource_sites.json', 'ai_auto_cycles.json', 'ai_console_logs.json', 'ai_strategies_state.json'
         ]
         
         if filename not in allowed_files:
