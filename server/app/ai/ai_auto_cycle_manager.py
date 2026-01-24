@@ -268,6 +268,9 @@ class AIAutoCycleManager:
     
     def get_status(self) -> dict:
         """Retourne le statut complet du système"""
+        # Recharger la config pour s'assurer qu'elle est à jour
+        self.config = self._load_config()
+        
         active_now = 0
         player_configs = {}
         
