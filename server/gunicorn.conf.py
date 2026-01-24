@@ -4,9 +4,10 @@ Configuration Gunicorn pour Railway
 import os
 import multiprocessing
 
-# Nombre de workers
-workers = 2
-threads = 4
+# Nombre de workers (1 seul pour éviter les race conditions sur auto-tick)
+# TODO: Passer à plusieurs workers avec Redis pour production à grande échelle
+workers = 1
+threads = 8  # Augmenté pour compenser (1 worker × 8 threads = 8 connexions concurrentes)
 
 # Timeout
 timeout = 120
