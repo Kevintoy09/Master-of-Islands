@@ -449,6 +449,10 @@ ADMIN_INTERFACE_HTML = """
                         <option value="messages.json">✉️ messages.json</option>
                         <option value="notifications.json">📬 notifications.json</option>
                         <option value="market.json">🏛️ market.json</option>
+                        <option value="resource_sites.json">🏔️ resource_sites.json</option>
+                        <option value="ai_auto_cycles.json">🤖 ai_auto_cycles.json</option>
+                        <option value="ai_console_logs.json">📝 ai_console_logs.json</option>
+                        <option value="ai_strategies_state.json">🎯 ai_strategies_state.json</option>
                     </select>
                 </div>
 
