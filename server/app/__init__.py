@@ -100,6 +100,7 @@ from .routes.progression_routes import progression_bp
 from .routes.leaderboard_routes import leaderboard_bp
 from .routes.quest_routes import quest_bp
 from .messages import messages_bp
+from .routes.ai_auto_cycle_routes import ai_auto_cycle_bp
 
 def create_app():
     """
@@ -192,20 +193,15 @@ def create_app():
     # military_service = init_military_service(data_manager)
 
     
-    # === INITIALISATION DU TICK SERVICE UNIFIÉ ===
-    # Service unique pour ticks manuels ET auto-tick intégré
+    # === TICK SERVICE ===
     from .services.tick_service import TickService
     tick_service = TickService(data_manager)
-    
-    # Expose pour les endpoints admin
     app.config['TICK_SERVICE'] = tick_service
     
-    # === INITIALISATION DU TIME MANAGER ===
-    # === INITIALISATION DES BLUEPRINTS - SIMPLIFIÉ ===
+    # === BLUEPRINTS ===
     init_auth_routes(player_service, profile_service, session_tracker)
     init_username_routes(player_service)
     init_city_routes(city_service, data_manager, game_logic, None, session_tracker)
-    # init_military_routes(data_manager)  # OBSOLÈTE - remplacé par military_api.py
     init_universe_routes(data_manager)
     init_resource_routes(data_manager, game_logic, None)
     init_game_routes(game_logic, None, data_manager)
@@ -254,6 +250,7 @@ def create_app():
     app.register_blueprint(quest_bp)  # 🎯 SYSTÈME DE QUÊTES - QUOTIDIENNES ET PRINCIPALES
     app.register_blueprint(messages_bp)  # 💬 SYSTÈME DE MESSAGERIE - COMMUNICATION JOUEURS & ADMIN
     app.register_blueprint(faction_bp)  # 🏰 API FACTIONS - STATS ET RÉPARTITION
+    app.register_blueprint(ai_auto_cycle_bp)  # 🤖 CYCLES AUTOMATIQUES IA - EXÉCUTION AUTO PAR TICK
     # app.register_blueprint(military_unified_bp)  # SUPPRIMÉ - gestion militaire V1 supprimée pour éviter conflits
     
     # === INITIALISATION DU SCHEDULER DE QUÊTES ===
@@ -394,13 +391,7 @@ def create_app():
         print(f"❌ [ADMIN] Erreur enregistrement interface admin: {e}")
     
     # Routes AI supprimées (système IA simplifié)
-    
-    # Route pour l'interface admin AI (accessible directement)
-    @app.route('/admin/ai')
-    def ai_admin_interface():
-        """Interface d'administration des joueurs IA"""
-        from flask import render_template
-        return render_template('ai_admin.html')
+    # La route /admin/ai est maintenant dans admin_routes.py (blueprint)
     
     # API pour toggle IA auto
     @app.route('/api/admin/ai/toggle-auto', methods=['POST'])
@@ -533,6 +524,168 @@ def create_app():
                 'error': str(e)
             }), 500
     
+    @app.route('/api/ai/players', methods=['POST'])
+    def create_ai_player():
+        """Crée un nouveau joueur IA"""
+        from flask import request, jsonify
+        from app.business.player_service import PlayerService
+        from app.data_manager import DataManager
+        import os
+        import random
+        
+        try:
+            data = request.get_json()
+            name = data.get('name')
+            personality = data.get('personality', 'balanced')
+            difficulty = data.get('difficulty', 'medium')
+            
+            # Générer un nom automatique si non fourni
+            if not name:
+                # Noms latins selon la spécification
+                AI_NAME_PREFIXES = [
+                    "Emperor", "Archon", "Consul", "Basileus", "Strategos",
+                    "Caesar", "Imperator", "Praetor", "Tribune", "Legatus"
+                ]
+                AI_NAME_SUFFIXES = [
+                    "Magnus", "Victor", "Maximus", "Augustus", "Invictus",
+                    "Fortis", "Sapiens", "Audax", "Severus", "Clemens"
+                ]
+                prefix = random.choice(AI_NAME_PREFIXES)
+                suffix = random.choice(AI_NAME_SUFFIXES)
+                number = random.randint(1, 999)
+                name = f"{prefix}_{suffix}_{number}"
+            
+            # Créer le joueur via PlayerService
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            data_manager = DataManager(base_dir)
+            player_service = PlayerService(data_manager)
+            
+            # Créer le joueur
+            new_player = player_service.create_player(name)
+            
+            # Choisir une faction aléatoire (ressource de base)
+            factions = ['stone', 'iron', 'cereal', 'papyrus']
+            chosen_faction = random.choice(factions)
+            
+            # Marquer comme IA et ajouter les attributs IA + faction
+            players_data = data_manager.load_players()
+            for player in players_data.get('players', []):
+                if player['id'] == new_player['id']:
+                    player['is_ai'] = True
+                    player['ai_personality'] = personality
+                    player['ai_difficulty'] = difficulty
+                    player['faction'] = chosen_faction
+                    break
+            
+            data_manager.save_players(players_data, force_save=True)
+            
+            # Donner une ville de départ à l'IA
+            from app.business.island_assignment_service import IslandAssignmentService
+            from app.business.city_service import CityService
+            from app.game_logic import GameLogic
+            
+            island_service = IslandAssignmentService(data_manager)
+            island, city = island_service.suggest_city_for_player(chosen_faction)
+            
+            if island and city:
+                game_logic = GameLogic(data_manager)
+                city_service = CityService(data_manager, game_logic)
+                city_service.claim_city(city['id'], new_player['id'])
+            else:
+                # Pas de ville disponible, mais on a créé le joueur quand même
+                pass
+            
+            return jsonify({
+                'success': True,
+                'ai_player': {
+                    'id': new_player['id'],
+                    'username': new_player['username'],
+                    'personality': personality,
+                    'difficulty': difficulty,
+                    'is_ai': True
+                }
+            })
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/api/ai/players/<player_id>', methods=['DELETE'])
+    def delete_ai_player(player_id):
+        """Supprime un joueur IA et toutes ses villes"""
+        from flask import jsonify
+        from app.data_manager import DataManager
+        import os
+        
+        try:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            data_manager = DataManager(base_dir)
+            
+            # Vérifier que c'est bien une IA
+            players_data = data_manager.load_players()
+            player_to_delete = None
+            
+            for player in players_data.get('players', []):
+                if player['id'] == player_id:
+                    if not player.get('is_ai', False):
+                        return jsonify({
+                            'success': False,
+                            'error': 'Ce joueur n\'est pas une IA'
+                        }), 400
+                    player_to_delete = player
+                    break
+            
+            if not player_to_delete:
+                return jsonify({
+                    'success': False,
+                    'error': 'Joueur IA non trouvé'
+                }), 404
+            
+            # Supprimer les villes du joueur
+            savegame = data_manager.load_savegame()
+            original_city_count = len(savegame.get('cities', []))
+            savegame['cities'] = [c for c in savegame.get('cities', []) if c.get('owner') != player_id]
+            deleted_cities = original_city_count - len(savegame['cities'])
+            data_manager.save_savegame(savegame, force_save=True)
+            
+            # Supprimer le joueur
+            players_data['players'] = [p for p in players_data.get('players', []) if p['id'] != player_id]
+            data_manager.save_players(players_data, force_save=True)
+            
+            # Nettoyer ai_strategies_state.json
+            try:
+                import json
+                ai_state_path = os.path.join(base_dir, 'gamedata', 'ai_strategies_state.json')
+                
+                if os.path.exists(ai_state_path):
+                    with open(ai_state_path, 'r', encoding='utf-8') as f:
+                        ai_state = json.load(f)
+                    
+                    if player_id in ai_state:
+                        del ai_state[player_id]
+                        
+                        with open(ai_state_path, 'w', encoding='utf-8') as f:
+                            json.dump(ai_state, f, indent=2, ensure_ascii=False)
+                        
+                        print(f"✅ {player_id} supprimé de ai_strategies_state.json")
+            except Exception as cleanup_error:
+                print(f"⚠️ Erreur nettoyage ai_strategies_state.json: {cleanup_error}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'IA "{player_to_delete["username"]}" supprimée ({deleted_cities} ville(s) supprimée(s))'
+            })
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
     @app.route('/api/ai/execute', methods=['POST'])
     def execute_ai_cycle():
         """Exécute manuellement un cycle IA (force=True pour ignorer ai_auto_enabled)"""
@@ -564,7 +717,7 @@ def create_app():
         
         try:
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            logs_path = os.path.join(base_dir, 'data', 'ai_console_logs.json')
+            logs_path = os.path.join(base_dir, 'gamedata', 'ai_console_logs.json')
             
             if os.path.exists(logs_path):
                 with open(logs_path, 'r', encoding='utf-8') as f:
@@ -593,7 +746,7 @@ def create_app():
         
         try:
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            logs_path = os.path.join(base_dir, 'data', 'ai_console_logs.json')
+            logs_path = os.path.join(base_dir, 'gamedata', 'ai_console_logs.json')
             
             if os.path.exists(logs_path):
                 with open(logs_path, 'r', encoding='utf-8') as f:

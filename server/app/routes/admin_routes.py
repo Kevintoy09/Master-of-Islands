@@ -10,7 +10,7 @@ Popup/Fenêtre indépendante pour piloter les paramètres temporels du jeu :
 - NOUVEAU: Ticks manuels simplifiés
 """
 
-from flask import Blueprint, jsonify, request, render_template_string
+from flask import Blueprint, jsonify, request, render_template_string, render_template
 from ..services.tick_service import TickService
 import time
 import os
@@ -281,6 +281,24 @@ ADMIN_INTERFACE_HTML = """
                 </div>
             </div>
 
+            <!-- Contrôle IA -->
+            <div class="control-section">
+                <div class="section-title">
+                    🤖 Gestion des Joueurs IA
+                </div>
+                
+                <div style="margin-top: 12px;">
+                    <button class="freq-button" onclick="openAIAdmin()" style="width: 100%; font-size: 1em; padding: 12px; background: linear-gradient(to bottom, #6a5acd, #483d8b);">
+                        🎮 Ouvrir Interface IA
+                    </button>
+                </div>
+
+                <!-- Note -->
+                <div style="background: #FFF3CD; border-left: 4px solid #CD7F32; padding: 8px 12px; margin-top: 12px; font-size: 0.85em; color: #4A3933;">
+                    <strong>ℹ️</strong> Créer, supprimer et contrôler les joueurs IA
+                </div>
+            </div>
+
             <!-- Vitesse de Construction -->
             <div class="control-section">
                 <div class="section-title">
@@ -295,12 +313,12 @@ ADMIN_INTERFACE_HTML = """
                 <!-- Slider de multiplicateur -->
                 <div style="margin-top: 12px;">
                     <div style="display: flex; gap: 12px; align-items: center;">
-                        <input type="range" id="timeMultiplierSlider" min="0.1" max="10" step="0.1" value="1.0" 
+                        <input type="range" id="timeMultiplierSlider" min="0.01" max="10" step="0.01" value="1.0" 
                                style="flex: 1; height: 8px; border-radius: 4px; background: linear-gradient(to right, #2d5016, #DAA520, #8B0000); cursor: pointer;" 
                                oninput="updateMultiplierDisplay()" onchange="saveMultiplier()">
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #4A3933; margin-top: 4px;">
-                        <span>10× plus rapide</span>
+                        <span>100× plus rapide</span>
                         <span>Normal</span>
                         <span>10× plus lent</span>
                     </div>
@@ -311,7 +329,8 @@ ADMIN_INTERFACE_HTML = """
                     <div style="font-size: 0.9em; font-weight: bold; color: #4A3933; margin-bottom: 6px;">
                         Presets rapides :
                     </div>
-                    <div class="frequency-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="frequency-grid" style="grid-template-columns: repeat(7, 1fr);">
+                        <button class="freq-button" onclick="setMultiplier(0.01)">×0.01</button>
                         <button class="freq-button" onclick="setMultiplier(0.1)">×0.1</button>
                         <button class="freq-button" onclick="setMultiplier(0.5)">×0.5</button>
                         <button class="freq-button" onclick="setMultiplier(1.0)">×1 ⭐</button>
@@ -730,16 +749,13 @@ ADMIN_INTERFACE_HTML = """
         // Charger le multiplicateur de temps de construction
         async function loadMultiplier() {
             try {
-                console.log('🔍 Chargement du multiplicateur...');
                 const response = await fetch('/admin/api/construction-multiplier/status');
                 const data = await response.json();
-                console.log('✅ Multiplicateur reçu:', data);
                 
                 if (data.success) {
                     currentMultiplier = data.multiplier || 1.0;
                     document.getElementById('timeMultiplierSlider').value = currentMultiplier;
                     updateMultiplierDisplay();
-                    console.log('✅ Slider mis à jour:', currentMultiplier);
                 }
             } catch (error) {
                 console.error('❌ Erreur chargement multiplicateur:', error);
@@ -752,7 +768,9 @@ ADMIN_INTERFACE_HTML = """
             const display = document.getElementById('currentMultiplier');
             const value = parseFloat(slider.value);
             
-            display.textContent = '×' + value.toFixed(1);
+            // Afficher 2 décimales si < 0.1, sinon 1 décimale
+            const formatted = value < 0.1 ? value.toFixed(2) : value.toFixed(1);
+            display.textContent = '×' + formatted;
             
             // Changer la couleur selon la valeur
             if (value < 0.5) {
@@ -775,8 +793,6 @@ ADMIN_INTERFACE_HTML = """
             const slider = document.getElementById('timeMultiplierSlider');
             const value = parseFloat(slider.value);
             
-            console.log('💾 Sauvegarde du multiplicateur:', value);
-            
             try {
                 const response = await fetch('/admin/api/construction-multiplier', {
                     method: 'POST',
@@ -785,7 +801,6 @@ ADMIN_INTERFACE_HTML = """
                 });
                 
                 const data = await response.json();
-                console.log('✅ Réponse serveur:', data);
                 
                 if (data.success) {
                     currentMultiplier = value;
@@ -805,6 +820,20 @@ ADMIN_INTERFACE_HTML = """
             document.getElementById('timeMultiplierSlider').value = value;
             updateMultiplierDisplay();
             saveMultiplier();
+        }
+
+        // Ouvrir l'interface IA
+        function openAIAdmin() {
+            const width = 1200;
+            const height = 800;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+            
+            window.open(
+                '/admin/ai',
+                'AIAdmin',
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+            );
         }
 
         // Générer des quêtes quotidiennes
@@ -1200,15 +1229,15 @@ def toggle_auto_tick():
         enabled = data.get('enabled', False)
         interval_seconds = data.get('interval_seconds', 1.0)
         
-        # Changer l'intervalle
+        # Changer l'intervalle (redémarre automatiquement si nécessaire)
         tick_service.set_auto_tick_interval(interval_seconds)
         
-        # Démarrer/arrêter
-        if enabled:
+        # Démarrer/arrêter selon la demande
+        if enabled and not tick_service.auto_tick_running:
             tick_service.start_auto_tick()
-        else:
+        elif not enabled and tick_service.auto_tick_running:
             tick_service.stop_auto_tick()
-            
+        
         # Récupérer le statut actuel
         status = tick_service.get_auto_tick_status()
         
@@ -1307,6 +1336,55 @@ def execute_manual_tick():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # ============================================================================
+# AI AUTO ENDPOINTS (pour AIDebugPopup.tsx)
+# ============================================================================
+
+@admin_bp.route('/api/admin/ai/auto-status')
+def get_ai_auto_status():
+    """Get current AI auto-execution status (appelé par AIDebugPopup)"""
+    try:
+        from flask import current_app
+        data_manager = current_app.config.get('DATA_MANAGER')
+        if not data_manager:
+            return jsonify({'success': False, 'error': 'DataManager not available'}), 500
+        
+        enabled = data_manager.is_ai_auto_enabled()
+        
+        return jsonify({
+            'success': True,
+            'ai_auto_enabled': enabled
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/api/admin/ai/toggle-auto', methods=['POST'])
+def toggle_ai_auto():
+    """Toggle AI auto-execution on/off (appelé par AIDebugPopup)"""
+    try:
+        from flask import current_app
+        data_manager = current_app.config.get('DATA_MANAGER')
+        if not data_manager:
+            return jsonify({'success': False, 'error': 'DataManager not available'}), 500
+        
+        # Récupérer l'état actuel
+        settings = data_manager.load_admin_settings()
+        current_state = settings.get('ai_auto_enabled', False)
+        
+        # Inverser l'état
+        new_state = not current_state
+        settings['ai_auto_enabled'] = new_state
+        
+        # Sauvegarder
+        data_manager.save_admin_settings(settings)
+        
+        return jsonify({
+            'success': True,
+            'ai_auto_enabled': new_state
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============================================================================
 # CONSTRUCTION TIME MULTIPLIER ENDPOINTS
 # ============================================================================
 
@@ -1342,9 +1420,9 @@ def set_construction_multiplier():
             
         multiplier = data.get('multiplier', 1.0)
         
-        # Valider le multiplicateur (entre 0.1 et 10)
-        if multiplier < 0.1 or multiplier > 10:
-            return jsonify({'success': False, 'error': 'Multiplier must be between 0.1 and 10'}), 400
+        # Valider le multiplicateur (entre 0.01 et 10)
+        if multiplier < 0.01 or multiplier > 10:
+            return jsonify({'success': False, 'error': 'Multiplier must be between 0.01 and 10'}), 400
         
         settings_file = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'admin_settings.json')
         
@@ -1606,6 +1684,38 @@ def save_json_data(filename):
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(content, f, indent=2, ensure_ascii=False)
         
+        # Si c'est players.json, nettoyer ai_strategies_state.json
+        if filename == 'players.json':
+            try:
+                # Récupérer la liste des IDs de joueurs IA restants
+                remaining_ai_players = set()
+                for player in content.get('players', []):
+                    if player.get('is_ai', False):
+                        remaining_ai_players.add(player.get('id'))
+                
+                # Charger ai_strategies_state.json
+                ai_state_path = os.path.join(os.path.dirname(__file__), '..', '..', 'gamedata', 'ai_strategies_state.json')
+                
+                if os.path.exists(ai_state_path):
+                    with open(ai_state_path, 'r', encoding='utf-8') as f:
+                        ai_state = json.load(f)
+                    
+                    # Supprimer les entrées des joueurs qui n'existent plus
+                    players_to_remove = [pid for pid in ai_state.keys() if pid not in remaining_ai_players]
+                    
+                    if players_to_remove:
+                        for pid in players_to_remove:
+                            del ai_state[pid]
+                        
+                        # Sauvegarder ai_strategies_state.json nettoyé
+                        with open(ai_state_path, 'w', encoding='utf-8') as f:
+                            json.dump(ai_state, f, indent=2, ensure_ascii=False)
+                        
+                        print(f"✅ Nettoyage ai_strategies_state.json: {len(players_to_remove)} joueurs supprimés")
+            
+            except Exception as e:
+                print(f"⚠️ Erreur nettoyage ai_strategies_state.json: {e}")
+        
         return jsonify({
             'success': True,
             'message': f'Fichier {filename} sauvegardé avec succès (backup créé)'
@@ -1678,3 +1788,13 @@ def reset_json_data(filename):
         
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# =============================================================================
+# INTERFACE D'ADMINISTRATION DES IA
+# =============================================================================
+
+@admin_bp.route('/ai')
+def ai_admin_interface():
+    """Interface d'administration des joueurs IA"""
+    return render_template('ai_admin.html')
