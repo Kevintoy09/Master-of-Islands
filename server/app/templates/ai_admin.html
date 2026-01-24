@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -399,7 +399,7 @@
                     <tr>
                         <th>Username</th>
                         <th>Personnalité</th>
-                        <th>Difficulté</th>
+                        <th>Preset Auto</th>
                         <th>Villes</th>
                         <th>Statut</th>
                         <th>Actions</th>
@@ -414,6 +414,75 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- === CYCLES AUTOMATIQUES IA === -->
+        <div class="actions" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h2 style="margin-bottom: 15px;">🤖 Cycles Automatiques IA</h2>
+            <p style="color: #6c757d; margin-bottom: 20px;">Configurez l'exécution automatique des IA à chaque tick</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div style="background: white; padding: 15px; border-radius: 8px;">
+                    <strong>Statut Système:</strong> <span id="auto-cycles-enabled">-</span>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px;">
+                    <strong>IA Configurées:</strong> <span id="auto-cycles-players">-</span>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px;">
+                    <strong>Actives maintenant:</strong> <span id="auto-cycles-active">-</span>
+                </div>
+            </div>
+            
+            <div class="button-group" style="margin-bottom: 20px;">
+                <button class="btn-primary" onclick="toggleAutoCycles()" id="toggle-auto-cycles-btn">
+                    ▶️ Activer
+                </button>
+                <button class="btn-success" onclick="showPresetsModal()">
+                    📋 Gérer Presets
+                </button>
+                <button class="btn-warning" onclick="loadAutoCyclesConfig()">
+                    🔄 Rafraîchir
+                </button>
+            </div>
+        </div>
+        
+        <!-- Modal Presets -->
+        <div id="presets-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+            <div style="background: white; max-width: 700px; margin: 50px auto; border-radius: 8px; padding: 30px; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">📋 Gestion des Presets</h2>
+                    <button onclick="closePresetsModal()" class="btn-secondary" style="padding: 5px 15px;">✖ Fermer</button>
+                </div>
+                
+                <button onclick="generateDefaultPresets()" class="btn-success" style="margin-bottom: 20px;">
+                    🎲 Générer Presets Par Défaut
+                </button>
+                
+                <table style="width: 100%; margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Tick/Cycle</th>
+                            <th>Plages</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="presets-list">
+                        <tr><td colspan="4">Chargement...</td></tr>
+                    </tbody>
+                </table>
+                
+                <h3>Créer un Preset</h3>
+                <div style="margin-top: 15px;">
+                    <input type="text" id="preset-name" placeholder="Nom (ex: ultra-hard)" 
+                           style="width: 100%; padding: 10px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                    <input type="number" id="preset-tick-per-cycle" placeholder="Tick par cycle (ex: 1, 3, 6...)" 
+                           step="0.5" min="0.5" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                    <input type="text" id="preset-time-slots" placeholder="Plages (ex: 8h-12h, 18h-22h)" 
+                           style="width: 100%; padding: 10px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 4px;">
+                    <button onclick="createPreset()" class="btn-primary">Créer</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -425,10 +494,9 @@
             loadAIPlayers();
             loadAIAutoStatus();
             
-            // Rafraîchir stats toutes les 10 secondes
+            // Rafraîchir stats toutes les 10 secondes (SANS recharger la liste des IAs)
             setInterval(() => {
                 loadStats();
-                loadAIPlayers();
                 loadAIAutoStatus();
             }, 10000);
             
@@ -552,6 +620,13 @@
                     aiConsoleLogs[ai.id] = [];
                 }
                 
+                // Créer le select pour le preset
+                const currentPreset = ai.ai_preset || '';
+                const presetOptions = autoCyclesConfig && autoCyclesConfig.presets ? 
+                    Object.keys(autoCyclesConfig.presets).map(name => 
+                        `<option value="${name}" ${name === currentPreset ? 'selected' : ''}>${name}</option>`
+                    ).join('') : '';
+                
                 return `
                     <tr>
                         <td colspan="7">
@@ -559,7 +634,10 @@
                                 <div style="display: flex; gap: 20px; align-items: center; flex: 1;">
                                     <strong>${ai.username}</strong>
                                     <span class="personality-badge personality-${ai.personality}">${ai.personality}</span>
-                                    <span>${ai.difficulty}</span>
+                                    <select onchange="updateAIPreset('${ai.id}', this.value)" style="padding: 5px; border: 2px solid #ddd; border-radius: 4px;">
+                                        <option value="">-- Aucun --</option>
+                                        ${presetOptions}
+                                    </select>
                                     <span>${ai.city_count || 0} ville(s)</span>
                                     <span class="status-${ai.is_online ? 'online' : 'offline'}">${ai.is_online ? '● En ligne' : '○ Hors ligne'}</span>
                                 </div>
@@ -641,18 +719,12 @@
                 aiConsoleLogs[aiId].shift();
             }
             
-            // Mettre à jour l'affichage si la console est visible
+            // Mettre à jour l'affichage uniquement si nouveaux logs
             const consoleContent = document.getElementById(`console-content-${aiId}`);
-            if (consoleContent) {
+            if (consoleContent && consoleContent.children.length !== aiConsoleLogs[aiId].length) {
                 consoleContent.innerHTML = aiConsoleLogs[aiId].map(log => 
                     `<div class="ai-console-line"><span class="ai-console-time">${log.time}</span><span class="${log.type}">${log.message}</span></div>`
                 ).join('');
-                
-                // Auto-scroll vers le bas
-                const consoleEl = document.getElementById(`console-${aiId}`);
-                if (consoleEl.classList.contains('show')) {
-                    consoleEl.scrollTop = consoleEl.scrollHeight;
-                }
             }
         }
         
@@ -748,6 +820,28 @@
             }
         }
         
+        async function updateAIPreset(playerId, preset) {
+            try {
+                const response = await fetch(`/api/ai-auto-cycles/players/${playerId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ preset: preset || null })
+                });
+                
+                if (response.ok) {
+                    showMessage(`Preset "${preset || 'aucun'}" assigné à ${playerId} !`);
+                    loadAutoCyclesConfig();
+                    loadAIPlayers();
+                } else {
+                    showMessage('Erreur lors de l\'assignation', 'error');
+                    loadAIPlayers(); // Recharger pour réinitialiser le select
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+                loadAIPlayers(); // Recharger pour réinitialiser le select
+            }
+        }
+        
         async function spawnMissingAIs() {
             if (!confirm('Spawn des IA manquantes (minimum 1 par île) ?')) return;
             
@@ -785,20 +879,9 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Afficher les actions dans les consoles
-                    if (data.actions && data.actions.length > 0) {
-                        data.actions.forEach(action => {
-                            let type = 'ai-console-info';
-                            if (action.success) {
-                                type = 'ai-console-success';
-                            } else if (action.action === 'wait') {
-                                type = 'ai-console-warning';
-                            } else {
-                                type = 'ai-console-error';
-                            }
-                            addConsoleLog(action.player_id, action.message, type);
-                        });
-                    }
+                    // Ne pas afficher ici, le polling récupérera les logs automatiquement
+                    // pour éviter les doublons
+                    showMessage(`Cycle IA exécuté : ${data.executed_count} IA(s), ${data.total_actions} action(s)`);
                     
                     loadStats();
                     loadAIPlayers();
@@ -831,6 +914,251 @@
                 showLoading(false);
             }
         }
+        
+        // === CYCLES AUTOMATIQUES IA ===
+        let autoCyclesConfig = null;
+        
+        async function loadAutoCyclesConfig() {
+            try {
+                const response = await fetch('/api/ai-auto-cycles/status');
+                autoCyclesConfig = await response.json();
+                
+                // Update status
+                document.getElementById('auto-cycles-enabled').textContent = 
+                    autoCyclesConfig.enabled ? '✅ Activé' : '❌ Désactivé';
+                document.getElementById('auto-cycles-players').textContent = 
+                    Object.keys(autoCyclesConfig.player_configs || {}).length;
+                document.getElementById('auto-cycles-active').textContent = 
+                    autoCyclesConfig.active_now || 0;
+                
+                // Update button
+                const btn = document.getElementById('toggle-auto-cycles-btn');
+                btn.textContent = autoCyclesConfig.enabled ? '⏸️ Désactiver' : '▶️ Activer';
+                btn.className = autoCyclesConfig.enabled ? 'btn-warning' : 'btn-success';
+                
+                // Update table
+                updateConfigTable();
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        async function toggleAutoCycles() {
+            try {
+                const newState = !autoCyclesConfig.enabled;
+                const response = await fetch('/api/ai-auto-cycles/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: newState })
+                });
+                
+                if (response.ok) {
+                    showMessage(`Système ${newState ? 'activé' : 'désactivé'} !`);
+                    loadAutoCyclesConfig();
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        function showPresetsModal() {
+            document.getElementById('presets-modal').style.display = 'block';
+            loadPresetsList();
+        }
+        
+        function closePresetsModal() {
+            document.getElementById('presets-modal').style.display = 'none';
+        }
+        
+        async function loadPresetsList() {
+            if (!autoCyclesConfig) return;
+            
+            const tbody = document.getElementById('presets-list');
+            tbody.innerHTML = '';
+            
+            for (const [name, config] of Object.entries(autoCyclesConfig.presets || {})) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${name}</td>
+                    <td>${config.tick_per_cycle}</td>
+                    <td>${config.time_slots ? config.time_slots.join(', ') : 'Toujours'}</td>
+                    <td>
+                        <button class="btn-danger btn-sm" onclick="deletePreset('${name}')">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+        
+        async function generateDefaultPresets() {
+            if (!confirm('Générer les presets par défaut ?')) return;
+            
+            try {
+                const response = await fetch('/api/ai-auto-cycles/presets/generate-defaults', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showMessage('Presets générés !');
+                    loadAutoCyclesConfig();
+                    loadPresetsList();
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        async function createPreset() {
+            const name = document.getElementById('preset-name').value.trim();
+            const tickPerCycle = parseFloat(document.getElementById('preset-tick-per-cycle').value);
+            const timeSlots = document.getElementById('preset-time-slots').value
+                .split(',').map(s => s.trim()).filter(s => s);
+            
+            if (!name || !tickPerCycle) {
+                showMessage('Nom et tick_per_cycle requis !', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/ai-auto-cycles/presets/${name}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tick_per_cycle: tickPerCycle,
+                        time_slots: timeSlots.length > 0 ? timeSlots : null
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage(`Preset "${name}" créé !`);
+                    document.getElementById('preset-name').value = '';
+                    document.getElementById('preset-tick-per-cycle').value = '';
+                    document.getElementById('preset-time-slots').value = '';
+                    loadAutoCyclesConfig();
+                    loadPresetsList();
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deletePreset(name) {
+            if (!confirm(`Supprimer le preset "${name}" ?`)) return;
+            
+            try {
+                const response = await fetch(`/api/ai-auto-cycles/presets/${name}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage(`Preset "${name}" supprimé !`);
+                    loadAutoCyclesConfig();
+                    loadPresetsList();
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        function showAssignModal() {
+            document.getElementById('assign-modal').style.display = 'block';
+            loadPresetOptions();
+        }
+        
+        function closeAssignModal() {
+            document.getElementById('assign-modal').style.display = 'none';
+        }
+        
+        function loadPresetOptions() {
+            if (!autoCyclesConfig) return;
+            
+            const select = document.getElementById('player-preset');
+            select.innerHTML = '<option value="">-- Choisir un preset --</option>';
+            
+            for (const name of Object.keys(autoCyclesConfig.presets || {})) {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            }
+        }
+        
+        async function assignPreset() {
+            const playerId = document.getElementById('player-id').value.trim();
+            const preset = document.getElementById('player-preset').value;
+            
+            if (!playerId) {
+                showMessage('ID joueur requis !', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/ai-auto-cycles/players/${playerId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ preset: preset || null })
+                });
+                
+                if (response.ok) {
+                    showMessage(`Preset assigné à ${playerId} !`);
+                    document.getElementById('player-id').value = '';
+                    loadAutoCyclesConfig();
+                    closeAssignModal();
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateConfigTable() {
+            const tbody = document.getElementById('auto-cycles-config-table');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            if (!autoCyclesConfig || !autoCyclesConfig.player_configs || 
+                Object.keys(autoCyclesConfig.player_configs).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #6c757d;">Aucune configuration</td></tr>';
+                return;
+            }
+            
+            for (const [playerId, config] of Object.entries(autoCyclesConfig.player_configs)) {
+                const preset = autoCyclesConfig.presets[config.preset] || {};
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${playerId}</td>
+                    <td>${config.preset}</td>
+                    <td>${preset.tick_per_cycle || 'N/A'}</td>
+                    <td>${preset.time_slots ? preset.time_slots.join(', ') : 'Toujours'}</td>
+                    <td>
+                        <button class="btn-danger btn-sm" onclick="removeConfig('${playerId}')">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+        
+        async function removeConfig(playerId) {
+            if (!confirm(`Retirer la config de ${playerId} ?`)) return;
+            
+            try {
+                const response = await fetch(`/api/ai-auto-cycles/players/${playerId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage(`Config retirée pour ${playerId} !`);
+                    loadAutoCyclesConfig();
+                }
+            } catch (error) {
+                showMessage(`Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        // Load auto-cycles config on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAutoCyclesConfig();
+        });
     </script>
 </body>
 </html>
