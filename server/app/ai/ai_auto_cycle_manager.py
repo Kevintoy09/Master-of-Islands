@@ -22,15 +22,32 @@ class AIAutoCycleManager:
         if os.path.exists(self.config_file):
             with open(self.config_file, 'r', encoding='utf-8') as f:
                 return json.load(f)
-        return {
-            "enabled": False,
-            "presets": {}
+        
+        # Initialiser avec les presets par défaut
+        default_config = {
+            "enabled": True,
+            "presets": {
+                "casual": {"tick_per_cycle": 12, "time_slots": None},
+                "easy": {"tick_per_cycle": 6, "time_slots": None},
+                "medium": {"tick_per_cycle": 3, "time_slots": None},
+                "hard": {"tick_per_cycle": 1, "time_slots": None},
+                "extreme": {"tick_per_cycle": 0.5, "time_slots": None},
+                "perso": {"tick_per_cycle": 1, "time_slots": []}
+            }
         }
+        
+        # Sauvegarder le fichier par défaut
+        self._save_config_data(default_config)
+        return default_config
     
     def _save_config(self):
         """Sauvegarde la configuration dans le fichier JSON"""
+        self._save_config_data(self.config)
+    
+    def _save_config_data(self, config_data: dict):
+        """Sauvegarde des données de configuration dans le fichier JSON"""
         with open(self.config_file, 'w', encoding='utf-8') as f:
-            json.dump(self.config, f, indent=2, ensure_ascii=False)
+            json.dump(config_data, f, indent=2, ensure_ascii=False)
     
     def _load_players(self) -> dict:
         """Charge les données des joueurs"""

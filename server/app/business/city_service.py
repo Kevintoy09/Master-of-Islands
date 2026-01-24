@@ -90,9 +90,9 @@ class CityService:
         for resource, amount in actual_cost.items():
             city_resources[resource] = city_resources.get(resource, 0) - amount
         
-        # Calculer le temps d'upgrade avec bonus architecte
+        # Calculer le temps d'upgrade avec bonus architecte + multiplicateur global
         upgrade_time = levels[next_level - 1].get('construction_time', 30)
-        actual_time = self.building_manager.apply_architect_bonuses_to_time(upgrade_time, city)
+        actual_time = self.game_logic.apply_architect_bonuses_to_building_time(upgrade_time, city)
         
         # Lancer le timer d'amélioration
         building['upgrade_in_progress'] = True
@@ -348,11 +348,13 @@ class CityService:
         building = self.building_manager.create_building(slot_id, building_name, level=1)
         buildings_data = self.data_manager.load_buildings()
         
-        # Récupérer le temps de base et appliquer les bonus architecte
+        # Récupérer le temps de base et appliquer les bonus architecte + multiplicateur global
         building_config = buildings_data[building_name]
         levels = building_config.get('levels', [])
         base_time = levels[0].get('construction_time', 30) if levels else 30
-        actual_time = self.building_manager.apply_architect_bonuses_to_time(base_time, city)
+        
+        # Utiliser GameLogic pour appliquer TOUS les bonus (multiplicateur global + architecte + faction)
+        actual_time = self.game_logic.apply_architect_bonuses_to_building_time(base_time, city)
         
         # Démarrer la construction avec le temps réduit
         building.start_construction(actual_time)
@@ -361,7 +363,9 @@ class CityService:
         city['buildings'].append(building.to_dict())
         
         # Sauvegarder IMMÉDIATEMENT (force_save=True) pour éviter la boucle IA
-        if not self.data_manager.save_savegame(savegame_data, force_save=True):
+        save_success = self.data_manager.save_savegame(savegame_data, force_save=True)
+        
+        if not save_success:
             raise GameValidationError("Impossible de sauvegarder")
         
         return {

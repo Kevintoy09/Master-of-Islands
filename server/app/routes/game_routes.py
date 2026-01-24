@@ -30,6 +30,8 @@ from ..core.decorators import handle_errors, validate_json
 from ..core.exceptions import GameValidationError
 from ..city_constants import DEFAULT_CITY_RESOURCES
 from ..business.player_resources_service import PlayerResourcesService
+import json
+import os
 
 # Initialiser le blueprint principal
 game_bp = Blueprint('game', __name__, url_prefix='/api/game')
@@ -58,6 +60,23 @@ def get_time_control():
     return jsonify({
         'time_multiplier': time_manager.get_time_multiplier(),
         'display_info': time_manager.get_display_info()
+    })
+
+@game_bp.route('/game-time', methods=['GET'])
+@handle_errors
+def get_game_time():
+    """
+    Retourne la date et l'heure réelles du jeu (temps réel système).
+    Les ticks sont indépendants et servent uniquement à la synchronisation.
+    """
+    from datetime import datetime
+    
+    now = datetime.now()
+    
+    return jsonify({
+        'game_time': now.isoformat(),
+        'game_time_timestamp': int(now.timestamp() * 1000),  # En millisecondes
+        'formatted': now.strftime('%d %B %Y - %Hh%M:%S')
     })
 
 @game_bp.route('/time-control', methods=['POST'])
@@ -512,6 +531,146 @@ def get_gold_production():
         import traceback
         traceback.print_exc()
         return jsonify({'error': 'Erreur lors de la récupération des données d\'or'}), 500
+
+
+@game_bp.route('/military-expenses', methods=['GET'])
+@handle_errors
+def get_military_expenses():
+    """Récupère les détails des dépenses militaires pour le joueur spécifié."""
+    try:
+        # Obtenir l'ID du joueur depuis les paramètres de requête
+        player_id = request.args.get('player_id')
+        if not player_id:
+            return jsonify({'error': 'player_id requis en paramètre'}), 400
+        
+        # Charger les données
+        savegame_data = data_manager.load_savegame()
+        if not savegame_data:
+            return jsonify({'error': 'Données de jeu non trouvées'}), 404
+        
+        # Charger les données du joueur pour les bonus
+        players_data = data_manager.load_players()
+        player_data = next((p for p in players_data.get('players', []) if p['id'] == player_id), None)
+        
+        # Charger unit_stats.json
+        unit_stats_path = os.path.join(data_manager.base_dir, 'data', 'unit_stats.json')
+        with open(unit_stats_path, 'r', encoding='utf-8') as f:
+            unit_stats_data = json.load(f)
+        
+        classical_units = unit_stats_data.get('classical_age', {})
+        
+        # Compter toutes les unités du joueur
+        unit_details = {}
+        total_cost_per_hour = 0
+        
+        for city in savegame_data.get('cities', []):
+            if city.get('owner') == player_id:
+                military_data = city.get('military', {})
+                garrison = military_data.get('garrison', {})
+                player_garrison = garrison.get(player_id, {})
+                
+                for unit_type, unit_data in player_garrison.items():
+                    count = unit_data.get('quantity', 0)
+                    if count > 0 and unit_type in classical_units:
+                        unit_info = classical_units[unit_type]
+                        gold_cost_per_hour = unit_info.get('gold_cost_per_hour', 0)
+                        unit_name = unit_info.get('name', unit_type)
+                        
+                        if unit_type not in unit_details:
+                            unit_details[unit_type] = {
+                                'unit_id': unit_type,
+                                'unit_name': unit_name,
+                                'count': 0,
+                                'gold_cost_per_hour_each': gold_cost_per_hour,
+                                'total_cost_per_hour': 0
+                            }
+                        
+                        unit_details[unit_type]['count'] += count
+                        unit_details[unit_type]['total_cost_per_hour'] += count * gold_cost_per_hour
+                        total_cost_per_hour += count * gold_cost_per_hour
+        
+        # Calculer les bonus de réduction
+        bonus_reduction_percent = 0
+        bonus_sources = []
+        
+        if player_data:
+            # Bonus de faction (iron = -10%)
+            if player_data.get('faction') == 'iron':
+                bonus_reduction_percent += 10
+                bonus_sources.append({'source': 'Faction Fer', 'reduction': 10})
+            
+            # Bonus de recherche (economie_militaire = -10%)
+            unlocked_research = player_data.get('unlocked_research', [])
+            if 'economie_militaire' in unlocked_research:
+                bonus_reduction_percent += 10
+                bonus_sources.append({'source': 'Recherche Économie Militaire', 'reduction': 10})
+        
+        # Appliquer la réduction
+        total_cost_after_bonus = total_cost_per_hour * (1 - bonus_reduction_percent / 100)
+        
+        # Convertir le dict en liste
+        units_list = list(unit_details.values())
+        
+        result = {
+            'total_cost_per_hour': total_cost_per_hour,
+            'bonus_reduction_percent': bonus_reduction_percent,
+            'total_cost_after_bonus': total_cost_after_bonus,
+            'bonus_sources': bonus_sources,
+            'units': units_list
+        }
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        print(f"❌ [API] Erreur get_military_expenses: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Erreur lors de la récupération des dépenses militaires: {str(e)}'}), 500
+
+
+@game_bp.route('/faction-bonuses', methods=['GET'])
+@handle_errors
+def get_faction_bonuses():
+    """Récupère les bonus de faction pour un joueur."""
+    try:
+        player_id = request.args.get('player_id')
+        if not player_id:
+            return jsonify({'error': 'player_id requis en paramètre'}), 400
+        
+        # Charger les données du joueur
+        players_data = data_manager.load_players()
+        player_data = next((p for p in players_data.get('players', []) if p['id'] == player_id), None)
+        
+        if not player_data:
+            return jsonify({'error': 'Joueur non trouvé'}), 404
+        
+        faction = player_data.get('faction', '')
+        bonuses = {
+            'faction': faction,
+            'military_cost_reduction': 0,
+            'unit_production_time_reduction': 0,
+            'bonuses_description': []
+        }
+        
+        # Bonus spécifiques à la faction Fer
+        if faction == 'iron':
+            bonuses['military_cost_reduction'] = 10
+            bonuses['unit_production_time_reduction'] = 10
+            bonuses['bonuses_description'].append({
+                'name': 'Faction Fer - Maîtrise Militaire',
+                'effects': [
+                    'Réduction de 10% des coûts de maintenance des unités',
+                    'Réduction de 10% du temps de production des unités'
+                ]
+            })
+        
+        return jsonify(bonuses)
+        
+    except Exception as e:
+        print(f"❌ [API] Erreur get_faction_bonuses: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Erreur lors de la récupération des bonus de faction: {str(e)}'}), 500
 
 
 @legacy_game_bp.route('/players', methods=['GET'])

@@ -134,8 +134,9 @@ def attack_wall_group():
             }), 500
         
         # Calculer max_hp depuis le niveau du mur
-        from app.utils.wall_group_manager import WallGroupManager
-        wall_manager = WallGroupManager("data")
+        from app.utils.wall_group_manager import get_wall_group_manager
+        from app.data_manager import DataManager
+        wall_manager = get_wall_group_manager(data_manager=DataManager('data'))
         wall_level = wall_group.get('wall_level', 1)
         max_hp = wall_manager.get_max_hp(wall_level)
         

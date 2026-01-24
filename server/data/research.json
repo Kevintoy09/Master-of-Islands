@@ -222,6 +222,19 @@
       "exclusive_group": "specialisation_science"
     },
     {
+      "id": "planification_urbaine",
+      "level": 6,
+      "name": "Planification Urbaine",
+      "age": "Pierre",
+      "description": "Permet de construire 2 bâtiments simultanément dans une ville.",
+      "cost": { "research_points": 250, "gold": 100 },
+      "prerequisites": ["philosophie"],
+      "effect": { 
+        "max_concurrent_buildings": 2
+      },
+      "category": "science"
+    },
+    {
       "id": "outils_acier",
       "level": 6,
       "name": "Outils en Acier",
@@ -374,6 +387,17 @@
       "cost": { "research_points": 200, "gold": 100 },
       "prerequisites": ["maitrise_epees"],
       "effect": { "unlock_building": "Muraille" },
+      "category": "warfare"
+    },
+    {
+      "id": "economie_militaire",
+      "level": 4,
+      "name": "Économie Militaire",
+      "age": "Pierre",
+      "description": "Optimise la gestion des troupes et réduit les coûts de maintenance de 10%.",
+      "cost": { "research_points": 180, "gold": 90 },
+      "prerequisites": ["muraille"],
+      "effect": { "military_cost_reduction": 10 },
       "category": "warfare"
     },
     {

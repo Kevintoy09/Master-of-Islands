@@ -16,19 +16,9 @@ from typing import Dict, List, Tuple, Any
 class WallGroupManager:
     """Gestionnaire des groupes de murs pour le système de fortification"""
     
-    def __init__(self, data_dir: str):
-        self.data_dir = data_dir
-        self.buildings_data = self._load_buildings_data()
-    
-    def _load_buildings_data(self) -> Dict[str, Any]:
-        """Charge les données des bâtiments"""
-        buildings_path = os.path.join(self.data_dir, 'buildings.json')
-        try:
-            with open(buildings_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"❌ Erreur chargement buildings.json: {e}")
-            return {}
+    def __init__(self, data_manager):
+        self.data_manager = data_manager
+        self.buildings_data = self.data_manager.load_buildings()
     
     def get_wall_stats(self, wall_level: int) -> Dict[str, Any]:
         """Récupère les stats d'un niveau de muraille"""
@@ -278,11 +268,16 @@ class WallGroupManager:
         }
 
 
-def get_wall_group_manager(data_dir: str = None) -> WallGroupManager:
+def get_wall_group_manager(data_dir: str = None, data_manager = None) -> WallGroupManager:
     """Factory function pour obtenir une instance du gestionnaire"""
+    # Si data_manager est fourni, l'utiliser directement
+    if data_manager:
+        return WallGroupManager(data_manager)
+    
+    # Sinon fallback sur l'ancien système (à éviter)
+    from app.data_manager import DataManager
     if data_dir is None:
-        # Default path relative to this file
         current_dir = os.path.dirname(os.path.abspath(__file__))
         data_dir = os.path.join(current_dir, '..', '..', 'data')
     
-    return WallGroupManager(data_dir)
+    return WallGroupManager(DataManager(data_dir))

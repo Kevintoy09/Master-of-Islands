@@ -157,8 +157,8 @@ class BattleTimerService:
             # 2. Le joueur n'a pas agi → Vérifier si l'auto-IA est activée
             print(f"⚠️ [BATTLE-TIMER] Joueur {current_player} n'a PAS agi → Vérification auto-IA")
             
-            # Vérifier le paramètre ai_auto_enabled dans admin_settings.json
-            ai_auto_enabled = self._is_ai_auto_enabled()
+            # Vérifier le paramètre ai_auto_enabled via DataManager
+            ai_auto_enabled = self.data_manager.is_ai_auto_enabled()
             print(f"🎛️ [BATTLE-TIMER] Auto-IA activée : {ai_auto_enabled}")
             
             if not ai_auto_enabled:
@@ -243,32 +243,6 @@ class BattleTimerService:
                 return True
         
         return False
-    
-    def _is_ai_auto_enabled(self) -> bool:
-        """
-        Vérifie si l'auto-IA est activée dans admin_settings.json
-        
-        Returns: True si ai_auto_enabled est activé
-        """
-        try:
-            import os
-            data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data')
-            settings_path = os.path.join(data_dir, 'admin_settings.json')
-            
-            if not os.path.exists(settings_path):
-                # Fichier absent → Considérer comme activé par défaut pour rétrocompatibilité
-                print(f"⚠️ [BATTLE-TIMER] admin_settings.json absent, auto-IA activée par défaut")
-                return True
-            
-            with open(settings_path, 'r', encoding='utf-8') as f:
-                settings = json.load(f)
-            
-            # Par défaut True si la clé n'existe pas (rétrocompatibilité)
-            return settings.get('ai_auto_enabled', True)
-            
-        except Exception as e:
-            print(f"❌ [BATTLE-TIMER] Erreur lecture ai_auto_enabled: {e}")
-            return True  # En cas d'erreur, activer par défaut
     
     def _auto_deploy_units(self, battle_id: str, player_id: str) -> bool:
         """

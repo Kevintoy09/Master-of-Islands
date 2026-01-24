@@ -168,7 +168,7 @@ class QuestService:
             else:
                 return json.dumps(obj, ensure_ascii=False)
         
-        file_obj.write(compact_dump(data))
+        file_obj.write(compact_dump(data).rstrip())
         file_obj.write("\n")
     
     def _initialize_player_quests(self, username: str) -> Dict:
@@ -177,6 +177,7 @@ class QuestService:
             "daily_quests": {
                 "generated_date": None,
                 "player_level_snapshot": 1,
+                "initial_snapshot": {},  # Snapshot des valeurs au début de la journée
                 "quests": []
             },
             "main_quests": {
@@ -532,7 +533,14 @@ class QuestService:
                     quest['rewards_claimed'] = False  # Initialement non réclamée
                     newly_completed.append(quest_id)
                     has_changes = True
-                    # Note: completed_main_quests sera mis à jour quand la récompense sera réclamée
+                    
+                    # 🔒 SÉCURITÉ : Ajouter immédiatement à completed_main_quests
+                    # pour éviter que la quête soit reproposée avant la réclamation de la récompense
+                    completed_main_quests = username_data.get('completed_main_quests', [])
+                    if quest_id not in completed_main_quests:
+                        completed_main_quests.append(quest_id)
+                        username_data['completed_main_quests'] = completed_main_quests
+                        print(f"✅ Quête {quest_id} ajoutée à completed_main_quests pour {username}")
             
             # Sauvegarder si des changements
             if has_changes:
@@ -628,9 +636,13 @@ class QuestService:
             # Générer de nouvelles quêtes quotidiennes
             new_daily_quests = self.generate_daily_quests(username)
             
+            # 📸 Créer un snapshot pour mesurer les deltas quotidiens
+            initial_snapshot = self._create_daily_snapshot(username)
+            
             # Mettre à jour la structure
             username_data['daily_quests'] = {
                 'generated_date': datetime.now().strftime('%Y-%m-%d'),
+                'initial_snapshot': initial_snapshot,  # ← Nouveau snapshot
                 'quests': new_daily_quests
             }
             
@@ -658,6 +670,49 @@ class QuestService:
         except Exception as e:
             print(f"Erreur lecture stat {stat_name} pour {username}: {e}")
             return 0
+    
+    def _create_daily_snapshot(self, username: str) -> Dict:
+        """
+        Crée un snapshot des statistiques du joueur pour calculer les deltas quotidiens
+        Retourne: {population_max, research_points, victories, units_killed}
+        """
+        try:
+            snapshot = {}
+            
+            # Charger players.json
+            with open(self.players_path, 'r', encoding='utf-8') as f:
+                players_data = json.load(f)
+            
+            players_list = players_data.get('players', [])
+            player = next((p for p in players_list if p.get('username') == username), None)
+            
+            if player:
+                # Stats depuis players.json
+                snapshot['research_points'] = player.get('research_points', 0)
+                snapshot['victories'] = player.get('victories', 0)
+                snapshot['units_killed'] = player.get('total_units_killed', 0)
+                
+                # Population max depuis savegame.json
+                player_id = player.get('id')
+                try:
+                    with open(self.savegame_path, 'r', encoding='utf-8') as f:
+                        savegame = json.load(f)
+                    
+                    max_pop = 0
+                    for city in savegame.get('cities', []):
+                        if city.get('owner') == player_id:
+                            pop = city.get('resources', {}).get('population_total', 0)
+                            max_pop = max(max_pop, pop)
+                    
+                    snapshot['population_max'] = max_pop
+                except Exception as e:
+                    print(f"Erreur lecture population pour snapshot: {e}")
+                    snapshot['population_max'] = 0
+            
+            return snapshot
+        except Exception as e:
+            print(f"Erreur création snapshot pour {username}: {e}")
+            return {}
     
     def enrich_quest_data(self, quest_progress: Dict, username: str = None) -> Dict:
         """
@@ -691,13 +746,23 @@ class QuestService:
             # Format complet (prioritaire)
             current_progress = quest_progress.get('progress', 0)
             
-            # 🎯 SYNC AUTO: Pour certaines quêtes, synchroniser avec players.json
-            if username and quest_id == 'mil_win_battles':
-                current_progress = self._get_player_stat(username, 'victories')
-                quest_progress['progress'] = current_progress
-            elif username and quest_id == 'mil_kill_units':
-                current_progress = self._get_player_stat(username, 'total_units_killed')
-                quest_progress['progress'] = current_progress
+            # 🎯 SYNC AUTO: Pour certaines quêtes basées sur des stats cumulatives,
+            # calculer le DELTA depuis le snapshot initial
+            if username:
+                quest_data = self.load_player_quests(username)
+                snapshot = quest_data.get('daily_quests', {}).get('initial_snapshot', {})
+                
+                if quest_id == 'mil_win_battles':
+                    total_victories = self._get_player_stat(username, 'victories')
+                    initial_victories = snapshot.get('victories', total_victories)
+                    current_progress = max(0, total_victories - initial_victories)  # Delta quotidien
+                    quest_progress['progress'] = current_progress
+                
+                elif quest_id == 'mil_kill_units':
+                    total_units_killed = self._get_player_stat(username, 'total_units_killed')
+                    initial_units_killed = snapshot.get('units_killed', total_units_killed)
+                    current_progress = max(0, total_units_killed - initial_units_killed)  # Delta quotidien
+                    quest_progress['progress'] = current_progress
             
             targets = quest_progress.get('targets', [0, 0, 0])
             target = targets[0] if targets else 0
@@ -821,9 +886,13 @@ class QuestService:
         player_level = self.calculate_player_level(username)
         new_quests = self.generate_daily_quests(username)
         
+        # 📸 Créer un snapshot des statistiques actuelles pour mesurer les deltas
+        initial_snapshot = self._create_daily_snapshot(username)
+        
         quest_data['daily_quests'] = {
             "generated_date": today,
             "player_level_snapshot": player_level,
+            "initial_snapshot": initial_snapshot,  # ← Nouveau snapshot
             "quests": new_quests
         }
         
@@ -1021,10 +1090,12 @@ class QuestService:
                         quest['rewards_claimed'] = True
                         quest_found = True
                         
-                        # Ajouter à la liste des quêtes principales complétées
+                        # 🔒 VÉRIFICATION : S'assurer que la quête est bien dans completed_main_quests
+                        # (normalement déjà ajoutée lors de check_and_complete_main_quests)
                         if 'completed_main_quests' not in quest_data:
                             quest_data['completed_main_quests'] = []
                         if quest_id not in quest_data['completed_main_quests']:
+                            print(f"⚠️ Quête {quest_id} pas dans completed_main_quests lors du claim, ajout de sécurité")
                             quest_data['completed_main_quests'].append(quest_id)
                         break
             

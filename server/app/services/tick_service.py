@@ -12,8 +12,14 @@ import json
 import os
 from typing import Dict, Any
 
+# Verrou global pour empêcher le démarrage simultané de plusieurs threads auto-tick
+_AUTO_TICK_START_LOCK = threading.Lock()
+
 class TickService:
     """Service de tick unifié - Manuel ET Auto"""
+    
+    # Verrou global pour éviter les exécutions simultanées
+    _execution_lock = threading.Lock()
     
     def __init__(self, data_manager):
         self.data_manager = data_manager
@@ -28,18 +34,30 @@ class TickService:
         # === AUTO-TICK INTÉGRÉ ===
         self.auto_tick_running = False
         self.auto_tick_thread = None
+        self.auto_tick_stop_event = threading.Event()  # Pour arrêt propre
         self.auto_tick_interval = 10.0
         self.auto_tick_enabled = False
         self._load_auto_tick_settings()
         
-        # Démarrer auto-tick si activé dans les paramètres
-        if self.auto_tick_enabled:
+        print(f"[TICK-DEBUG] Initialisation TickService: enabled={self.auto_tick_enabled}, running={self.auto_tick_running}")
+        
+        # Démarrer auto-tick si activé dans le fichier de config (une seule fois)
+        if self.auto_tick_enabled and not self.auto_tick_running:
+            print("[TICK-DEBUG] Démarrage auto-tick...")
             self.start_auto_tick()
     
     def _load_auto_tick_settings(self):
         """Charge les paramètres d'auto-tick depuis auto_tick_settings.json"""
         try:
+            # Essayer d'abord le nouveau chemin (data/)
             settings_file = os.path.join(self.data_manager.base_dir, 'data', 'auto_tick_settings.json')
+            
+            # Si pas trouvé, essayer l'ancien chemin (racine server/)
+            if not os.path.exists(settings_file):
+                old_settings_file = os.path.join(self.data_manager.base_dir, 'auto_tick_settings.json')
+                if os.path.exists(old_settings_file):
+                    settings_file = old_settings_file
+            
             if os.path.exists(settings_file):
                 with open(settings_file, 'r', encoding='utf-8') as f:
                     settings = json.load(f)
@@ -73,6 +91,17 @@ class TickService:
         Returns:
             dict: Résumé complet des changements
         """
+        # VERROU : Un seul tick à la fois
+        if not TickService._execution_lock.acquire(blocking=False):
+            return {'error': 'Tick already running'}
+        
+        try:
+            return self._execute_tick_internal()
+        finally:
+            TickService._execution_lock.release()
+    
+    def _execute_tick_internal(self) -> Dict[str, Any]:
+        """Exécution interne du tick (protégée par verrou)"""
         results = {
             'cities_updated': 0,
             'players_updated': 0,
@@ -84,6 +113,15 @@ class TickService:
             # === CHARGER LES DONNÉES UNE SEULE FOIS ===
             savegame_data = self.data_manager.load_savegame()
             players_data = self.data_manager.load_players()
+            
+            # Incrémenter le compteur de tick
+            current_tick = savegame_data.get('current_tick', 0)
+            savegame_data['current_tick'] = current_tick + 1
+            
+            # Capturer le timestamp de modification du fichier savegame AU MOMENT DU CHARGEMENT
+            import os
+            savegame_path = self.data_manager._get_file_path('savegame.json')
+            initial_mtime = os.path.getmtime(savegame_path) if os.path.exists(savegame_path) else 0
             
             if not savegame_data or not players_data:
                 results['errors'].append("Données manquantes")
@@ -174,25 +212,65 @@ class TickService:
             except Exception as e:
                 results['errors'].append(f"Erreur production militaire: {e}")
             
+            # === SAUVEGARDER LA PRODUCTION AVANT L'IA ===
+            # L'IA va charger le fichier, construire et sauvegarder
+            # Il faut que nos changements de production soient déjà dans le fichier
+            self.data_manager.save_savegame(savegame_data, force_save=True)
+            
+            # Sauvegarder aussi les players (or, recherche) AVANT le reload
+            if results['players_updated'] > 0:
+                self.data_manager.save_players(players_data, force_save=True)
+            
+            self.data_manager.invalidate_savegame_cache()
+            
             # === TRAITEMENT DES IA ===
-            # Exécuter les cycles de décision des IA
             try:
+                from app.ai.ai_auto_cycle_manager import AIAutoCycleManager
                 from app.ai.ai_controller import AIController
+                
+                gamedata_dir = os.path.join(self.data_manager.base_dir, 'gamedata')
+                auto_cycle_manager = AIAutoCycleManager(gamedata_dir)
                 ai_controller = AIController()
-                ai_results = ai_controller.execute_all_ais()
-                results['ai_executed'] = ai_results.get('executed_count', 0)
-                results['ai_actions'] = ai_results.get('total_actions', 0)
+                
+                current_tick = savegame_data.get('current_tick', 0)
+                
+                # Si auto-cycle activé, utiliser le système de preset
+                if auto_cycle_manager.is_enabled():
+                    # NE PAS passer savegame_data : l'IA charge, modifie et sauvegarde elle-même
+                    auto_cycle_stats = auto_cycle_manager.execute_ai_cycles_for_tick(current_tick, ai_controller, None)
+                    results['ai_executed'] = auto_cycle_stats.get('executed', 0)
+                    results['ai_auto_cycles'] = auto_cycle_stats
+                else:
+                    # Sinon, exécuter normalement toutes les IA
+                    # NE PAS passer savegame_data : l'IA charge, modifie et sauvegarde elle-même
+                    ai_results = ai_controller.execute_all_ais(savegame_data=None)
+                    results['ai_executed'] = ai_results.get('executed_count', 0)
+                    results['ai_actions'] = ai_results.get('total_actions', 0)
+                    
             except Exception as e:
                 results['errors'].append(f"Erreur IA: {e}")
             
-            # === SAUVEGARDER UNE SEULE FOIS ===
-            if results['cities_updated'] > 0:
-                # Force la sauvegarde immédiate pour les auto-ticks
-                force_save = self.auto_tick_running  # Force seulement si c'est un auto-tick
-                self.data_manager.save_savegame(savegame_data, force_save=force_save)
-            if results['players_updated'] > 0:
-                force_save = self.auto_tick_running
-                self.data_manager.save_players(players_data, force_save=force_save)
+            # === RECHARGER SAVEGAME APRÈS L'IA ===
+            # L'IA a sauvegardé ses constructions, on recharge pour les récupérer
+            # Il faut recharger pour ne pas écraser ses changements
+            savegame_data = self.data_manager.load_savegame()
+            players_data = self.data_manager.load_players(use_cache=False)
+            
+            # === VÉRIFIER LES CONSTRUCTIONS APRÈS RECHARGEMENT ===
+            # L'IA peut avoir lancé de nouvelles constructions, il faut les vérifier aussi
+            try:
+                from app.game_logic import GameLogic
+                game_logic = GameLogic(self.data_manager)
+                game_logic.update_construction_statuses_in_memory(savegame_data)
+            except Exception as e:
+                results['errors'].append(f"Erreur constructions post-IA: {e}")
+            
+            # === SAUVEGARDER APRÈS VÉRIFICATION CONSTRUCTIONS ===
+            # On a déjà sauvegardé les changements de production et players avant le reload
+            # Ici on sauvegarde seulement les constructions terminées trouvées après reload
+            self.data_manager.save_savegame(savegame_data, force_save=True)
+            
+            # Les players sont déjà sauvegardés avant le reload (pas besoin de resauvegarder)
             
             self.logger.info(f"✅ Tick unifié: {results['cities_updated']} villes, {results['players_updated']} joueurs")
             return results
@@ -295,6 +373,84 @@ class TickService:
         
         return city_production
     
+    def _calculate_military_cost(self, player_id: str, cities: list) -> float:
+        """
+        Calcule le coût militaire total en or pour un joueur avec bonus de réduction
+        
+        Coût = Σ (nombre_unités × gold_cost_per_hour) × (1 - bonus%) / TICKS_PER_HOUR
+        Avec 1 tick = 10 secondes, TICKS_PER_HOUR = 360
+        
+        Bonus:
+        - Faction iron: -5%
+        - Recherche economie_militaire: -10%
+        
+        Args:
+            player_id: ID du joueur
+            cities: Liste de toutes les villes
+        
+        Returns:
+            float: Coût en or pour ce tick (après bonus)
+        """
+        try:
+            # Charger les données du joueur pour les bonus
+            players_data = self.data_manager.load_players()
+            player_data = next((p for p in players_data.get('players', []) if p['id'] == player_id), None)
+            
+            # Charger unit_stats.json
+            unit_stats_path = os.path.join(self.data_manager.base_dir, 'data', 'unit_stats.json')
+            with open(unit_stats_path, 'r', encoding='utf-8') as f:
+                unit_stats_data = json.load(f)
+            
+            classical_units = unit_stats_data.get('classical_age', {})
+            
+            total_cost_per_hour = 0
+            total_units = 0
+            
+            # Parcourir toutes les villes du joueur
+            for city in cities:
+                if city.get('owner') == player_id:
+                    military_data = city.get('military', {})
+                    garrison = military_data.get('garrison', {})
+                    player_garrison = garrison.get(player_id, {})
+                    
+                    # Compter chaque type d'unité
+                    for unit_type, unit_data in player_garrison.items():
+                        count = unit_data.get('quantity', 0)
+                        if count > 0 and unit_type in classical_units:
+                            unit_info = classical_units[unit_type]
+                            gold_cost_per_hour = unit_info.get('gold_cost_per_hour', 0)
+                            total_cost_per_hour += count * gold_cost_per_hour
+                            total_units += count
+            
+            # Calculer les bonus de réduction
+            bonus_reduction_percent = 0
+            if player_data:
+                # Bonus de faction (iron = -10%)
+                if player_data.get('faction') == 'iron':
+                    bonus_reduction_percent += 10
+                
+                # Bonus de recherche (economie_militaire = -10%)
+                unlocked_research = player_data.get('unlocked_research', [])
+                if 'economie_militaire' in unlocked_research:
+                    bonus_reduction_percent += 10
+            
+            # Appliquer la réduction
+            total_cost_after_bonus = total_cost_per_hour * (1 - bonus_reduction_percent / 100)
+            
+            # Convertir en coût par tick
+            TICKS_PER_HOUR = 360
+            cost_per_tick = total_cost_after_bonus / TICKS_PER_HOUR
+            
+            if total_units > 0:
+                bonus_str = f" (-{bonus_reduction_percent}%)" if bonus_reduction_percent > 0 else ""
+                logging.info(f"💰 [MILITARY] Player {player_id}: {total_units} unités, {total_cost_per_hour:.2f} or/h{bonus_str} = {cost_per_tick:.4f} or/tick")
+            
+            return cost_per_tick
+            
+        except Exception as e:
+            logging.error(f"❌ Erreur calcul coût militaire player {player_id}: {e}")
+            return 0
+    
     def _process_player_tick(self, player: Dict, cities: list) -> Dict[str, float]:
         """
         Traite tous les calculs pour UN joueur
@@ -355,6 +511,12 @@ class TickService:
                             except Exception as e:
                                 logging.warning(f"Erreur chargement bonus recherche écriture: {e}")
                         
+                        # 📜 Bonus de faction papyrus : +10% productivité
+                        player_faction = player.get('faction')
+                        if player_faction == 'papyrus':
+                            research_bonus_multiplier *= 1.1  # +10% pour faction papyrus
+                            logging.info(f"[FACTION BONUS] Player {player.get('id')} - Papyrus: +10% productivité recherche (multiplicateur={research_bonus_multiplier})")
+                        
                         # Conversion: 1 tick = 10 sec, donc 360 ticks/heure
                         TICKS_PER_HOUR = 360
                         points_per_worker_per_tick = points_per_worker_per_hour / TICKS_PER_HOUR
@@ -371,13 +533,22 @@ class TickService:
             player['gold'] = round(current_gold + total_gold_production, 4)
             player_production['gold'] = total_gold_production
         
+        # === 2. COÛT MILITAIRE (DÉPENSES EN OR) ===
+        military_cost_per_tick = self._calculate_military_cost(player_id, cities)
+        if military_cost_per_tick > 0:
+            current_gold = player.get('gold', 0)
+            new_gold = round(current_gold - military_cost_per_tick, 4)
+            player['gold'] = new_gold
+            player_production['military_cost'] = military_cost_per_tick
+            logging.debug(f"[MILITARY COST] Player {player_id}: -{military_cost_per_tick:.4f} gold/tick")
+        
         if total_research_production > 0:
             current_research = player.get('research_points', 0)
             # Arrondir à 4 décimales pour éviter l'accumulation d'erreurs de virgule flottante
             player['research_points'] = round(current_research + total_research_production, 4)
             player_production['research_points'] = total_research_production
         
-        # === HOOK QUÊTE: Mise à jour de la population (valeur absolue) ===
+        # === HOOK QUÊTE: Mise à jour de la population (DELTA quotidien) ===
         try:
             from app.services.quest_service import quest_service
             username = player.get('username')
@@ -389,23 +560,34 @@ class TickService:
                         pop = city.get('resources', {}).get('population_total', 0)
                         max_population = max(max_population, pop)
                 
-                # Mettre à jour la quête avec set_value pour refléter la population actuelle
+                # Charger le snapshot initial pour calculer le delta
+                quest_data = quest_service.load_player_quests(username)
+                snapshot = quest_data.get('daily_quests', {}).get('initial_snapshot', {})
+                initial_population = snapshot.get('population_max', max_population)  # Si pas de snapshot, on suppose que c'est le début
+                
+                # Calculer la CROISSANCE depuis le début de la journée
+                population_delta = max(0, max_population - initial_population)
+                
+                # Mettre à jour la quête avec le DELTA (croissance quotidienne)
                 if max_population > 0:
                     quest_service.update_quest_progress(
                         username=username,
                         quest_id='eco_reach_population',
-                        set_value=int(max_population)
+                        set_value=int(population_delta)  # ✅ DELTA au lieu de valeur absolue
                     )
                 
-                # === HOOK QUÊTE: Points de recherche accumulés (valeur absolue) ===
+                # === HOOK QUÊTE: Points de recherche accumulés (DELTA quotidien) ===
                 research_points = int(player.get('research_points', 0))
+                initial_research = snapshot.get('research_points', research_points)  # Si pas de snapshot
+                research_delta = max(0, research_points - initial_research)
+                
                 if research_points > 0:
-                    # Mettre à jour les deux quêtes possibles (ancien et nouveau nom)
+                    # Mettre à jour les deux quêtes possibles avec le DELTA
                     for quest_id in ['sci_reach_research_level', 'sci_accumulate_research_points']:
                         result = quest_service.update_quest_progress(
                             username=username,
                             quest_id=quest_id,
-                            set_value=research_points
+                            set_value=research_delta  # ✅ DELTA au lieu de valeur absolue
                         )
         except Exception as e:
             # Ne jamais bloquer le tick principal si la mise à jour des quêtes échoue
@@ -532,19 +714,23 @@ class TickService:
     # ===================================================================
     
     def start_auto_tick(self):
-        """Démarre l'auto-tick intégré"""
-        if self.auto_tick_running:
-            return False
-            
-        # S'assurer qu'aucun thread précédent n'existe
-        if self.auto_tick_thread and self.auto_tick_thread.is_alive():
-            self.stop_auto_tick()
-            time.sleep(0.5)  # Laisser le temps au thread de s'arrêter
-            
-        self.auto_tick_running = True
-        self.auto_tick_thread = threading.Thread(target=self._auto_tick_loop, daemon=True)
-        self.auto_tick_thread.start()
-        return True
+        """Démarre l'auto-tick intégré avec protection contre double démarrage"""
+        with _AUTO_TICK_START_LOCK:
+            # Double vérification dans le lock
+            if self.auto_tick_running:
+                return False
+                
+            # S'assurer qu'aucun thread précédent n'existe
+            if self.auto_tick_thread and self.auto_tick_thread.is_alive():
+                self.stop_auto_tick()
+                time.sleep(0.5)  # Laisser le temps au thread de s'arrêter
+                
+            # Réinitialiser l'event et démarrer
+            self.auto_tick_stop_event.clear()
+            self.auto_tick_running = True
+            self.auto_tick_thread = threading.Thread(target=self._auto_tick_loop, daemon=True)
+            self.auto_tick_thread.start()
+            return True
         
     def stop_auto_tick(self):
         """Arrête l'auto-tick intégré"""
@@ -552,21 +738,28 @@ class TickService:
             return False
             
         self.auto_tick_running = False
+        self.auto_tick_stop_event.set()  # Signaler au thread de s'arrêter
         
         # Attendre que le thread se termine proprement
         if self.auto_tick_thread and self.auto_tick_thread.is_alive():
             try:
-                self.auto_tick_thread.join(timeout=2.0)  # Max 2 secondes d'attente
-            except:
-                pass  # Arrêt silencieux
+                self.auto_tick_thread.join(timeout=3.0)  # 3 secondes d'attente
+            except Exception as e:
+                print(f"[AUTO-TICK] ⚠️ Timeout lors de l'arrêt: {e}")
             
         self.auto_tick_thread = None
         return True
         
     def set_auto_tick_interval(self, seconds: float):
-        """Change l'intervalle d'auto-tick"""
+        """Change l'intervalle d'auto-tick et redémarre le thread si nécessaire"""
         self.auto_tick_interval = float(seconds)
-        pass  # Changement silencieux
+        
+        # Si un thread est actif, le redémarrer pour appliquer le nouvel intervalle
+        if self.auto_tick_running and self.auto_tick_thread:
+            self.stop_auto_tick()
+            time.sleep(0.3)  # Attente plus longue pour être sûr de l'arrêt
+            self.start_auto_tick()
+        
         return True
         
     def get_auto_tick_status(self) -> Dict[str, Any]:
@@ -583,10 +776,15 @@ class TickService:
         """Boucle d'auto-tick avec timing précis"""
         tick_count = 0
         next_tick_time = time.time() + self.auto_tick_interval
+        last_tick_time = time.time()
         
-        while self.auto_tick_running:
+        while not self.auto_tick_stop_event.is_set():
             current_time = time.time()
             tick_count += 1
+            
+            # Temps depuis le dernier tick
+            time_since_last = current_time - last_tick_time
+            last_tick_time = current_time
             
             try:
                 # Exécuter le tick
@@ -595,10 +793,14 @@ class TickService:
                 
                 execution_time = time.time() - tick_start
                 cities_updated = result.get('cities_updated', 0)
-                # Logs désactivés pour éviter le spam
+                
+                # Logs de performance (commentés pour production propre)
+                # print(f"[AUTO-TICK] ⏱️  Tick #{tick_count} | Intervalle: {time_since_last:.2f}s | Exec: {execution_time:.3f}s | Villes: {cities_updated}")
                     
             except Exception as e:
                 print(f"❌ [AUTO-TICK] Erreur: {e}")
+                import traceback
+                traceback.print_exc()
             
             # Calculer le temps d'attente pour respecter l'intervalle exact
             next_tick_time += self.auto_tick_interval
@@ -606,10 +808,14 @@ class TickService:
             
             # Si on est trop en retard, recaler
             if sleep_time <= 0:
+                drift = abs(sleep_time)
+                print(f"[AUTO-TICK] ⚠️ Dérive détectée: {drift:.2f}s - Recalage")
                 next_tick_time = time.time() + self.auto_tick_interval
                 sleep_time = self.auto_tick_interval
             
-            time.sleep(sleep_time)
+            # Utiliser wait() pour pouvoir être interrompu immédiatement
+            if self.auto_tick_stop_event.wait(timeout=sleep_time):
+                break
     
     def _update_building_bonuses(self, city: Dict):
         """Met à jour les bonus de production des bâtiments pour une ville"""

@@ -24,7 +24,11 @@
       "moral_bonus": 30,
       "aura_radius": 3
     },
+    "satisfaction": {
+      "base": 7
+    },
     "progression": {
+      "satisfaction_per_level": 0.33,
       "offensive_bonus_per_level": 6,
       "defensive_bonus_per_level": 2,
       "movement_bonus_per_level": 0.3,
@@ -75,7 +79,11 @@
       "moral_bonus": 35,
       "aura_radius": 3
     },
+    "satisfaction": {
+      "base": 6
+    },
     "progression": {
+      "satisfaction_per_level": 0.33,
       "offensive_bonus_per_level": 4,
       "defensive_bonus_per_level": 4,
       "movement_bonus_per_level": 0.3,
@@ -126,7 +134,11 @@
       "moral_bonus": 40,
       "aura_radius": 4
     },
+    "satisfaction": {
+      "base": 5
+    },
     "progression": {
+      "satisfaction_per_level": 0.25,
       "offensive_bonus_per_level": 5,
       "defensive_bonus_per_level": 3,
       "movement_bonus_per_level": 0.5,
@@ -177,7 +189,11 @@
       "moral_bonus": 45,
       "aura_radius": 4
     },
+    "satisfaction": {
+      "base": 3
+    },
     "progression": {
+      "satisfaction_per_level": 0.25,
       "offensive_bonus_per_level": 3,
       "defensive_bonus_per_level": 7,
       "movement_bonus_per_level": 0.2,

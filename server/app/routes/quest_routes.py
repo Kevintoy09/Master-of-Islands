@@ -173,14 +173,22 @@ def get_main_quests(username):
                 # FUSION : Garder l'état des quêtes existantes qui sont dans les nouvelles
                 old_quests_map = {q.get('id'): q for q in all_quests}
                 merged_quests = []
+                completed_list = username_data.get('completed_main_quests', [])
                 
                 for new_quest in new_quests:
                     quest_id = new_quest.get('id')
+                    
+                    # 🔒 SÉCURITÉ : Ne JAMAIS réintroduire une quête complétée
+                    if quest_id in completed_list:
+                        print(f"⚠️ Quête {quest_id} ignorée (déjà dans completed_main_quests)")
+                        continue
+                    
                     # Si la quête existait déjà, garder son état de complétion
                     if quest_id in old_quests_map:
                         old_quest = old_quests_map[quest_id]
                         new_quest['is_completed'] = old_quest.get('is_completed', False)
                         new_quest['progress'] = old_quest.get('progress', 0)
+                        new_quest['rewards_claimed'] = old_quest.get('rewards_claimed', False)
                     merged_quests.append(new_quest)
                 
                 # Mettre à jour avec les quêtes fusionnées
@@ -382,9 +390,11 @@ def claim_main_reward():
         # Marquer comme réclamée
         quest_to_claim['rewards_claimed'] = True
         
-        # Ajouter à la liste completed_main_quests maintenant que la récompense est réclamée
+        # 🔒 VÉRIFICATION : S'assurer que la quête est bien dans completed_main_quests
+        # (normalement déjà ajoutée lors de check_and_complete_main_quests)
         completed_main_quests = username_data.get('completed_main_quests', [])
         if quest_id not in completed_main_quests:
+            print(f"⚠️ Quête {quest_id} pas dans completed_main_quests, ajout maintenant")
             completed_main_quests.append(quest_id)
             username_data['completed_main_quests'] = completed_main_quests
         

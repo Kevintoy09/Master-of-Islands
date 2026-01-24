@@ -62,12 +62,13 @@ class ResearchService:
                 break
         
         if not player:
-            return {"unlocked_research": [], "research_points": 0, "research_effects": {}}
+            return {"unlocked_research": [], "research_points": 0, "research_effects": {}, "faction": None}
             
         return {
             "unlocked_research": player.get("unlocked_research", []),
             "research_points": player.get("research_points", 0),
-            "research_effects": player.get("research_effects", {})
+            "research_effects": player.get("research_effects", {}),
+            "faction": player.get("faction")
         }
     
     def can_unlock_research(self, player_id: str, research_id: str, research_data: Dict) -> Dict[str, Any]:
@@ -288,6 +289,13 @@ class ResearchService:
                 current_bonuses[resource] = current_bonuses.get(resource, 0) + bonus
                 
             research_effects["resource_bonuses"] = current_bonuses
+        
+        # Limite de constructions simultanées
+        if "max_concurrent_buildings" in effects:
+            max_value = effects["max_concurrent_buildings"]
+            # Garder la valeur maximale si plusieurs recherches apportent ce bonus
+            current_max = research_effects.get("max_concurrent_buildings", 1)
+            research_effects["max_concurrent_buildings"] = max(current_max, max_value)
             
         # Autres effets peuvent être ajoutés ici...
         

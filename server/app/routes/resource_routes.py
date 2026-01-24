@@ -193,10 +193,10 @@ def assign_workers_to_site(island_id, site_type):
     if not site_data:
         raise GameValidationError(f'Type de site inconnu: {site_type}')
     
-    # Récupérer le niveau réel du site depuis savegame.json (PAS universe.json)
-    resource_sites = savegame_data.get('resource_sites', {})
+    # Récupérer le niveau réel du site depuis resource_sites.json
+    resource_sites_data = data_manager.load_resource_sites()
     site_key = f"{island_id}_{site_type}"
-    site_info = resource_sites.get(site_key, {})
+    site_info = resource_sites_data['sites'].get(site_key, {})
     current_level = site_info.get('level', 1)
     
     # CORRECTION : Si le site est en cours d'amélioration, utiliser le niveau de destination

@@ -275,6 +275,15 @@ def start_production():
         
         # Calculer le temps de production ajusté
         time_reduction = min(0.55, (barracks_level - 1) * 0.05)
+        
+        # Bonus de faction Fer : -10% sur le temps de production
+        owner_id = city.get('owner')
+        players_data = data_manager.load_players()
+        player = next((p for p in players_data.get('players', []) if p.get('id') == owner_id), None)
+        if player and player.get('faction') == 'iron':
+            time_reduction += 0.10  # Bonus supplémentaire de 10%
+            time_reduction = min(0.75, time_reduction)  # Cap maximum à 75%
+        
         base_time = unit_stats.get('production_time', 60)
         adjusted_time = int(base_time * (1 - time_reduction) * quantity)
         
@@ -357,6 +366,14 @@ def start_batch_production():
         # Calculer les coûts totaux et temps cumulé
         cost_reduction = min(0.45, (barracks_level - 1) * 0.05)
         time_reduction = min(0.55, (barracks_level - 1) * 0.05)
+        
+        # Bonus de faction Fer : -10% sur le temps de production
+        owner_id = city.get('owner')
+        players_data = data_manager.load_players()
+        player = next((p for p in players_data.get('players', []) if p.get('id') == owner_id), None)
+        if player and player.get('faction') == 'iron':
+            time_reduction += 0.10  # Bonus supplémentaire de 10%
+            time_reduction = min(0.75, time_reduction)  # Cap maximum à 75%
         
         total_cost = {'wood': 0, 'stone': 0, 'iron': 0, 'horse': 0, 'population': 0}
         total_time = 0

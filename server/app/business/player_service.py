@@ -128,7 +128,7 @@ class PlayerService:
         try:
             import os
             import json
-            profiles_file = os.path.join(self.data_manager.data_dir, 'player_profiles.json')
+            profiles_file = os.path.join(self.data_manager.gamedata_dir, 'player_profiles.json')
             if os.path.exists(profiles_file):
                 with open(profiles_file, 'r', encoding='utf-8') as f:
                     profiles_data = json.load(f)
@@ -213,5 +213,6 @@ class PlayerService:
             'gold': player.get('gold', 0),
             'diamonds': player.get('diamonds', 0),
             'transport_ships_total': transport_ships_total,
-            'transport_ships_available': transport_ships_available
+            'transport_ships_available': transport_ships_available,
+            'faction': player.get('faction')
         }

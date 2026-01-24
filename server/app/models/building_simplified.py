@@ -48,16 +48,19 @@ class Building:
         result = {
             'slot_id': self.slot_id,
             'name': self.name,
-            'level': self.level,
-            'status': self.status
+            'level': self.level
         }
         
+        # Ajouter les champs de construction dans le même ordre que les joueurs
         if self.construction_end:
             result['construction_end'] = self.construction_end
         if self.started_at:
             result['started_at'] = self.started_at
         if self.duration:
             result['duration'] = self.duration
+        
+        # status en dernier pour correspondre au format joueur
+        result['status'] = self.status
             
         return result
     

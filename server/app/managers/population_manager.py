@@ -316,6 +316,76 @@ class PopulationManager:
             'dt': dt
         }
     
+    def _calculate_heroes_satisfaction_bonus(self, city) -> int:
+        """
+        Calcule le bonus de satisfaction apporté par les héros en garnison dans la ville.
+        
+        Le bonus est directement lu depuis player_heroes.json (satisfaction_bonus).
+        Le status est vérifié dans la section military/heroes de la ville (savegame.json).
+        Cette valeur est calculée et stockée lors de la création du héros et à chaque level up.
+        
+        Returns:
+            int: Total du bonus de satisfaction (somme de tous les héros en garrison)
+        """
+        try:
+            city_id = city.get('id')
+            owner_id = city.get('owner')
+            
+            if not owner_id or not city_id:
+                return 0
+            
+            # Récupérer les héros de la garnison de la ville (depuis savegame.json)
+            military_data = city.get('military', {})
+            heroes_garrison = military_data.get('heroes', {})
+            
+            if not heroes_garrison:
+                return 0
+            
+            # Charger player_heroes.json pour les stats (satisfaction_bonus)
+            gamedata_dir = os.path.join(os.path.dirname(self.data_dir), 'gamedata')
+            player_heroes_path = os.path.join(gamedata_dir, 'player_heroes.json')
+            
+            if not os.path.exists(player_heroes_path):
+                return 0
+            
+            with open(player_heroes_path, 'r', encoding='utf-8') as f:
+                player_heroes_data = json.load(f)
+            
+            # Vérifier si le joueur a des héros
+            if owner_id not in player_heroes_data:
+                return 0
+            
+            player_heroes = player_heroes_data[owner_id].get('heroes', {})
+            total_satisfaction_bonus = 0
+            
+            # Parcourir les héros de la garnison de la ville
+            for hero_instance_id, hero_garrison_data in heroes_garrison.items():
+                # Vérifier le status dans savegame.json (garrison uniquement)
+                status = hero_garrison_data.get('status', '')
+                
+                if status != 'garrison':
+                    continue
+                
+                # Récupérer les données complètes du héros depuis player_heroes.json
+                hero_data = player_heroes.get(hero_instance_id)
+                
+                if not hero_data:
+                    continue
+                
+                # Lire directement le bonus de satisfaction stocké
+                hero_satisfaction = hero_data.get('satisfaction_bonus', 0)
+                total_satisfaction_bonus += hero_satisfaction
+                
+                hero_id = hero_data.get('hero_id', 'unknown')
+                hero_level = hero_data.get('current_level', 1)
+                logging.info(f"🦸 Héros {hero_id} (lvl {hero_level}) en garnison à {city.get('name')}: +{hero_satisfaction} satisfaction")
+            
+            return total_satisfaction_bonus
+            
+        except Exception as e:
+            logging.warning(f"Erreur calcul bonus satisfaction héros: {e}")
+            return 0
+    
     def calculate_satisfaction_factors(self, city, cereal_consumption):
         """Calcule tous les facteurs de satisfaction."""
         self.ensure_city_satisfaction_structure(city)
@@ -336,6 +406,11 @@ class PopulationManager:
                 if level > 0:
                     thermes_bonus += self.get_building_effect('Thermes', level, 'satisfaction_bonus')
         bonus['thermes'] = thermes_bonus
+        
+        # 🦸 NOUVEAU : Bonus des héros en garnison
+        heroes_bonus = self._calculate_heroes_satisfaction_bonus(city)
+        if heroes_bonus > 0:
+            bonus['heroes'] = heroes_bonus
         
         # Bonus des recherches du joueur (Puits, Philosophie, etc.)
         research_satisfaction_bonus = 0
@@ -369,6 +444,21 @@ class PopulationManager:
         
         if research_satisfaction_bonus > 0:
             bonus['research'] = research_satisfaction_bonus
+        
+        # 🌾 Bonus de faction céréales : +10 satisfaction pour toutes les villes
+        if owner_id:
+            try:
+                gamedata_dir = os.path.join(os.path.dirname(self.data_dir), 'gamedata')
+                players_path = os.path.join(gamedata_dir, 'players.json')
+                
+                with open(players_path, 'r', encoding='utf-8') as f:
+                    players_data = json.load(f)
+                
+                player = next((p for p in players_data.get('players', []) if p.get('id') == owner_id), None)
+                if player and player.get('faction') == 'cereal':
+                    bonus['faction'] = 10  # +10 satisfaction pour faction céréales
+            except Exception as e:
+                logging.warning(f"Erreur chargement faction satisfaction: {e}")
         
         # Malus de population
         malus['population'] = self.get_population_malus(city)
@@ -550,141 +640,10 @@ class PopulationManager:
         city_name = city.get('name', 'Unknown')
         logging.info(f"🔄 [{city_name}] Population: {current_pop} → {new_population} (fraction: {pop_fractional:.3f}) | Growth: {growth_amount:.3f}")
 
-    def _update_ai_city_population(self, city, elapsed_seconds=1):
-        """
-        Mise à jour simplifiée pour les villes IA
-        - Croissance basée uniquement sur le taux de l'Hôtel de Ville
-        - Pas de satisfaction/peste
-        - Nourriture requise (cereal >= cereal_needed)
-        """
-        import math
-        
-        resources = city['resources']
-        dt = elapsed_seconds / BASE_SECONDS_PER_UPDATE
-        
-        # 1. Capacités alimentaires
-        food_capacities = self.calculate_food_capacities(city)
-        population_food_status = self.calculate_population_food_status(city, food_capacities)
-        
-        # 2. Consommation céréales
-        cereal_consumption = self.calculate_cereal_consumption(city, population_food_status, dt)
-        
-        # 3. Appliquer consommation
-        current_cereal = resources.get('cereal', 0)
-        cereal_needed = cereal_consumption['total_needed']
-        
-        if current_cereal >= cereal_needed:
-            resources['cereal'] = current_cereal - cereal_needed
-        
-        # 4. Croissance/Décroissance selon disponibilité nourriture
-        growth_rate = 0.0
-        starving = population_food_status.get('starving', 0)
-        
-        if current_cereal >= cereal_needed:
-            # Nourriture OK → croissance normale
-            townhall_level = self._get_townhall_level(city)
-            growth_rate = self._get_townhall_growth_rate(townhall_level)
-        elif starving > 0:
-            # Famine → décroissance proportionnelle aux affamés
-            # Taux de mort: -2 pop/sec par affamé (plus rapide que la croissance)
-            famine_death_rate = -2.0
-            growth_rate = famine_death_rate * (starving / max(1, population_food_status['total']))
-        
-        # 5. Appliquer croissance/décroissance
-        pop_fractional = resources.get('population_fractional', 0.0)
-        growth_amount = growth_rate * dt
-        total_growth = pop_fractional + growth_amount
-        population_gained = math.floor(total_growth)
-        pop_fractional = total_growth - population_gained
-        
-        current_pop = int(resources.get('population_total', 0))
-        new_population = current_pop + population_gained
-        
-        # Limites
-        max_population = self.calculate_population_limit(city)
-        food_capacity = food_capacities['total_capacity']
-        
-        # En famine, la population ne peut pas descendre sous food_capacity
-        if starving > 0 and new_population < food_capacity:
-            new_population = food_capacity
-            pop_fractional = 0.0
-        
-        if new_population > max_population:
-            new_population = max_population
-            pop_fractional = 0.0
-        if new_population < 0:
-            new_population = 0
-            pop_fractional = 0.0
-        
-        resources['population_total'] = int(new_population)
-        resources['population_fractional'] = pop_fractional
-        
-        # 6. Pas de peste pour IA
-        city['has_plague'] = False
-        city['hygiene_percent'] = 100
-        
-        # 7. Mise à jour satisfaction_details (pour le frontend)
-        real_growth_per_hour = growth_rate * 360  # Conversion hab/tick → hab/h
-        
-        # Calculer les vrais facteurs de satisfaction (incluant les recherches)
-        satisfaction_factors = self.calculate_satisfaction_factors(city, cereal_consumption)
-        
-        city['satisfaction_details'] = {
-            'base': 50,
-            'bonus': satisfaction_factors['bonus'],
-            'malus': satisfaction_factors['malus'],
-            'total': city.get('satisfaction', 50),
-            'growth_rate': growth_rate,  # En hab/tick (pour le calcul réel)
-            'real_growth_per_hour': real_growth_per_hour  # En hab/h (pour l'affichage)
-        }
-        
-        # 8. Mise à jour données compatibilité frontend
-        # Toutes les données de population/nourriture sont dans resources, pas de duplication
-        resources['population_unfed'] = population_food_status['starving']
-        resources['pop_nourished_by_townhall'] = population_food_status['fed_by_townhall']
-        resources['cereal_consumption_per_tick'] = cereal_consumption['consumption_per_tick']  # Consommation par tick (pas total_needed qui est * dt)
-        resources['windmill_cereal_bonus'] = cereal_consumption['windmill_bonus']  # Bonus du moulin (slider)
-        
-        # 9. Population libre
-        workers_assigned = city.get('workers_assigned', {})
-        total_workers = sum(workers_assigned.values())
-        resources['population_free'] = max(0, int(new_population) - total_workers)
-        
-        return city
-    
-    def _get_townhall_level(self, city) -> int:
-        """Récupère le niveau de l'Hôtel de Ville"""
-        buildings = city.get('buildings', [])
-        for building in buildings:
-            if building.get('name') == 'Hôtel de Ville' and building.get('status') == 'Terminé':
-                return building.get('level', 1)
-        return 1
-    
-    def _get_townhall_growth_rate(self, level: int) -> float:
-        """Taux de croissance selon niveau Hôtel de Ville (habitants/heure)"""
-        growth_rates = {
-            1: 1.0,
-            2: 1.5,
-            3: 2.0,
-            4: 2.5,
-            5: 3.0,
-            6: 3.5,
-            7: 4.0,
-            8: 4.5,
-            9: 5.0,
-            10: 5.5
-        }
-        return growth_rates.get(level, 1.0)
-    
     def update_city_population(self, city, elapsed_seconds=1):
         """Méthode principale de mise à jour de la population - Version refactorisée."""
         if not city.get('resources') or not city.get('owner'):
             return city
-        
-        # === LOGIQUE SIMPLIFIÉE POUR L'IA ===
-        owner = city.get('owner', '')
-        if owner.startswith('ai_'):
-            return self._update_ai_city_population(city, elapsed_seconds)
         
         try:
             # Récupérer le tick actuel pour le timestamp

@@ -13,9 +13,8 @@ if __name__ == "__main__":
         
         print("Démarrage du serveur Flask...")
         print("Serveur en écoute sur http://localhost:5000")
-        # Activer debug temporairement pour diagnostiquer les crashes
-        # use_reloader=False pour éviter que les ticks auto se désactivent
-        app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+        # MODE PRODUCTION : pas de debug, pas de reloader
+        app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
         
     except KeyboardInterrupt:
         print("\nArrêt du serveur demandé par l'utilisateur")

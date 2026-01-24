@@ -64,8 +64,11 @@ class ResourceSiteService:
         
         return None
     
-    def find_resource_site_on_island(self, island, site_type, savegame_data):
-        """Trouve un site de ressource sur une île"""
+    def find_resource_site_on_island(self, island, site_type, universe_data=None):
+        """
+        Trouve un site de ressource sur une île
+        Note: savegame_data n'est plus utilisé, les sites sont dans resource_sites.json
+        """
         # Chercher dans les éléments de l'île pour vérifier que le site existe
         elements = island.get('elements', [])
         site_exists = any(
@@ -77,30 +80,34 @@ class ResourceSiteService:
             return None
         
         # Si le site existe dans l'univers, récupérer ses données de progression
-        return self.get_or_create_site_data(island, site_type, savegame_data)
+        return self.get_or_create_site_data(island, site_type)
     
-    def get_or_create_site_data(self, island, site_type, savegame_data):
-        """Récupère ou crée les données d'un site de ressource"""
+    def get_or_create_site_data(self, island, site_type):
+        """
+        Récupère ou crée les données d'un site de ressource
+        Utilise maintenant resource_sites.json au lieu de savegame.json
+        """
         island_id = island.get('id')
         
-        # Vérifier si on a une section resource_sites dans le savegame
-        if 'resource_sites' not in savegame_data:
-            savegame_data['resource_sites'] = {}
+        # Charger resource_sites.json
+        resource_sites_data = self.data_manager.load_resource_sites()
         
         # Clé unique pour ce site : island_id + site_type
         site_key = f"{island_id}_{site_type}"
         
         # Si le site n'existe pas encore, le créer
-        if site_key not in savegame_data['resource_sites']:
-            savegame_data['resource_sites'][site_key] = {
+        if site_key not in resource_sites_data['sites']:
+            resource_sites_data['sites'][site_key] = {
                 'island_id': island_id,
                 'type': site_type,
                 'level': 1,
                 'donations': {},
                 'donations_history': {}
             }
+            # Sauvegarder immédiatement
+            self.data_manager.save_resource_sites(resource_sites_data)
         
-        return savegame_data['resource_sites'][site_key]
+        return resource_sites_data['sites'][site_key]
     
     def check_and_upgrade_site(self, site):
         """Vérifie si un site doit être upgradé et le fait si nécessaire"""
@@ -219,18 +226,24 @@ class ResourceSiteService:
             if city.get('owner') != player_id:
                 return {"success": False, "error": "Cette ville ne vous appartient pas."}
             
-            # Trouver le site de ressource
-            site = self.find_resource_site_on_island(island, site_type, savegame_data)
+            # Trouver le site de ressource (charge automatiquement resource_sites.json)
+            site = self.find_resource_site_on_island(island, site_type)
             if not site:
                 return {"success": False, "error": "Site non trouvé sur l'île"}
             
+            # Charger resource_sites pour modifications
+            resource_sites_data = self.data_manager.load_resource_sites()
+            island_id = island.get('id')
+            site_key = f"{island_id}_{site_type}"
+            site_ref = resource_sites_data['sites'][site_key]  # Référence modifiable
+            
             # Vérifier si le site peut être upgradé automatiquement
-            upgraded_automatically = self.check_and_upgrade_site(site)
+            upgraded_automatically = self.check_and_upgrade_site(site_ref)
             if upgraded_automatically:
-                self.data_manager.save_savegame(savegame_data)
+                self.data_manager.save_resource_sites(resource_sites_data)
             
             # Récupérer les infos du niveau courant
-            level = site.get("level", 1)
+            level = site_ref.get("level", 1)
             resource_key = self.SITE_TO_RESOURCE.get(site_type, site_type)
             site_config = self.RESOURCE_SITE_LEVELS.get(resource_key, {})
             level_config = site_config.get(level, {})
@@ -241,7 +254,7 @@ class ResourceSiteService:
                 return {"success": False, "error": f"La ressource {resource_type} n'est pas requise pour l'amélioration."}
             
             # Calculer le maximum possible
-            total_donated = self.calculate_total_donations(site, resource_type)
+            total_donated = self.calculate_total_donations(site_ref, resource_type)
             max_possible = max(0, upgrade_cost[resource_type] - total_donated)
             
             if max_possible <= 0:
@@ -259,38 +272,41 @@ class ResourceSiteService:
             city['resources'][resource_type] = current_resource - amount
             
             # Ajouter la donation pour ce niveau
-            if "donations" not in site:
-                site["donations"] = {}
-            if city_id not in site["donations"]:
-                site["donations"][city_id] = {}
-            site["donations"][city_id][resource_type] = site["donations"][city_id].get(resource_type, 0) + amount
+            if "donations" not in site_ref:
+                site_ref["donations"] = {}
+            if city_id not in site_ref["donations"]:
+                site_ref["donations"][city_id] = {}
+            site_ref["donations"][city_id][resource_type] = site_ref["donations"][city_id].get(resource_type, 0) + amount
             
             # Historique cumulé des dons (jamais remis à zéro)
-            if "donations_history" not in site:
-                site["donations_history"] = {}
-            if city_id not in site["donations_history"]:
-                site["donations_history"][city_id] = {}
-            site["donations_history"][city_id][resource_type] = site["donations_history"][city_id].get(resource_type, 0) + amount
+            if "donations_history" not in site_ref:
+                site_ref["donations_history"] = {}
+            if city_id not in site_ref["donations_history"]:
+                site_ref["donations_history"][city_id] = {}
+            site_ref["donations_history"][city_id][resource_type] = site_ref["donations_history"][city_id].get(resource_type, 0) + amount
             
             upgraded = False
             
             # Vérifier si on peut démarrer un upgrade
-            if self.can_start_upgrade(site, site_type):
-                self.start_upgrade(site, site_type)
+            if self.can_start_upgrade(site_ref, site_type):
+                self.start_upgrade(site_ref, site_type)
                 upgraded = False  # Upgrade démarré mais pas encore terminé
             
-            # Sauvegarder (forcer la sauvegarde pour les upgrades de sites - action critique)
+            # Sauvegarder resource_sites.json (forcer la sauvegarde - action critique)
+            self.data_manager.save_resource_sites(resource_sites_data, force_save=True)
+            
+            # Sauvegarder savegame.json pour les ressources de la ville
             self.data_manager.save_savegame(savegame_data, force_save=True)
             
             # Calculer le temps restant pour l'upgrade
             upgrade_remaining_time = 0
-            if site.get("upgrade_start_time"):
-                start_time = site["upgrade_start_time"]
+            if site_ref.get("upgrade_start_time"):
+                start_time = site_ref["upgrade_start_time"]
                 if isinstance(start_time, str):
                     start_time = datetime.fromisoformat(start_time)
                 now = datetime.now(timezone.utc)
                 elapsed = (now - start_time).total_seconds()
-                upgrade_time = site.get("upgrade_time", 0)
+                upgrade_time = site_ref.get("upgrade_time", 0)
                 upgrade_remaining_time = max(0, int(upgrade_time - elapsed))
             
             return {
@@ -299,8 +315,8 @@ class ResourceSiteService:
                 "donated_resource": resource_type,
                 "remaining_resource": city['resources'][resource_type],
                 "upgraded": upgraded,
-                "current_level": site.get("level", 1),
-                "upgrade_in_progress": bool(site.get("upgrade_start_time")),
+                "current_level": site_ref.get("level", 1),
+                "upgrade_in_progress": bool(site_ref.get("upgrade_start_time")),
                 "upgrade_remaining_time": upgrade_remaining_time,
                 "message": f'{amount} {resource_type} donné au site {site_type}'
             }
@@ -323,7 +339,9 @@ class ResourceSiteService:
         try:
             # Charger les données
             savegame_data = self.data_manager.load_savegame()
-            if not savegame_data:
+            resource_sites_data = self.data_manager.load_resource_sites()
+            
+            if not savegame_data or not resource_sites_data:
                 return {"success": False, "error": "Impossible de charger les données"}
             
             # Trouver l'île
@@ -332,14 +350,14 @@ class ResourceSiteService:
                 return {"success": False, "error": "Île introuvable"}
             
             # Trouver le site de ressource
-            site = self.find_resource_site_on_island(island, site_type, savegame_data)
+            site = self.find_resource_site_on_island(island, site_type)
             if not site:
                 return {"success": False, "error": "Site non trouvé sur l'île"}
             
             # Vérifier et appliquer les upgrades automatiques
             upgraded = self.check_and_upgrade_site(site)
             if upgraded:
-                self.data_manager.save_savegame(savegame_data)
+                self.data_manager.save_resource_sites(resource_sites_data)
             
             # Récupérer les informations du niveau courant
             level = site.get("level", 1)

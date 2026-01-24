@@ -117,8 +117,10 @@ def get_city_heroes_v2(city_id):
                 'owner': owner_id,
                 'calculated_stats': hero_stats['calculated_stats'],
                 'calculated_bonuses': hero_stats['calculated_bonuses'],
+                'satisfaction_bonus': hero_stats.get('satisfaction_bonus', 0),
                 'experience_table': hero_base_data.get('experience_table', []),
-                'progression': hero_base_data.get('progression', {})
+                'progression': hero_base_data.get('progression', {}),
+                'satisfaction': hero_base_data.get('satisfaction', {})
             }
         
         return jsonify({
@@ -260,6 +262,10 @@ def select_hero(player_id, hero_id):
         base_stats = hero_definition.get('base_stats', {})
         base_bonuses = hero_definition.get('base_bonuses', {})
         
+        # Calculer le bonus de satisfaction (niveau 1 = base)
+        satisfaction_config = hero_definition.get('satisfaction', {})
+        satisfaction_base = satisfaction_config.get('base', 0)
+        
         hero_instance = {
             'hero_id': hero_id,
             'instance_id': hero_instance_id,
@@ -276,9 +282,10 @@ def select_hero(player_id, hero_id):
                 'type': 'city',
                 'city_id': city_id
             },
-            'status': 'available',
+            'status': 'garrison',
             'calculated_stats': base_stats.copy(),
-            'calculated_bonuses': base_bonuses.copy()
+            'calculated_bonuses': base_bonuses.copy(),
+            'satisfaction_bonus': satisfaction_base
         }
         
         # Initialiser les données du joueur s'il n'existe pas
@@ -448,10 +455,17 @@ def level_up_hero():
             
             new_calculated_bonuses[bonus_name] = calculated_value
         
+        # Calculer le bonus de satisfaction
+        satisfaction_config = hero_definition.get('satisfaction', {})
+        satisfaction_base = satisfaction_config.get('base', 0)
+        satisfaction_per_level = progression.get('satisfaction_per_level', 0)
+        satisfaction_bonus = int(satisfaction_base + (satisfaction_per_level * (next_level - 1)))
+        
         # Mettre à jour le héros
         hero_data['current_level'] = next_level
         hero_data['calculated_stats'] = new_calculated_stats
         hero_data['calculated_bonuses'] = new_calculated_bonuses
+        hero_data['satisfaction_bonus'] = satisfaction_bonus
         
         # Sauvegarder
         with open(player_heroes_file, 'w', encoding='utf-8') as f:
@@ -475,8 +489,10 @@ def level_up_hero():
             'status': hero_data['status'],
             'calculated_stats': hero_data['calculated_stats'],
             'calculated_bonuses': hero_data['calculated_bonuses'],
+            'satisfaction_bonus': hero_data.get('satisfaction_bonus', 0),
             'experience_table': hero_definition.get('experience_table', []),
-            'progression': hero_definition.get('progression', {})
+            'progression': hero_definition.get('progression', {}),
+            'satisfaction': hero_definition.get('satisfaction', {})
         }
         
         return jsonify({

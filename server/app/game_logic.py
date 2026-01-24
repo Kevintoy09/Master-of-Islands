@@ -36,6 +36,7 @@ HISTORIQUE:
     - calculate_total_production_rate() : Lit player.research_effects.resource_bonuses
 """
 
+import logging
 from typing import Dict, List, Optional, Tuple
 from .data_manager import DataManager
 from .transition_utils import load_savegame_transition, save_savegame_transition
@@ -59,23 +60,25 @@ def get_active_resources_by_era(era: str = "all") -> List[str]:
     else:  # "all" par défaut
         return early_game_resources + mid_game_resources + late_game_resources
 
+# === VARIABLE GLOBALE POUR ÉVITER LES DOUBLONS DE POPULATION ===
+# Partagée entre TOUTES les instances de GameLogic pour éviter qu'elles ajoutent
+# chacune +25 habitants lors de la construction d'un Hôtel de Ville
+_GLOBAL_PROCESSED_CONSTRUCTIONS = set()
+
 class GameLogic:
     """Gestionnaire de la logique métier du jeu"""
     
     def __init__(self, data_manager: DataManager):
         self.data = data_manager
+        # Référence à la variable globale pour éviter les doublons de population
+        self._processed_constructions = _GLOBAL_PROCESSED_CONSTRUCTIONS
     
     def get_city_storage_limits(self, city: Dict) -> Dict[str, int]:
         """
         Calcule les limites de stockage d'une ville basées sur ses entrepôts
         """
-        import json
-        import os
-        
-        # Charger les données des bâtiments
-        buildings_path = os.path.join(self.data.data_dir, 'buildings.json')
-        with open(buildings_path, 'r', encoding='utf-8') as f:
-            buildings_data = json.load(f)
+        # Charger les données des bâtiments via DataManager
+        buildings_data = self.data.load_buildings()
         
         warehouse_data = buildings_data.get('Entrepôt', {})
         levels = warehouse_data.get('levels', [])
@@ -148,13 +151,6 @@ class GameLogic:
         
         # Somme de tous les ouvriers assignés à tous les sites
         total_assigned_workers = sum(workers_assigned.values())
-        
-        # Si population <= 1, tous les ouvriers doivent être à 0
-        if population_total <= 1:
-            if total_assigned_workers > 0:
-                for resource in workers_assigned:
-                    workers_assigned[resource] = 0
-                total_assigned_workers = 0
         
         # Population libre = population totale - ouvriers assignés
         free_population = population_total - total_assigned_workers
@@ -318,8 +314,9 @@ class GameLogic:
         if workers < 0:
             return False, "Nombre d'ouvriers invalide"
         
-        # Vérifier si le joueur peut assigner des ouvriers (recherche "acces_ressources", sauf pour la forêt)
-        if player_id and site_type != 'forest':
+        # Vérifier si le joueur peut assigner des ouvriers (recherche "acces_ressources")
+        # Exception : forest (toujours accessible) et academy (bâtiment en ville, pas site de ressources)
+        if player_id and site_type not in ['forest', 'academy']:
             from .business.research_service import ResearchService
             research_service = ResearchService(self.data)
             
@@ -335,20 +332,36 @@ class GameLogic:
             return False, f"Population insuffisante. Disponible: {available_population}"
         
         # Vérifier la capacité du site
-        try:
-            from app.app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
-            resource_type = SITE_TO_RESOURCE.get(site_type, site_type)
-            site_data = RESOURCE_SITE_LEVELS.get(resource_type, {})
+        if site_type == 'academy':
+            # Cas spécial pour l'académie (bâtiment, pas site de ressource)
+            buildings = city.get('buildings', [])
+            academy = next((b for b in buildings if b.get('name') == 'Academy'), None)
             
-            if not site_data:
-                return False, f"Type de site inconnu: {site_type}"
+            if not academy:
+                return False, "Académie non construite"
             
-            max_workers = site_data.get('1', {}).get('max_workers_per_city', 10)
+            # Capacité = niveau de l'académie * 10
+            academy_level = academy.get('level', 1)
+            max_workers = academy_level * 10
+            
             if workers > max_workers:
-                return False, f"Capacité maximale dépassée. Maximum: {max_workers}"
-        
-        except ImportError:
-            return False, "Configuration des sites non disponible"
+                return False, f"Capacité maximale dépassée. Maximum: {max_workers} (Academy niveau {academy_level})"
+        else:
+            # Sites de ressources normaux
+            try:
+                from app.data.resource_sites_database import RESOURCE_SITE_LEVELS, SITE_TO_RESOURCE
+                resource_type = SITE_TO_RESOURCE.get(site_type, site_type)
+                site_data = RESOURCE_SITE_LEVELS.get(resource_type, {})
+                
+                if not site_data:
+                    return False, f"Type de site inconnu: {site_type}"
+                
+                max_workers = site_data.get('1', {}).get('max_workers_per_city', 10)
+                if workers > max_workers:
+                    return False, f"Capacité maximale dépassée. Maximum: {max_workers}"
+            
+            except ImportError as ie:
+                return False, f"Configuration des sites non disponible: {str(ie)}"
         
         return True, ""
     
@@ -603,6 +616,17 @@ class GameLogic:
         architect_bonuses = self.calculate_architect_bonuses(city)
         time_reduction_percent = architect_bonuses.get('time_reduction', 0) / 100.0
         
+        # 🏛️ Bonus de faction Stone : -10% temps de construction/développement
+        owner_id = city.get('owner')
+        if owner_id:
+            try:
+                players_data = self.data.load_players()
+                player = next((p for p in players_data.get('players', []) if p.get('id') == owner_id), None)
+                if player and player.get('faction') == 'stone':
+                    time_reduction_percent += 0.10  # +10% de réduction = -10% de temps
+            except Exception as e:
+                logging.warning(f"Erreur chargement faction stone bonus: {e}")
+        
         reduced_time = int(adjusted_time * (1 - time_reduction_percent))
         return max(1, reduced_time)  # Minimum 1 seconde
     
@@ -623,104 +647,6 @@ class GameLogic:
         except Exception as e:
             print(f"Warning: Could not load construction_time_multiplier: {e}")
             return 1.0  # Valeur par défaut en cas d'erreur
-
-    def update_construction_statuses(self):
-        """
-        Met à jour automatiquement le statut des constructions terminées.
-        Cette fonction est appelée automatiquement lors de l'actualisation de l'état des villes.
-        """
-        import time
-        import threading
-        
-        # Protection contre les exécutions simultanées (évite les doublons)
-        if not hasattr(self, '_construction_lock_2'):
-            self._construction_lock_2 = threading.Lock()
-        
-        # Protection contre les constructions déjà traitées
-        if not hasattr(self, '_processed_constructions_2'):
-            self._processed_constructions_2 = set()
-        
-        # Tentative d'acquisition non-bloquante
-        if not self._construction_lock_2.acquire(blocking=False):
-            # Une autre thread traite déjà les constructions
-            return
-        
-        try:
-            # TimeManager supprimé - constructions gérées par système manuel
-            current_tick = 0  # Valeur par défaut pour compatibilité
-            save_data = load_savegame_transition()
-            has_changes = False
-            
-            for city in save_data.get('cities', []):
-                for building in city.get('buildings', []):
-                    construction_end = building.get('construction_end')
-                    if (construction_end and 
-                        isinstance(construction_end, (int, float)) and
-                        construction_end <= current_tick and 
-                        building.get('status') == 'En construction'):
-                        
-                        # Créer un ID unique pour ce bâtiment en construction
-                        building_id = f"{city.get('id', 'unknown')}_{building.get('slot_id', 'unknown')}_{construction_end}"
-                        
-                        # Vérifier si cette construction a déjà été traitée
-                        if building_id in self._processed_constructions_2:
-                            continue
-                        
-                        # Marquer comme traité immédiatement
-                        self._processed_constructions_2.add(building_id)
-                        
-                        # Construction terminée
-                        building['status'] = 'Construit'
-                        
-                        # ✅ CRÉER NOTIFICATION IMMÉDIATEMENT
-                        try:
-                            from app.business.notification_service import NotificationService
-                            from app.models.notification import NotificationType
-                            notification_service = NotificationService(self.data)
-                            
-                            building_name = building.get('name', 'Bâtiment')
-                            city_name = city.get('name', 'Ville')
-                            player_id = city.get('owner', 'player_1')
-                            level = building.get('level', 1)
-                            
-                            if level > 1:
-                                title = "Développement terminé"
-                                message = f"{building_name} niveau {level} terminé dans {city_name}"
-                            else:
-                                title = "Construction terminée"
-                                message = f"{building_name} terminé dans {city_name}"
-                            
-                            notification_service.create_building_notification(
-                                player_id=player_id,
-                                building_name=building_name,
-                                city_name=city_name
-                            )
-                            pass  # Notification créée
-                        except Exception as e:
-                            pass  # Erreur création notification
-                        
-                        # Nettoyer les champs de construction
-                        building.pop('construction_end', None)
-                        building.pop('started_at', None)
-                        building.pop('duration', None)
-                        building.pop('previous_level', None)  # Nettoyer le niveau précédent pour développements
-                        
-                        has_changes = True
-            
-            # Nettoyer les anciennes entrées (plus de 5 minutes)
-            if hasattr(self, '_last_cleanup_2') and (current_tick - self._last_cleanup_2) > 300:
-                self._processed_constructions_2.clear()
-                self._last_cleanup_2 = current_tick
-            elif not hasattr(self, '_last_cleanup_2'):
-                self._last_cleanup_2 = current_tick
-            
-            # Sauvegarder si des changements ont eu lieu (SaveService avec force pour actions critiques)
-            if has_changes:
-                save_savegame_transition(save_data, force=True)
-                
-        finally:
-            # Libérer le lock dans tous les cas
-            self._construction_lock_2.release()
 
     def update_resource_production_in_memory(self, savegame_data):
         """Met à jour la production de ressources pour toutes les villes sans recharger les données"""
@@ -789,9 +715,8 @@ class GameLogic:
         if not hasattr(self, '_construction_lock'):
             self._construction_lock = threading.Lock()
         
-        # Protection contre les constructions déjà traitées
-        if not hasattr(self, '_processed_constructions'):
-            self._processed_constructions = set()
+        # Utiliser le set GLOBAL partagé entre toutes les instances
+        global _GLOBAL_PROCESSED_CONSTRUCTIONS
         
         # Tentative d'acquisition non-bloquante
         if not self._construction_lock.acquire(blocking=False):
@@ -807,32 +732,56 @@ class GameLogic:
                 for building in city.get('buildings', []):
                     # Vérifier les constructions terminées
                     construction_end = building.get('construction_end')
+                    
                     if (construction_end and 
                         isinstance(construction_end, (int, float)) and
                         construction_end <= current_time and 
                         building.get('status') == 'En construction'):
                         
-                        # Créer un ID unique pour ce bâtiment en construction
-                        building_id = f"{city.get('id', 'unknown')}_{building.get('slot_id', 'unknown')}_{construction_end}"
-                        
-                        # Vérifier si cette construction a déjà été traitée
-                        if building_id in self._processed_constructions:
-                            continue
-                        
-                        # Marquer comme traité immédiatement
-                        self._processed_constructions.add(building_id)
-                        
-                        # Construction terminée
+                        # Construction terminée → Changer le status TOUJOURS
                         building['status'] = 'Terminé'
+                        has_changes = True
                         
                         # Vérifier si c'est un upgrade (a previous_level) ou une nouvelle construction
                         is_upgrade = 'previous_level' in building
                         
-                        # Nettoyer les champs de construction
+                        # Nettoyer les champs de construction IMMÉDIATEMENT
                         building.pop('construction_end', None)
                         building.pop('started_at', None)
                         building.pop('duration', None)
-                        building.pop('previous_level', None)  # Nettoyer le niveau précédent pour développements
+                        building.pop('previous_level', None)
+                        
+                        # Appliquer instant_population UNE SEULE FOIS (avec set global)
+                        instant_pop_id = f"{city.get('id')}_{building.get('slot_id')}_instant_pop"
+                        
+                        if instant_pop_id not in _GLOBAL_PROCESSED_CONSTRUCTIONS:
+                            building_name = building.get('name')
+                            building_level = building.get('level', 1)
+                            
+                            # Charger buildings.json pour vérifier instant_population
+                            try:
+                                import json
+                                import os
+                                buildings_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'buildings.json')
+                                with open(buildings_path, 'r', encoding='utf-8') as f:
+                                    buildings_data = json.load(f)
+                                
+                                # Trouver le bâtiment et son niveau
+                                building_config = buildings_data.get(building_name, {})
+                                level_config = next((l for l in building_config.get('levels', []) if l.get('level') == building_level), None)
+                                
+                                if level_config:
+                                    instant_pop = level_config.get('effect', {}).get('instant_population', 0)
+                                    if instant_pop > 0:
+                                        # Ajouter la population instantanée à population_total
+                                        current_pop = city['resources'].get('population_total', 0)
+                                        city['resources']['population_total'] = current_pop + instant_pop
+                                        
+                                        # Marquer comme traité (SET GLOBAL)
+                                        _GLOBAL_PROCESSED_CONSTRUCTIONS.add(instant_pop_id)
+                                        # NE PAS ajouter instant_population_applied au bâtiment (pollue le JSON)
+                            except Exception as e:
+                                print(f"⚠️ Erreur application instant_population: {e}")
                         
                         # Mettre à jour les quêtes de construction
                         try:
@@ -897,9 +846,13 @@ class GameLogic:
                         
                         has_changes = True
             
-            # Nettoyer les anciennes entrées (plus de 5 minutes)
+            # Nettoyer le set global périodiquement (toutes les 5 minutes)
             if hasattr(self, '_last_cleanup') and (current_time - self._last_cleanup) > 300:
-                self._processed_constructions.clear()
+                # Garder seulement les 50 dernières entrées
+                if len(_GLOBAL_PROCESSED_CONSTRUCTIONS) > 50:
+                    recent = list(_GLOBAL_PROCESSED_CONSTRUCTIONS)[-50:]
+                    _GLOBAL_PROCESSED_CONSTRUCTIONS.clear()
+                    _GLOBAL_PROCESSED_CONSTRUCTIONS.update(recent)
                 self._last_cleanup = current_time
             elif not hasattr(self, '_last_cleanup'):
                 self._last_cleanup = current_time

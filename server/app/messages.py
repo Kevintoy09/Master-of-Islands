@@ -27,7 +27,7 @@ def allowed_file(filename):
 
 def load_messages():
     """Charge les messages depuis le fichier JSON"""
-    messages_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'messages.json')
+    messages_file = os.path.join(os.path.dirname(__file__), '..', 'gamedata', 'messages.json')
     try:
         with open(messages_file, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -36,7 +36,7 @@ def load_messages():
 
 def save_messages(messages):
     """Sauvegarde les messages dans le fichier JSON"""
-    messages_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'messages.json')
+    messages_file = os.path.join(os.path.dirname(__file__), '..', 'gamedata', 'messages.json')
     with open(messages_file, 'w', encoding='utf-8') as f:
         json.dump(messages, f, indent=2, ensure_ascii=False)
 
@@ -47,7 +47,7 @@ def send_email_notification(sender_name, subject, content, attachment_url=None):
     ou configurer un système externe pour les envoyer automatiquement.
     """
     try:
-        notifications_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'admin_email_notifications.json')
+        notifications_file = os.path.join(os.path.dirname(__file__), '..', 'gamedata', 'admin_email_notifications.json')
         
         # Charger les notifications existantes
         try:

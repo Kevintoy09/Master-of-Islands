@@ -302,7 +302,8 @@ class DataManager:
             'battlefields_v2.json', 'battlesv2.json', 'battle_reports.json',
             'battle_replays.json', 'transports.json', 'transport_history.json',
             'market.json', 'messages.json', 'notifications.json',
-            'player_heroes.json', 'player_profiles.json', 'player_unit_improvements.json'
+            'player_heroes.json', 'player_profiles.json', 'player_unit_improvements.json',
+            'resource_sites.json'
         }
         
         # Cache pour éviter les rechargements
@@ -536,7 +537,6 @@ class DataManager:
     
     def save_savegame(self, data: Dict, force_save: bool = False) -> bool:
         """Sauvegarde savegame.json avec protection contre les écritures simultanées"""
-        # Logs réduits en dev
         with self._savegame_lock:
             # Nettoyer les données avant sauvegarde
             cleaned_data = self._clean_savegame_data(data)
@@ -548,6 +548,14 @@ class DataManager:
             result = self._save_json_file(filepath, cleaned_data, create_backup=True, force_save=force_save)
             
             return result
+    
+    def invalidate_savegame_cache(self):
+        """Force le prochain load_savegame à lire le fichier frais au lieu du cache"""
+        filepath = self._get_file_path('savegame.json')
+        cache_key = f"file_{filepath}"
+        if cache_key in self._cache:
+            del self._cache[cache_key]
+            del self._cache_timestamps[cache_key]
     
     def _clean_savegame_data(self, data: Dict) -> Dict:
         """Nettoie les données du savegame avant sauvegarde (supprime gold, players, research_points des villes, etc.)"""
@@ -658,10 +666,35 @@ class DataManager:
         data = self._load_json_file(self._get_file_path('resource_sites_config.json'))
         return data or {}
     
+    def load_resource_sites(self, use_cache: bool = True) -> Dict:
+        """Charge resource_sites.json (état des sites de production)"""
+        data = self._load_json_file(self._get_file_path('resource_sites.json'), use_cache=use_cache)
+        return data or {"sites": {}}
+    
+    def save_resource_sites(self, data: Dict, force_save: bool = False) -> bool:
+        """Sauvegarde resource_sites.json"""
+        filepath = self._get_file_path('resource_sites.json')
+        return self._save_json_file(filepath, data, create_backup=True, force_save=force_save)
+    
     def load_research(self) -> Dict:
         """Charge research.json"""
         data = self._load_json_file(self._get_file_path('research.json'))
         return data or {"researches": [], "categories": []}
+    
+    def load_admin_settings(self) -> Dict:
+        """Charge admin_settings.json"""
+        data = self._load_json_file(self._get_file_path('admin_settings.json'))
+        return data or {}
+    
+    def save_admin_settings(self, data: Dict) -> bool:
+        """Sauvegarde admin_settings.json"""
+        filepath = self._get_file_path('admin_settings.json')
+        return self._save_json_file(filepath, data, create_backup=False)
+    
+    def is_ai_auto_enabled(self) -> bool:
+        """Vérifie si l'automatisation des IA est activée"""
+        settings = self.load_admin_settings()
+        return settings.get('ai_auto_enabled', False)
     
     def load_universe(self) -> Dict:
         """Charge universe.json"""
@@ -781,11 +814,6 @@ class DataManager:
         filepath = self._get_file_path('unit_transport_history.json')
         return self._load_json_file(filepath, use_cache) or {"transport_history": []}
 
-    def load_players(self, use_cache: bool = False) -> Dict:
-        """Charge players.json"""
-        filepath = self._get_file_path('players.json')
-        return self._load_json_file(filepath, use_cache) or {"players": []}
-    
     def save_players(self, data: Dict, force_save: bool = False) -> bool:
         """Sauvegarde players.json et synchronise avec savegame.json"""
         filepath = self._get_file_path('players.json')

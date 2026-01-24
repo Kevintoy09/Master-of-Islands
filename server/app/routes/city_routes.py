@@ -321,13 +321,7 @@ def get_city_population(city_id):
     # Recalculer la population libre
     city['resources']['population_free'] = game_logic.calculate_actual_free_population(city)
     
-    # Sauvegarder à chaque appel (mode développement pour analyse)
-    current_time = int(time.time())
-    last_save = getattr(get_city_population, 'last_save', 0)
-    
-    if current_time - last_save >= 0:  # Sauvegarde à chaque appel (mode développement)
-        if data_manager.save_savegame(savegame):
-            get_city_population.last_save = current_time
+    # PAS de sauvegarde : cette route ne fait que LIRE les données
     
     # Retourner les informations de population - RECONSTRUCTION MANUELLE
     resources = city.get('resources', {})
@@ -503,9 +497,6 @@ def build_building(city_id):
     """Construction et développement de bâtiments"""
     from ..transition_utils import load_savegame_transition, save_savegame_transition
     
-    BASE_DIR = data_manager.base_dir
-    buildings_path = os.path.join(BASE_DIR, 'data', 'buildings.json')
-    
     data = request.get_json()
     slot_id = data.get('slot_id')
     building_name = data.get('building')
@@ -519,12 +510,8 @@ def build_building(city_id):
     except Exception as e:
         raise GameValidationError(f'Erreur de chargement des données: {str(e)}')
         
-    # Charger buildings.json
-    try:
-        with open(buildings_path, 'r', encoding='utf-8') as f:
-            buildings_data = json.load(f)
-    except Exception as e:
-        raise GameValidationError(f'buildings.json introuvable: {str(e)}')
+    # Charger buildings.json via DataManager
+    buildings_data = data_manager.load_buildings()
         
     # Trouver la ville
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
@@ -573,7 +560,7 @@ def build_building(city_id):
         required_research = building_info.get('required_research')
         if required_research:
             # Charger les données des joueurs
-            players_path = os.path.join(BASE_DIR, 'gamedata', 'players.json')
+            players_path = os.path.join(data_manager.base_dir, 'gamedata', 'players.json')
             try:
                 with open(players_path, 'r', encoding='utf-8') as f:
                     players_data = json.load(f)
@@ -601,6 +588,39 @@ def build_building(city_id):
                     'error': '🔬 Recherche à débloquer !',
                     'type': 'research_required'
                 }), 400
+    
+    # VALIDATION DU NOMBRE DE CONSTRUCTIONS SIMULTANÉES
+    # Compter le nombre de bâtiments en construction
+    buildings_under_construction = len([b for b in city.get('buildings', []) 
+                                       if b.get('status') == 'En construction'])
+    
+    # Déterminer la limite de constructions simultanées (par défaut: 1)
+    max_concurrent_buildings = 1
+    
+    # Charger les données du joueur pour vérifier les recherches
+    player_id = city.get('owner')
+    if player_id:
+        players_path = os.path.join(data_manager.base_dir, 'gamedata', 'players.json')
+        try:
+            with open(players_path, 'r', encoding='utf-8') as f:
+                players_data = json.load(f)
+            
+            player = next((p for p in players_data.get('players', []) if p.get('id') == player_id), None)
+            if player:
+                # Vérifier les effets de recherche pour max_concurrent_buildings
+                research_effects = player.get('research_effects', {})
+                max_concurrent_buildings = research_effects.get('max_concurrent_buildings', 1)
+        except Exception as e:
+            print(f"⚠️ Erreur lors du chargement des données joueur: {e}")
+    
+    # Vérifier si la limite est atteinte
+    if buildings_under_construction >= max_concurrent_buildings:
+        return jsonify({
+            'error': f'🏗️ Limite de constructions simultanées atteinte ! ({max_concurrent_buildings} maximum)',
+            'type': 'max_concurrent_buildings_reached',
+            'current': buildings_under_construction,
+            'max': max_concurrent_buildings
+        }), 400
     
     # VALIDATION DU NOMBRE MAXIMUM D'INSTANCES (seulement pour nouveaux bâtiments)
     if not is_upgrade:
@@ -819,40 +839,25 @@ def destroy_or_downgrade_building(city_id):
 def get_buildings_for_slot(city_id):
     """Liste des bâtiments disponibles pour construction avec coûts et bonus architecte"""
     BASE_DIR = data_manager.base_dir
-    buildings_path = os.path.join(BASE_DIR, 'data', 'buildings.json')
-    savegame_path = os.path.join(BASE_DIR, 'gamedata', 'savegame.json')
-    players_path = os.path.join(BASE_DIR, 'gamedata', 'players.json')
-    
     # Récupérer le type de slot depuis les paramètres de requête
     slot_type = request.args.get('slot_type', 'general')
     
-    try:
-        with open(buildings_path, 'r', encoding='utf-8') as f:
-            buildings_data = json.load(f)
-    except Exception as e:
-        raise GameValidationError(f'buildings.json introuvable: {str(e)}')
+    # Charger buildings.json via DataManager
+    buildings_data = data_manager.load_buildings()
     
     # ⚡ OPTIMISATION : Charger le savegame pour calculer les bonus architecte
-    try:
-        with open(savegame_path, 'r', encoding='utf-8') as f:
-            savegame = json.load(f)
-        city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
-    except:
-        city = None
+    savegame = data_manager.load_savegame()
+    city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None) if savegame else None
     
     # Charger les données du joueur pour vérifier les recherches
     player = None
     if city:
-        try:
-            with open(players_path, 'r', encoding='utf-8') as f:
-                players_data = json.load(f)
-            player_id = city.get('owner')
-            for p in players_data.get('players', []):
-                if p.get('id') == player_id:
-                    player = p
-                    break
-        except:
-            pass
+        players_data = data_manager.load_players()
+        player_id = city.get('owner')
+        for p in players_data.get('players', []):
+            if p.get('id') == player_id:
+                player = p
+                break
         
     # Retourner la liste des bâtiments disponibles filtré par catégorie
     buildings_list = []
@@ -921,23 +926,13 @@ def get_buildings_for_slot(city_id):
 @handle_errors
 def get_building_costs_with_bonuses(city_id):
     """Retourne les coûts et temps de construction avec bonus de l'Atelier d'Architecte"""
-    BASE_DIR = data_manager.base_dir
-    buildings_path = os.path.join(BASE_DIR, 'data', 'buildings.json')
-    savegame_path = os.path.join(BASE_DIR, 'gamedata', 'savegame.json')
-    
-    # Charger buildings.json
-    try:
-        with open(buildings_path, 'r', encoding='utf-8') as f:
-            buildings_data = json.load(f)
-    except Exception as e:
-        raise GameValidationError(f'buildings.json introuvable: {str(e)}')
+    # Charger buildings.json via DataManager
+    buildings_data = data_manager.load_buildings()
         
-    # Charger savegame
-    try:
-        with open(savegame_path, 'r', encoding='utf-8') as f:
-            savegame = json.load(f)
-    except Exception as e:
-        raise GameValidationError(f'savegame.json introuvable: {str(e)}')
+    # Charger savegame via DataManager
+    savegame = data_manager.load_savegame()
+    if not savegame:
+        raise GameValidationError('savegame.json introuvable')
         
     # Trouver la ville
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
@@ -1142,13 +1137,7 @@ def get_city_state_legacy(city_id):
     
     # Les effects sont calculés dynamiquement depuis buildings.json, pas besoin de les ajouter
     
-    # Sauvegarder à chaque appel (mode développement pour analyse)
-    current_time = int(time.time())
-    last_save = getattr(get_city_state_legacy, 'last_save', 0)
-    
-    if current_time - last_save >= 0:  # Sauvegarde à chaque appel (mode développement)
-        if data_manager.save_savegame(savegame):
-            get_city_state_legacy.last_save = current_time
+    # PAS de sauvegarde : cette route ne fait que LIRE les données
     
     city = next((c for c in savegame.get('cities', []) if c['id'] == city_id), None)
     if city:
@@ -1658,9 +1647,7 @@ def calculate_storage_capacities(city):
     total_storage = game_logic.get_city_storage_limits(city)
     
     # Calculer les capacités sécurisées séparément (entrepôts uniquement)
-    buildings_path = os.path.join(data_manager.data_dir, 'buildings.json')
-    with open(buildings_path, 'r', encoding='utf-8') as f:
-        buildings_data = json.load(f)
+    buildings_data = data_manager.load_buildings()
     
     warehouse_data = buildings_data.get('Entrepôt', {})
     levels = warehouse_data.get('levels', [])
