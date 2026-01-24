@@ -9,6 +9,7 @@ interface BuildingPopupBaseProps {
   cost?: Record<string, number>;
   originalCost?: Record<string, number>;
   constructionTime?: number;
+  originalTime?: number;
   level?: number;
   effectsCurrent?: Record<string, number>; // Changé en objet pour le tableau
   effectsNext?: Record<string, number>; // Changé en objet pour le tableau
@@ -100,7 +101,7 @@ const formatCostWithEmojis = (cost: Record<string, number>) => {
 };
 
 const BuildingPopupBase: React.FC<BuildingPopupBaseProps> = ({
-  title, description, cost, originalCost, constructionTime, level, effectsCurrent, effectsNext, timer,
+  title, description, cost, originalCost, constructionTime, originalTime, level, effectsCurrent, effectsNext, timer,
   onDevelop, onDestroy, destroyButtonText, onFinishInstant, canFinishInstant, onClose, error, children
 }) => {
   const [secLeft, setSecLeft] = useState(timer || 0);
@@ -185,6 +186,11 @@ const BuildingPopupBase: React.FC<BuildingPopupBaseProps> = ({
                 {constructionTime !== undefined && (
                   <div className="popup-construction-time">
                     <b>Temps de construction :</b> {constructionTime}s
+                    {originalTime && originalTime !== constructionTime && (
+                      <span style={{color: '#888', fontSize: '0.9em', marginLeft: '8px'}}>
+                        (original: {originalTime}s, {Math.round((1 - constructionTime / originalTime) * 100)}% de réduction)
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

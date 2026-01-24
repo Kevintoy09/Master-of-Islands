@@ -9,21 +9,60 @@ interface UseBuildingManagementOptions {
   onCityDataChange: () => Promise<any>;
 }
 
+interface ErrorInfo {
+  message: string;
+  title?: string;
+  icon?: string;
+}
+
 export const useBuildingManagement = ({ cityId, onCityDataChange }: UseBuildingManagementOptions) => {
   const [selectedBuilding, setSelectedBuilding] = useState<CityBuilding | null>(null);
   const [buildingActionLoading, setBuildingActionLoading] = useState(false);
   const [buildingActionMsg, setBuildingActionMsg] = useState<string | null>(null);
+  const [errorPopup, setErrorPopup] = useState<ErrorInfo | null>(null);
   const { getInstantFinishThreshold } = usePlayerResearch();
 
   // Actions de bâtiment
   const developBuilding = useCallback(async (building: CityBuilding) => {
     if (!cityId) return;
     
+    setErrorPopup(null);
+    
     try {
       await BuildingService.buildBuilding(cityId, building.slot_id, building.name);
       await onCityDataChange();
     } catch (error: any) {
-      alert(error.message || 'Impossible de développer');
+      // Parser l'erreur JSON si disponible
+      let errorData: any = {};
+      try {
+        errorData = JSON.parse(error.message);
+      } catch {
+        errorData = { error: error.message };
+      }
+
+      // Gestion spécifique des erreurs
+      if (errorData.type === 'max_concurrent_buildings_reached') {
+        setErrorPopup({
+          title: '🏗️ Construction en cours',
+          message: `Vous ne pouvez développer que ${errorData.max} bâtiment(s) à la fois.\n\nActuellement : ${errorData.current}/${errorData.max} construction(s) en cours.\n\nDébloquez la recherche "Planification Urbaine" pour augmenter cette limite !`,
+          icon: '🏗️'
+        });
+      } else if (errorData.type === 'insufficient_resources') {
+        const missingResources = Object.entries(errorData.missing || {})
+          .map(([res, amt]) => `${res}: ${amt}`)
+          .join(', ');
+        setErrorPopup({
+          title: '💰 Ressources insuffisantes',
+          message: `Il vous manque : ${missingResources}`,
+          icon: '💰'
+        });
+      } else {
+        setErrorPopup({
+          title: '⚠️ Erreur',
+          message: errorData.error || error.message || 'Impossible de développer le bâtiment',
+          icon: '⚠️'
+        });
+      }
     }
   }, [cityId, onCityDataChange]);
 
@@ -115,6 +154,8 @@ export const useBuildingManagement = ({ cityId, onCityDataChange }: UseBuildingM
     buildingActionLoading,
     buildingActionMsg,
     setBuildingActionMsg,
+    errorPopup,
+    setErrorPopup,
     developBuilding,
     destroyBuilding,
     finishInstantConstruction,

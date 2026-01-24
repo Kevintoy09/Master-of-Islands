@@ -233,7 +233,12 @@ const AcademyPopupContent: React.FC<AcademyPopupContentProps> = ({
           • {researchPointsPerWorker.toFixed(1)} points/ouvrier/h
           {researchBonus > 1 && (
             <span style={{ color: '#4caf50', marginLeft: '5px' }}>
-              (+{((researchBonus - 1) * 100).toFixed(0)}% Écriture)
+              {playerResearchData?.unlocked_research?.includes('ecriture') && (
+                <>(+{((researchBonus / (playerResearchData?.faction === 'papyrus' ? 1.1 : 1) - 1) * 100).toFixed(0)}% Écriture)</>
+              )}
+              {playerResearchData?.faction === 'papyrus' && (
+                <> (+10% Faction Papyrus)</>
+              )}
             </span>
           )}
         </div>
@@ -359,6 +364,11 @@ function calculateResearchBonus(playerResearchData: any, getResearchById: any): 
     if (ecritureResearch?.effect?.research_points_bonus) {
       bonusMultiplier += ecritureResearch.effect.research_points_bonus / 100.0;
     }
+  }
+  
+  // 📜 Bonus de faction papyrus : +10% productivité
+  if (playerResearchData?.faction === 'papyrus') {
+    bonusMultiplier *= 1.1;
   }
   
   return bonusMultiplier;

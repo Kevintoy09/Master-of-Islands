@@ -12,9 +12,10 @@ interface MenuPopupProps {
   onMessage: () => void;
   onSettings?: () => void;
   onLogout: () => void;
-  unreadNotifications?: number; // Nombre de notifications non lues
-  unreadMessages?: number; // Nombre de messages non lus
-  hasChiefHouse?: boolean; // True si la Maison du Chef est construite (slot 17)
+  unreadNotifications?: number;
+  unreadMessages?: number;
+  hasChiefHouse?: boolean;
+  gameTime?: string; // Date/heure formatée du jeu (temps réel)
 }
 
 const MenuPopup: React.FC<MenuPopupProps> = ({
@@ -30,7 +31,8 @@ const MenuPopup: React.FC<MenuPopupProps> = ({
   onLogout,
   unreadNotifications = 0,
   unreadMessages = 0,
-  hasChiefHouse = false
+  hasChiefHouse = false,
+  gameTime = ''
 }) => {
   if (!isOpen) return null;
 
@@ -41,6 +43,22 @@ const MenuPopup: React.FC<MenuPopupProps> = ({
         
         <div className="popup-content">
           <h3 className="popup-title">Menu Principal</h3>
+          
+          {gameTime && (
+            <div style={{
+              textAlign: 'center',
+              fontSize: '17px',
+              color: '#5c3a21',
+              marginBottom: '12px',
+              fontWeight: '600',
+              padding: '6px 10px',
+              background: 'rgba(212, 175, 55, 0.1)',
+              borderRadius: '4px',
+              border: '1px solid rgba(212, 175, 55, 0.3)'
+            }}>
+              🕒 {gameTime}
+            </div>
+          )}
           
           <div className="menu-buttons">
             <button onClick={onJournal} className="menu-button">

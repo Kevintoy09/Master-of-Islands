@@ -8,6 +8,7 @@ export type UserState = {
   cities: Array<string>;
   research_points?: number;
   unlocked_research?: string[];
+  faction?: string;
   // Ajoute ici d'autres propriétés utiles (islands, ressources, etc.)
 };
 
@@ -65,6 +66,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (userExists) {
                 // Restaurer l'utilisateur avec ses données stockées
                 setUser(storedUser);
+                // Charger les données à jour depuis le serveur (incluant faction)
+                try {
+                  const playerResponse = await fetch(`${getApiUrl()}/api/player/${storedUser.id}`);
+                  if (playerResponse.ok) {
+                    const playerData = await playerResponse.json();
+                    const playerInfo = playerData.player_info || playerData;
+                    setUser(prev => ({ ...prev, ...playerInfo }));
+                  }
+                } catch (e) {
+                  // Continuer avec les données locales en cas d'erreur
+                }
               } else {
                 // Utilisateur n'existe plus, mais garder la session si c'est un nouveau joueur
                 // (il n'a peut-être pas encore de ville)

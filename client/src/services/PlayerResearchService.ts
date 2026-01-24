@@ -6,6 +6,7 @@ export interface PlayerResearchData {
   research_effects: {
     resource_bonuses?: { [key: string]: number };
   };
+  faction?: string;
 }
 
 export interface UnlockResearchRequest {

@@ -21,6 +21,9 @@ interface Hero {
     moral_bonus: number;
     aura_radius: number;
   };
+  satisfaction: {
+    base: number;
+  };
 }
 
 interface HeroSelectionPopupProps {
@@ -200,6 +203,16 @@ const HeroSelectionPopup: React.FC<HeroSelectionPopupProps> = ({
                         <div className="bonus">
                           <span>📡 Rayon:</span>
                           <span>{hero?.base_bonuses?.aura_radius ?? 0} cases</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bonuses-section">
+                      <h4>🏛️ Bonus Ville</h4>
+                      <div className="bonuses-grid">
+                        <div className="bonus">
+                          <span>😊 Satisfaction:</span>
+                          <span>+{hero?.satisfaction?.base ?? 0}</span>
                         </div>
                       </div>
                     </div>

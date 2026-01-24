@@ -23,6 +23,36 @@
   font-weight: bold;
 }
 
+.faction-bonus-indicator {
+  margin-top: 12px;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2e7d32;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bonus-details {
+  display: flex;
+  gap: 15px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.bonus-item {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  border: 1px solid #81c784;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .barracks-tabs {
   padding: 0 20px;
 }
@@ -293,6 +323,35 @@
   background: #fff4e6;
   color: #e67e22;
   border-color: #f39c12;
+}
+
+.cost-item.maintenance-cost {
+  background: #fffbea;
+  color: #b8860b;
+  border-color: #daa520;
+  position: relative;
+}
+
+.cost-icon-stack {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+.icon-hourglass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 11px;
+}
+
+.icon-gold {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 9px;
 }
 
 /* Colonne 3: Contrôles */

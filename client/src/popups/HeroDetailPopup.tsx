@@ -272,6 +272,12 @@ const HeroDetailPopup: React.FC<HeroDetailPopupProps> = ({
                           <span className="progression-text">+{heroData.progression.movement_bonus_per_level} Mouvement par niveau</span>
                         </div>
                       )}
+                      {heroData.progression.satisfaction_per_level && heroData.progression.satisfaction_per_level > 0 && (
+                        <div className="progression-item">
+                          <span className="progression-icon">😊</span>
+                          <span className="progression-text">+{heroData.progression.satisfaction_per_level} Satisfaction par niveau</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -361,6 +367,23 @@ const HeroDetailPopup: React.FC<HeroDetailPopupProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Section Bonus de Présence dans la Ville */}
+          <div className="hero-section">
+            <h3 className="section-title">🏛️ Bonus de Présence dans la Ville</h3>
+            <div className="bonuses-grid">
+              <div className="bonus-card">
+                <div className="bonus-icon">😊</div>
+                <div className="bonus-info">
+                  <span className="bonus-label">Bonus de satisfaction</span>
+                  <span className="bonus-value">+{heroData.satisfaction_bonus || 0}</span>
+                </div>
+              </div>
+            </div>
+            <p style={{ marginTop: '10px', fontSize: '0.9em', color: '#666', fontStyle: 'italic' }}>
+              Lorsque ce héros est en garnison dans une ville, il apporte un bonus de satisfaction aux citoyens.
+            </p>
           </div>
 
           {/* Section Historique */}

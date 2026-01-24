@@ -3,6 +3,7 @@ import "./HeaderBar.css";
 import ResourceProductionPopup from "./ResourceProductionPopup";
 import PopulationInfoPopup from "./PopulationInfoPopup";
 import GoldProductionPopup from "./GoldProductionPopup";
+import MilitaryExpensesPopup from "../popups/MilitaryExpensesPopup";
 import { RESOURCE_EMOJIS, RESOURCE_LABELS } from "../constants/resourceIcons";
 import { useUnlockedResources } from "../hooks/useUnlockedResources";
 import { getApiUrl } from "../utils/api";
@@ -63,6 +64,12 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
 
   // État pour le popup d'or
   const [showGoldPopup, setShowGoldPopup] = useState(false);
+
+  // État pour le popup de dépenses militaires
+  const [showMilitaryExpensesPopup, setShowMilitaryExpensesPopup] = useState(false);
+
+  // État pour les dépenses militaires
+  const [militaryExpenses, setMilitaryExpenses] = useState(0);
 
   // État pour la réduction du headerbar
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -146,6 +153,28 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
 
   // Utiliser le hook de rafraîchissement dynamique - importer en haut du fichier
   useRefreshInterval(loadTickControlsVisibility);
+
+  // Charger les dépenses militaires
+  const loadMilitaryExpenses = useCallback(async () => {
+    if (!playerInfo?.player_id) return;
+    
+    try {
+      const response = await fetch(`${getApiUrl()}/api/game/military-expenses?player_id=${playerInfo.player_id}`);
+      const data = await response.json();
+      if (response.ok && data.total_cost_after_bonus !== undefined) {
+        setMilitaryExpenses(data.total_cost_after_bonus);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des dépenses militaires:', error);
+    }
+  }, [playerInfo?.player_id]);
+
+  // Charger les dépenses au montage et périodiquement
+  useEffect(() => {
+    loadMilitaryExpenses();
+    const interval = setInterval(loadMilitaryExpenses, 30000); // Toutes les 30 secondes
+    return () => clearInterval(interval);
+  }, [loadMilitaryExpenses]);
 
   // Fonction pour exécuter un tick manuel
   const executeManualTick = async (event?: React.MouseEvent) => {
@@ -599,6 +628,20 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
     {showGoldPopup && (
       <GoldProductionPopup
         onClose={() => setShowGoldPopup(false)}
+        onOpenMilitaryExpenses={() => {
+          setShowGoldPopup(false);
+          setShowMilitaryExpensesPopup(true);
+        }}
+        currentGold={typeof resources.gold === 'number' ? resources.gold : parseFloat(resources.gold as string) || 0}
+        militaryExpenses={militaryExpenses}
+      />
+    )}
+
+    {/* Popup de dépenses militaires */}
+    {showMilitaryExpensesPopup && (
+      <MilitaryExpensesPopup
+        onClose={() => setShowMilitaryExpensesPopup(false)}
+        playerId={playerInfo?.player_id || null}
       />
     )}
   </>

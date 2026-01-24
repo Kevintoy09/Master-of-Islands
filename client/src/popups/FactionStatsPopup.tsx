@@ -113,6 +113,19 @@ const FactionStatsPopup: React.FC<FactionStatsPopupProps> = ({ open, onClose, pl
               {faction.bonus.description}
             </Typography>
           </Box>
+          {/* Détails des bonus si disponibles */}
+          {faction.bonusDetails && faction.bonusDetails.length > 0 && (
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {faction.bonusDetails.map((detail, index) => (
+                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span style={{ fontSize: '1.2rem' }}>{detail.icon}</span>
+                  <Typography variant="body2" className="roman-text" sx={{ color: '#d4c5a9' }}>
+                    {detail.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
         </Box>
 
         {/* Statistiques globales */}

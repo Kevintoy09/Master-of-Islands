@@ -10,6 +10,10 @@ export interface Faction {
     value: string;
     icon: string;
   };
+  bonusDetails?: Array<{
+    icon: string;
+    text: string;
+  }>;
   logo: string;
   baseResource: string;
   theme: {
@@ -26,7 +30,7 @@ export const FACTIONS: Record<string, Faction> = {
     motto: 'Pierre par pierre, nous bâtissons l\'éternité',
     description: 'Les architectes légendaires qui érigent des merveilles indestructibles. Maîtres de la construction, leur héritage défie le temps.',
     bonus: {
-      description: 'Réduction du coût de toutes les constructions',
+      description: '-10% de temps pour construire et développer les bâtiments',
       value: '-10%',
       icon: '🏛️'
     },
@@ -44,10 +48,14 @@ export const FACTIONS: Record<string, Faction> = {
     motto: 'Le fer est notre loi, la victoire notre destin',
     description: 'Guerriers nés pour le combat, forgés dans le feu de la bataille. Leur armée est redoutable, leur détermination sans faille.',
     bonus: {
-      description: 'Réduction du coût d\'entretien des unités militaires',
+      description: 'Réduction du coût d\'entretien des unités militaires et du temps de fabrication',
       value: '-10%',
       icon: '⚔️'
     },
+    bonusDetails: [
+      { icon: '💰', text: '-10% coût d\'entretien des unités militaires' },
+      { icon: '⏳', text: '-10% temps de fabrication des unités' }
+    ],
     logo: '/assets/island_selection/faction_iron.png',
     baseResource: 'iron',
     theme: {
@@ -62,8 +70,8 @@ export const FACTIONS: Record<string, Faction> = {
     motto: 'La prospérité naît de l\'abondance',
     description: 'Gardiens de la fertilité et de la croissance. Leur peuple prospère et se multiplie grâce à des récoltes généreuses.',
     bonus: {
-      description: 'Augmentation de la croissance démographique',
-      value: '+10%',
+      description: '+ 10 points de satisfaction ce qui augmente la croissance de la population',
+      value: '+10',
       icon: '🌾'
     },
     logo: '/assets/island_selection/faction_cereal.png',
@@ -80,7 +88,7 @@ export const FACTIONS: Record<string, Faction> = {
     motto: 'Dans le savoir réside la vraie puissance',
     description: 'Érudits et savants qui maîtrisent les arcanes du savoir. Leurs découvertes façonnent le futur de la civilisation.',
     bonus: {
-      description: 'Augmentation des points de recherche',
+      description: '+10% de productivité dans les académies',
       value: '+10%',
       icon: '📜'
     },

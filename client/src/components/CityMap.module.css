@@ -54,6 +54,57 @@
   }
 }
 
+/* Fumée pour les bâtiments de production */
+.building-smoke {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.smoke-puff {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(120, 120, 120, 0.8) 0%, rgba(200, 200, 200, 0.4) 50%, transparent 100%);
+  border-radius: 50%;
+  animation: smoke-rise 3s ease-out infinite;
+  opacity: 0;
+}
+
+.smoke-puff:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.smoke-puff:nth-child(2) {
+  animation-delay: 1s;
+}
+
+.smoke-puff:nth-child(3) {
+  animation-delay: 2s;
+}
+
+@keyframes smoke-rise {
+  0% {
+    transform: translateX(-50%) translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-60px) scale(1.5);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 600px) {
   .city-map-container {
     width: 100vw;

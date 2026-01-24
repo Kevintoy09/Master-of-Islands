@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import BuildingPopupBase from "../popups/BuildingPopupBase";
 import TownHallPopupContent from "../popups/TownHallPopupContent";
@@ -17,6 +17,7 @@ import WallPopupContent from "../popups/WallPopupContent";
 import SatisfactionPopup from "../popups/SatisfactionPopup";
 import ThermesPopupContent from "../popups/ThermesPopupContent";
 import PopulationManagementPopup from "../popups/PopulationManagementPopup";
+import { useUser } from '../hooks/useUser';
 
 interface City {
   id: string;
@@ -65,6 +66,7 @@ const BuildingPopup: React.FC<BuildingPopupProps> = ({
   onCityDataChange,
   defaultTab
 }) => {
+  const { user } = useUser();
   const [architectBonuses, setArchitectBonuses] = useState<{cost_reduction: number, time_reduction: number} | null>(null);
   const [constructionTimeMultiplier, setConstructionTimeMultiplier] = useState<number>(1.0);
   const [showSatisfactionPopup, setShowSatisfactionPopup] = useState(false);
@@ -137,35 +139,52 @@ const BuildingPopup: React.FC<BuildingPopupProps> = ({
   const effectsCurrent = currentLevelData?.effect;
   const effectsNext = nextLevelData?.effect;
   
-  // Calculer le coût avec bonus architecte
-  let developmentCost = nextLevelData?.cost;
-  const originalCost = nextLevelData?.cost; // Coût original sans bonus
-  let constructionTime = nextLevelData?.construction_time;
+  // Calculer le coût et le temps avec useMemo pour recalculer quand les dépendances changent
+  const { developmentCost, originalCost, constructionTime, originalTime } = useMemo(() => {
+    const baseCost = nextLevelData?.cost;
+    const originalCost = nextLevelData?.cost;
+    const originalTime = nextLevelData?.construction_time;
+    let adjustedCost = baseCost;
+    let adjustedTime = originalTime;
 
-  if (developmentCost && architectBonuses?.cost_reduction) {
-    const reduction = architectBonuses.cost_reduction / 100;
-    developmentCost = Object.fromEntries(
-      Object.entries(developmentCost).map(([resource, cost]) => [
-        resource,
-        Math.ceil((cost as number) * (1 - reduction))
-      ])
-    );
-  }
-
-  // Calculer le temps de construction avec multiplicateur global + bonus architecte
-  if (constructionTime) {
-    // 1. Appliquer le multiplicateur global
-    constructionTime = constructionTime * constructionTimeMultiplier;
-    
-    // 2. Puis appliquer le bonus architecte
-    if (architectBonuses?.time_reduction) {
-      const timeReduction = architectBonuses.time_reduction / 100;
-      constructionTime = constructionTime * (1 - timeReduction);
+    // Appliquer le bonus de coût architecte
+    if (adjustedCost && architectBonuses?.cost_reduction) {
+      const reduction = architectBonuses.cost_reduction / 100;
+      adjustedCost = Object.fromEntries(
+        Object.entries(adjustedCost).map(([resource, cost]) => [
+          resource,
+          Math.ceil((cost as number) * (1 - reduction))
+        ])
+      );
     }
-    
-    // 3. Arrondir et minimum 1 seconde
-    constructionTime = Math.max(1, Math.ceil(constructionTime));
-  }
+
+    // Calculer le temps de construction avec multiplicateur global + bonus architecte + bonus faction
+    if (adjustedTime) {
+      // 1. Appliquer le multiplicateur global
+      adjustedTime = adjustedTime * constructionTimeMultiplier;
+      
+      // 2. Puis appliquer le bonus architecte
+      if (architectBonuses?.time_reduction) {
+        const timeReduction = architectBonuses.time_reduction / 100;
+        adjustedTime = adjustedTime * (1 - timeReduction);
+      }
+      
+      // 3. 🏛️ Bonus faction Stone : -10% temps construction
+      if (user?.faction === 'stone') {
+        adjustedTime = adjustedTime * 0.9; // -10%
+      }
+      
+      // 4. Arrondir et minimum 1 seconde
+      adjustedTime = Math.max(1, Math.ceil(adjustedTime));
+    }
+
+    return {
+      developmentCost: adjustedCost,
+      originalCost,
+      constructionTime: adjustedTime,
+      originalTime
+    };
+  }, [nextLevelData, architectBonuses, constructionTimeMultiplier, user?.faction]);
   
   const formatEffects = (eff: any) => {
     if (!eff) return "Aucun.";
@@ -196,6 +215,7 @@ const BuildingPopup: React.FC<BuildingPopupProps> = ({
           cost={developmentCost}
         originalCost={originalCost}
         constructionTime={constructionTime}
+        originalTime={originalTime}
         level={building.level}
         effectsCurrent={effectsCurrent}
         effectsNext={effectsNext}

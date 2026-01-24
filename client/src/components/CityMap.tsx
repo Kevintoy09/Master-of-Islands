@@ -1,6 +1,8 @@
 import React from "react";
 import styles from "./CityMap.module.css";
 import ConstructionTimer from "./ConstructionTimer";
+import AnimatedCitizen from "./AnimatedCitizen";
+import CityAnimations from "./CityAnimations";
 import { Slot, CityLayout, CityBuilding } from "../types";
 
 interface CityMapProps {
@@ -24,6 +26,20 @@ const CityMap: React.FC<CityMapProps> = ({
   onFinishInstant,
   hasUnclaimedQuestRewards = false
 }) => {
+  // Bâtiments avec fumée
+  const shouldShowSmoke = (buildingName: string) => {
+    const smokingBuildings = [
+      'Scierie',
+      'Windmill',
+      'Caserne',
+      'Port',
+      'Thermes',
+      'Centre de Ressources',
+      'Maison du Chef de Village'
+    ];
+    return smokingBuildings.includes(buildingName);
+  };
+
   // Fonction pour obtenir l'image du slot ou bâtiment
   const getSlotImage = (slot: Slot, built?: CityBuilding) => {
     if (slot.locked) {
@@ -95,8 +111,8 @@ const CityMap: React.FC<CityMapProps> = ({
         const top = (slot.y / 700) * 432;   // Convertir de 0-280 vers 0-432
         
         return (
+          <React.Fragment key={slot.id}>
           <div
-            key={slot.id}
             className={styles["city-map-slot"]}
             style={{ 
               left: `${left}px`, 
@@ -151,6 +167,15 @@ const CityMap: React.FC<CityMapProps> = ({
               </div>
             )}
 
+            {/* Fumée pour bâtiments de production */}
+            {built && !isBuilding && shouldShowSmoke(built.name) && (
+              <div className={styles["building-smoke"]}>
+                <div className={styles["smoke-puff"]}></div>
+                <div className={styles["smoke-puff"]}></div>
+                <div className={styles["smoke-puff"]}></div>
+              </div>
+            )}
+
             {/* Bonhomme animé pour les récompenses de quêtes (slot_17 = Maison du Chef) */}
             {slot.id === 'slot_17' && built && hasUnclaimedQuestRewards && (
               <div style={{
@@ -167,8 +192,39 @@ const CityMap: React.FC<CityMapProps> = ({
               </div>
             )}
           </div>
-        );
-      })}
+          {/* Animations drapeaux/étoiles positionnées en absolute HORS du slot */}
+          {built && !isBuilding && (
+            <CityAnimations
+              key={`anim-${slot.id}`}
+              type="building"
+              buildingName={built.name}
+              slotPosition={{ left, top }}
+            />
+          )}
+        </React.Fragment>
+      );
+    })}
+
+    {/* Feu de bois devant la Maison du Chef (slot_17) */}
+    {(() => {
+      const chiefSlot = layout.slots.find(s => s.id === 'slot_17');
+      const chiefBuilding = cityBuildings.find(b => b.slot_id === 'slot_17');
+      if (chiefSlot && chiefBuilding && chiefBuilding.name === 'Maison du Chef de Village') {
+        // Calculer la position du feu selon le layout
+        const left = (chiefSlot.x / 900) * 1152;
+        const top = (chiefSlot.y / 700) * 432;
+        return <CityAnimations type="campfire" campfirePosition={{ x: left + 40, y: top + 80 }} />;
+      }
+      return null;
+    })()}
+
+    {/* Citoyens animés qui se déplacent */}
+    <AnimatedCitizen citizenId={1} cityLayout="city_type_1" />
+    <AnimatedCitizen citizenId={2} cityLayout="city_type_1" />
+    <AnimatedCitizen citizenId={3} cityLayout="city_type_1" />
+    <AnimatedCitizen citizenId={4} cityLayout="city_type_1" />
+    <AnimatedCitizen citizenId={5} cityLayout="city_type_1" />
+    <AnimatedCitizen citizenId={6} cityLayout="city_type_1" />
     </div>
   );
 };

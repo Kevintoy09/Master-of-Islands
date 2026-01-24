@@ -92,13 +92,28 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
   const [showUnitDetail, setShowUnitDetail] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [returningHero, setReturningHero] = useState<string | null>(null);
+  const [factionBonuses, setFactionBonuses] = useState<any>(null);
 
   // Synchroniser les données du joueur (recherches) au montage
   useEffect(() => {
     if (user?.id) {
       syncFromServer();
+      fetchFactionBonuses();
     }
   }, []);
+
+  const fetchFactionBonuses = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/game/faction-bonuses?player_id=${user.id}`);
+      const data = await response.json();
+      if (response.ok) {
+        setFactionBonuses(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des bonus de faction:', error);
+    }
+  };
 
   useEffect(() => {
     fetchUnitStats();
@@ -248,8 +263,14 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
   };
 
   const calculateCost = (unit: UnitStats, quantity: number) => {
-    const timeReduction = Math.min(0.55, (building.level - 1) * 0.05);
+    let timeReduction = Math.min(0.55, (building.level - 1) * 0.05);
     const costReduction = Math.min(0.45, (building.level - 1) * 0.05);
+    
+    // Bonus de faction Fer : -10% sur le temps
+    if (factionBonuses?.unit_production_time_reduction) {
+      timeReduction += factionBonuses.unit_production_time_reduction / 100;
+      timeReduction = Math.min(0.75, timeReduction); // Cap à 75%
+    }
     
     const adjustedCost = {
       wood: Math.floor((unit.production_cost.wood || 0) * (1 - costReduction) * quantity),
@@ -565,8 +586,17 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
                 </span>
               )}
               <span className="cost-item time-cost">
-                ⏱️ {formatTime(time)}
+                ⏳ {formatTime(time)}
               </span>
+              {unit.gold_cost_per_hour > 0 && (
+                <span className="cost-item maintenance-cost">
+                  <span className="cost-icon-stack">
+                    <span className="icon-hourglass">⏳</span>
+                    <span className="icon-gold">🪙</span>
+                  </span>
+                  {unit.gold_cost_per_hour}/h
+                </span>
+              )}
             </div>
           ) : (
             /* Message de prérequis */
@@ -647,7 +677,7 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
           {totals.stone > 0 && <span className="summary-cost">🪨 {totals.stone}</span>}
           {totals.iron > 0 && <span className="summary-cost">⚙️ {totals.iron}</span>}
           {totals.horse > 0 && <span className="summary-cost">🐎 {totals.horse}</span>}
-          <span className="summary-cost time">⏱️ {loading ? formatTime(timeRemaining) : formatTime(totals.time)}</span>
+          <span className="summary-cost time">⏳ {loading ? formatTime(timeRemaining) : formatTime(totals.time)}</span>
         </div>
 
         {/* Ligne 3: Boutons produire/annuler au centre */}
@@ -950,6 +980,15 @@ const BarracksPopupContent: React.FC<BarracksPopupContentProps> = ({
     <div className="barracks-popup-content">
       <div className="barracks-header">
         <h2>Caserne - Niveau {building.level}</h2>
+        {factionBonuses && factionBonuses.faction === 'iron' && (
+          <div className="faction-bonus-indicator">
+            ⚔️ Faction Fer - Bonus actifs :
+            <div className="bonus-details">
+              <span className="bonus-item">💰 -10% coûts maintenance</span>
+              <span className="bonus-item">⏳ -10% temps production</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="barracks-tabs">

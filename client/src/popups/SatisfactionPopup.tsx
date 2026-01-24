@@ -110,6 +110,7 @@ const SatisfactionPopup: React.FC<SatisfactionPopupProps> = ({
       'academy': 'Académie',
       'thermes': 'Thermes',
       'windmill': 'Moulin',
+      'heroes': 'Héros en garnison',
       'impot': 'Taux d\'imposition favorable',
       'hygiene': 'Hygiène',
       'market': 'Marché',

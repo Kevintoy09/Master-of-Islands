@@ -8,6 +8,12 @@ interface UseBuildingConstructionOptions {
   onCityDataChange: () => Promise<any>;
 }
 
+interface ErrorInfo {
+  message: string;
+  title?: string;
+  icon?: string;
+}
+
 export const useBuildingConstruction = ({ cityId, onCityDataChange }: UseBuildingConstructionOptions) => {
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [buildingsList, setBuildingsList] = useState<any[]>([]);
@@ -16,6 +22,7 @@ export const useBuildingConstruction = ({ cityId, onCityDataChange }: UseBuildin
   const [buildingsError, setBuildingsError] = useState("");
   const [buildingActionLoading, setBuildingActionLoading] = useState(false);
   const [buildingActionMsg, setBuildingActionMsg] = useState<string | null>(null);
+  const [errorPopup, setErrorPopup] = useState<ErrorInfo | null>(null);
 
   // Gérer la sélection d'un slot pour construction
   const handleSlotClick = useCallback(async (slot: Slot) => {
@@ -47,6 +54,7 @@ export const useBuildingConstruction = ({ cityId, onCityDataChange }: UseBuildin
     
     setBuildingActionLoading(true);
     setBuildingActionMsg(null);
+    setErrorPopup(null);
     
     try {
       await BuildingService.buildBuilding(cityId, selectedSlot.id, buildingName);
@@ -60,7 +68,50 @@ export const useBuildingConstruction = ({ cityId, onCityDataChange }: UseBuildin
       }, 900);
       
     } catch (error: any) {
-      setBuildingActionMsg('Erreur : ' + (error.message || 'Impossible de construire'));
+      // Parser l'erreur JSON si disponible
+      let errorData: any = {};
+      try {
+        errorData = JSON.parse(error.message);
+      } catch {
+        errorData = { error: error.message };
+      }
+
+      // Gestion spécifique des erreurs de construction
+      if (errorData.type === 'max_concurrent_buildings_reached') {
+        setErrorPopup({
+          title: '🏗️ Construction en cours',
+          message: `Vous ne pouvez construire que ${errorData.max} bâtiment(s) à la fois.\n\nActuellement : ${errorData.current}/${errorData.max} construction(s) en cours.\n\nDébloquez la recherche "Planification Urbaine" pour augmenter cette limite !`,
+          icon: '🏗️'
+        });
+      } else if (errorData.type === 'insufficient_resources') {
+        const missingResources = Object.entries(errorData.missing || {})
+          .map(([res, amt]) => `${res}: ${amt}`)
+          .join(', ');
+        setErrorPopup({
+          title: '💰 Ressources insuffisantes',
+          message: `Il vous manque : ${missingResources}`,
+          icon: '💰'
+        });
+      } else if (errorData.type === 'research_required') {
+        setErrorPopup({
+          title: '🔬 Recherche requise',
+          message: errorData.error || 'Une recherche doit être débloquée avant de construire ce bâtiment.',
+          icon: '🔬'
+        });
+      } else if (errorData.type === 'max_instances_reached') {
+        setErrorPopup({
+          title: '🏛️ Limite atteinte',
+          message: `Vous avez déjà ${errorData.current} ${buildingName} dans cette ville. Maximum autorisé : ${errorData.max}.`,
+          icon: '🏛️'
+        });
+      } else {
+        // Erreur générique
+        setErrorPopup({
+          title: '⚠️ Erreur',
+          message: errorData.error || error.message || 'Impossible de construire le bâtiment',
+          icon: '⚠️'
+        });
+      }
     } finally {
       setBuildingActionLoading(false);
     }
@@ -70,6 +121,7 @@ export const useBuildingConstruction = ({ cityId, onCityDataChange }: UseBuildin
     setSelectedSlot(null);
     setBuildingActionMsg(null);
     setBuildingsError("");
+    setErrorPopup(null);
   }, []);
 
   return {
@@ -81,6 +133,8 @@ export const useBuildingConstruction = ({ cityId, onCityDataChange }: UseBuildin
     buildingsError,
     buildingActionLoading,
     buildingActionMsg,
+    errorPopup,
+    setErrorPopup,
     handleSlotClick,
     constructBuilding,
     closeConstructionPopup

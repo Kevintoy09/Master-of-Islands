@@ -48,6 +48,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
   const [hasChiefHouse, setHasChiefHouse] = useState(false); // Maison du Chef dans slot 17
   const [hasUnclaimedQuestRewards, setHasUnclaimedQuestRewards] = useState(false);
   const [preselectedRecipient, setPreselectedRecipient] = useState<string | undefined>(undefined);
+  const [gameTime, setGameTime] = useState<string>(''); // Date/heure du jeu formatée
   const { user, logout } = useUser();
   const { isMuted, toggleMute } = useMusicPlayer();
 
@@ -75,6 +76,58 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
 
     checkChiefHouse();
   }, [user?.id, activeCityId]);
+
+  // Charger la date/heure du jeu (temps réel) avec timer local
+  useEffect(() => {
+    let currentTime: Date | null = null;
+    
+    const loadGameTime = async () => {
+      try {
+        const response = await fetch(`${getApiUrl()}/api/game/game-time`);
+        if (response.ok) {
+          const data = await response.json();
+          currentTime = new Date(data.game_time);
+          updateDisplayTime();
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement de l\'heure du jeu:', error);
+      }
+    };
+
+    const updateDisplayTime = () => {
+      if (currentTime) {
+        const formatted = currentTime.toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }) + ' - ' + 
+        currentTime.getHours().toString().padStart(2, '0') + 'h' +
+        currentTime.getMinutes().toString().padStart(2, '0') + ':' +
+        currentTime.getSeconds().toString().padStart(2, '0');
+        
+        setGameTime(formatted);
+      }
+    };
+
+    // Charger l'heure initiale
+    loadGameTime();
+    
+    // Incrémenter localement chaque seconde
+    const secondInterval = setInterval(() => {
+      if (currentTime) {
+        currentTime.setSeconds(currentTime.getSeconds() + 1);
+        updateDisplayTime();
+      }
+    }, 1000);
+    
+    // Resynchroniser avec le serveur toutes les minutes
+    const resyncInterval = setInterval(loadGameTime, 60000);
+    
+    return () => {
+      clearInterval(secondInterval);
+      clearInterval(resyncInterval);
+    };
+  }, []);
 
   // Charger le nombre de notifications non lues
   useEffect(() => {
@@ -431,6 +484,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({
         unreadNotifications={unreadNotifications}
         unreadMessages={unreadMessages}
         hasChiefHouse={hasChiefHouse}
+        gameTime={gameTime}
       />
       
       <NotificationJournalPopup

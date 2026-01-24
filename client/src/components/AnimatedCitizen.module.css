@@ -1,0 +1,13 @@
+.citizen {
+  position: absolute;
+  pointer-events: none;
+  z-index: 8;
+  transition: left 2s linear, top 2s linear;
+}
+
+.sprite {
+  background-repeat: no-repeat;
+  image-rendering: pixelated; /* Pour garder les pixels nets */
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}

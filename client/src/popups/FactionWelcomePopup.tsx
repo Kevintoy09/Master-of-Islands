@@ -114,6 +114,19 @@ const FactionWelcomePopup: React.FC<FactionWelcomePopupProps> = ({ open, faction
           <Typography variant="body1" sx={{ color: '#e0e0e0' }}>
             {faction.bonus.description}
           </Typography>
+          {/* Détails des bonus si disponibles */}
+          {faction.bonusDetails && faction.bonusDetails.length > 0 && (
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+              {faction.bonusDetails.map((detail, index) => (
+                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span style={{ fontSize: '1.2rem' }}>{detail.icon}</span>
+                  <Typography variant="body2" sx={{ color: '#d4c5a9' }}>
+                    {detail.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
         </Box>
 
         {/* Footer decoratif */}

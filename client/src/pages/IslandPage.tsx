@@ -607,6 +607,7 @@ const IslandPage: React.FC = () => {
           userSelect: "none", // Empêche la sélection de texte
           WebkitUserSelect: "none",
           WebkitTouchCallout: "none", // Désactive le menu contextuel sur iOS
+          backgroundColor: "#2B5876", // Couleur océan pour remplir les espaces vides
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -636,7 +637,7 @@ const IslandPage: React.FC = () => {
           inset: 0,
           width: "100%",
           height: "100%",
-          objectFit: "cover",
+          objectFit: "contain",
           zIndex: 1,
           pointerEvents: "none",
           userSelect: "none"
@@ -743,8 +744,8 @@ const IslandPage: React.FC = () => {
                     alt={getCityDisplayName(el)}
                     title={getCityDisplayName(el)}
                     style={{
-                      width: 160,
-                      height: 120,
+                      width: isOccupied ? 160 : 80,
+                      height: isOccupied ? 120 : 60,
                       objectFit: "contain",
                       filter: isMine ? "drop-shadow(0 0 8px #ffe600)" : "none",
                       transition: "transform 0.2s ease"

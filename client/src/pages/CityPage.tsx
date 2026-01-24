@@ -5,6 +5,7 @@ import { useUser } from "../hooks/useUser";
 import CityMap from "../components/CityMap";
 import BuildingPopup from "../components/BuildingPopup";
 import BuildingConstructionPopup from "../components/city/BuildingConstructionPopup";
+import ErrorPopup from "../components/ErrorPopup";
 import { useAutoUpdatePopulation } from "../hooks/useAutoUpdatePopulation";
 import { usePlayerResearch } from "../hooks/usePlayerResearch";
 import { useCity } from "../hooks/city/useCity";
@@ -46,7 +47,9 @@ const CityPage: React.FC = () => {
     destroyBuilding,
     finishInstantConstruction,
     canFinishInstant,
-    updateSelectedBuildingFromCity
+    updateSelectedBuildingFromCity,
+    errorPopup: buildingErrorPopup,
+    setErrorPopup: setBuildingErrorPopup
   } = useBuildingManagement({ 
     cityId: id, 
     onCityDataChange: async () => {
@@ -64,6 +67,8 @@ const CityPage: React.FC = () => {
     buildingsError,
     buildingActionLoading: constructionLoading,
     buildingActionMsg: constructionMsg,
+    errorPopup: constructionErrorPopup,
+    setErrorPopup: setConstructionErrorPopup,
     handleSlotClick,
     constructBuilding,
     closeConstructionPopup
@@ -386,6 +391,28 @@ const CityPage: React.FC = () => {
             canFinishInstant={canFinishInstant}
             onRenameTownHall={renameTownHall}
             defaultTab={defaultTabToOpen}
+          />
+        )}
+
+        {/* Popup d'erreur pour la construction */}
+        {constructionErrorPopup && (
+          <ErrorPopup
+            isOpen={true}
+            onClose={() => setConstructionErrorPopup(null)}
+            title={constructionErrorPopup.title}
+            message={constructionErrorPopup.message}
+            icon={constructionErrorPopup.icon}
+          />
+        )}
+
+        {/* Popup d'erreur pour le développement */}
+        {buildingErrorPopup && (
+          <ErrorPopup
+            isOpen={true}
+            onClose={() => setBuildingErrorPopup(null)}
+            title={buildingErrorPopup.title}
+            message={buildingErrorPopup.message}
+            icon={buildingErrorPopup.icon}
           />
         )}
 
